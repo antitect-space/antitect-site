@@ -76,7 +76,9 @@ lives only in the API.
 - **No price in any meta description or share image.** Link previews are cached
   long after a price changes.
 - **Forms:** `lib/schemas.ts` holds one person schema for every form (email and
-  WhatsApp number both required, as the API requires). `lib/form-errors.ts`
+  WhatsApp number both required, as the API requires). Location is required
+  too: a state from `lib/locations.ts`, posted with `country: "Nigeria"`, or
+  "Outside Nigeria" and a typed country, posted as `country` alone. `lib/form-errors.ts`
   maps every API error to one of four outcomes, and no form clears its input on
   failure.
 - **`content/`** holds copy the CRM does not manage: the method, why Antitect,

@@ -31,6 +31,7 @@ export function RegistrationForm({ slug, title, startsAt }: { slug: string; titl
 
   const {
     register,
+    control,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
@@ -93,7 +94,7 @@ export function RegistrationForm({ slug, title, startsAt }: { slug: string; titl
       <p className="mt-2 leading-[1.6] text-muted-foreground">We email you the details and the link to join.</p>
 
       <div className="mt-6">
-        <PersonFields register={register} errors={errors} idPrefix="register" />
+        <PersonFields register={register} control={control} errors={errors} idPrefix="register" />
       </div>
 
       <FormAlert message={formError} className="mt-6" />

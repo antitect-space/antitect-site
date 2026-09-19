@@ -24,6 +24,7 @@ export function CommunityForm({ idPrefix = "community" }: { idPrefix?: string })
 
   const {
     register,
+    control,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
@@ -52,8 +53,7 @@ export function CommunityForm({ idPrefix = "community" }: { idPrefix?: string })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate aria-label="Join the community">
-      <PersonFields
-        register={register}
+      <PersonFields register={register} control={control}
         errors={errors}
         idPrefix={idPrefix}
         consentLabel="You can message me on WhatsApp about Antitect"

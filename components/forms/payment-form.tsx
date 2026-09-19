@@ -72,6 +72,7 @@ export function PaymentForm({ payable, title, priceKobo, closesAt }: Props) {
 
   const {
     register,
+    control,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
@@ -186,7 +187,7 @@ export function PaymentForm({ payable, title, priceKobo, closesAt }: Props) {
       </p>
 
       <div className="mt-6">
-        <PersonFields register={register} errors={errors} idPrefix={payable.kind} />
+        <PersonFields register={register} control={control} errors={errors} idPrefix={payable.kind} />
       </div>
 
       <details
