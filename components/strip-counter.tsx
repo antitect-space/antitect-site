@@ -15,6 +15,7 @@ export function StripCounter({ count, children }: { count: number; children: Rea
     <>
       <div
         ref={ref}
+        data-strip=""
         onScroll={(event) => {
           const strip = event.currentTarget;
           const width = strip.scrollWidth / count;

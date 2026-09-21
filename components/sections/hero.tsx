@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { CutFrame } from "@/components/cut";
 import { Fresh } from "@/components/live";
 import { Reveal } from "@/components/motion/reveal";
 import { CommunityTicket, EventTicket, ProgrammeTicket } from "@/components/ticket";
@@ -48,16 +49,18 @@ export function Hero({ event, program }: { event: PublicEvent | null; program: P
         <div className="relative flex flex-col gap-6">
           <NextUp event={event} program={program} />
 
-          <div className="cut-bl relative aspect-[4/3] w-full overflow-hidden bg-muted lg:order-first">
-            <Image
-              src={heroPhoto.src}
-              alt={heroPhoto.alt}
-              fill
-              priority
-              sizes="(min-width: 1024px) 40rem, 100vw"
-              className="object-cover"
-            />
-          </div>
+          <CutFrame corner="bl" className="lg:order-first">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+              <Image
+                src={heroPhoto.src}
+                alt={heroPhoto.alt}
+                fill
+                priority
+                sizes="(min-width: 1024px) 40rem, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </CutFrame>
         </div>
       </div>
     </section>

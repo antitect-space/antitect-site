@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { CutFrame } from "@/components/cut";
 import { GalleryViewer } from "@/components/gallery-viewer";
 import { Reveal } from "@/components/motion/reveal";
 import { StripCounter } from "@/components/strip-counter";
@@ -47,11 +48,11 @@ export function GallerySection() {
 
 /** Which corner is cut varies down the set; the angle never does. */
 const TILES = [
-  { cut: "cut-br", span: "md:col-span-2 md:row-start-1 md:h-[26rem]" },
-  { cut: "cut-tr", span: "md:col-start-3 md:row-start-1 md:h-[26rem]" },
-  { cut: "cut-bl", span: "md:row-start-2 md:h-[13rem]" },
-  { cut: "cut-tr", span: "md:row-start-2 md:h-[13rem]" },
-  { cut: "cut-br", span: "md:row-start-2 md:h-[13rem]" },
+  { cut: "br", span: "md:col-span-2 md:row-start-1 md:h-[26rem]" },
+  { cut: "tr", span: "md:col-start-3 md:row-start-1 md:h-[26rem]" },
+  { cut: "bl", span: "md:row-start-2 md:h-[13rem]" },
+  { cut: "tr", span: "md:row-start-2 md:h-[13rem]" },
+  { cut: "br", span: "md:row-start-2 md:h-[13rem]" },
 ] as const;
 
 function Tile({ photo, index }: { photo: Photo; index: number }) {
@@ -59,13 +60,14 @@ function Tile({ photo, index }: { photo: Photo; index: number }) {
 
   return (
     <Reveal kind="wipe" delay={index * 70} className={`w-[85%] shrink-0 snap-center md:w-auto ${span}`}>
-      <button
-        type="button"
-        data-photo={index}
-        aria-label={`Open photograph ${index + 1} of ${workshopPhotos.length} larger`}
-        className={`group relative block h-full w-full cursor-zoom-in overflow-hidden bg-muted ${cut} focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:outline-none`}
-      >
-        <span className="relative block aspect-[4/3] h-full w-full md:aspect-auto">
+      <CutFrame corner={cut} className="h-full">
+        <button
+          type="button"
+          data-photo={index}
+          aria-label={`Open photograph ${index + 1} of ${workshopPhotos.length} larger`}
+          className="group relative block h-full w-full cursor-zoom-in overflow-hidden bg-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          <span className="relative block aspect-[4/3] h-full w-full md:aspect-auto">
           <Image
             src={photo.src}
             alt={photo.alt}
@@ -74,8 +76,9 @@ function Tile({ photo, index }: { photo: Photo; index: number }) {
             style={{ objectPosition: photo.position }}
             className="object-cover transition-transform duration-500 motion-reduce:transition-none group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
           />
-        </span>
-      </button>
+          </span>
+        </button>
+      </CutFrame>
     </Reveal>
   );
 }

@@ -30,12 +30,13 @@ export function CommunitySection() {
           <p className="mt-6 max-w-[40ch] text-lg leading-[1.5] text-background/80">
             Hear about webinars before they are announced, and build alongside people doing the same thing.
           </p>
-        </div>
-        <div className="relative lg:justify-self-end">
+            <div className="relative lg:justify-self-start mt-5">
           <Button asChild size="lg" className="w-full sm:w-auto">
             <Link href="/community">Join the community</Link>
           </Button>
         </div>
+        </div>
+      
       </div>
     </section>
   );

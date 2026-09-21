@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CutFrame } from "@/components/cut";
 import { PaymentForm } from "@/components/forms/payment-form";
 import { JsonLd } from "@/components/json-ld";
 import { FaqSection } from "@/components/sections/faq";
@@ -90,7 +91,7 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
           id="enrol"
           className="scroll-mt-4 self-start lg:sticky lg:top-8 lg:col-start-2 lg:row-span-2 lg:row-start-1"
         >
-          <div className="cut-bl border-2 border-foreground p-6 sm:p-8">
+          <CutFrame corner="bl" innerClassName="p-6 sm:p-8">
             {state === "open" ? (
               <PaymentForm
                 payable={{ kind: "program", slug: program.slug }}
@@ -111,20 +112,22 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
                 </Button>
               </div>
             )}
-          </div>
+          </CutFrame>
         </div>
 
         <div className="space-y-10 lg:col-start-1">
           {program.imageUrl ? (
-            <div className="cut-tr relative aspect-video w-full overflow-hidden bg-muted">
-              <Image
-                src={program.imageUrl}
-                alt=""
-                fill
-                sizes="(min-width: 1024px) 36rem, 100vw"
-                className="object-cover"
-              />
-            </div>
+            <CutFrame corner="tr">
+              <div className="relative aspect-video w-full overflow-hidden bg-muted">
+                <Image
+                  src={program.imageUrl}
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 36rem, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            </CutFrame>
           ) : null}
 
           {program.description ? (

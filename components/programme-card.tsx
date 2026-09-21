@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { CutFrame } from "@/components/cut";
 import { Button } from "@/components/ui/button";
 import type { PublicProgram } from "@/lib/api";
 import { placesNote } from "@/lib/events";
@@ -32,7 +33,8 @@ export function ProgrammeCard({
   ].filter(Boolean) as string[];
 
   return (
-    <article className="cut-tr grid border-2 border-foreground bg-background lg:grid-cols-[1.5fr_1fr]">
+    <CutFrame corner="tr">
+      <article className="grid lg:grid-cols-[1.5fr_1fr]">
       <div className="p-6 sm:p-8">
         <p className="text-[0.9375rem] font-semibold text-muted-foreground">
           Capability Development Programme
@@ -58,15 +60,17 @@ export function ProgrammeCard({
 
       <div className="flex flex-col justify-between gap-6 border-t-2 border-foreground p-6 sm:p-8 lg:border-t-0 lg:border-l-2">
         {program.imageUrl ? (
-          <div className="cut-bl relative aspect-[4/3] w-full overflow-hidden bg-muted">
-            <Image
-              src={program.imageUrl}
-              alt=""
-              fill
-              sizes="(min-width: 1024px) 22rem, 100vw"
-              className="object-cover"
-            />
-          </div>
+          <CutFrame corner="bl">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+              <Image
+                src={program.imageUrl}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 22rem, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </CutFrame>
         ) : null}
 
         <div>
@@ -79,6 +83,7 @@ export function ProgrammeCard({
           </Button>
         </div>
       </div>
-    </article>
+      </article>
+    </CutFrame>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { CutFrame } from "@/components/cut";
 import { RelativeLabel, Started } from "@/components/live";
 import { Button } from "@/components/ui/button";
 import type { PublicEvent, PublicProgram } from "@/lib/api";
@@ -32,7 +33,8 @@ function TicketShell({
   className?: string;
 }) {
   return (
-    <article className={`cut-tr border-2 border-foreground bg-background ${className}`}>
+    <CutFrame corner="tr" className={className} innerClassName="flex flex-col">
+      <article>
       <div className="p-6 sm:p-7">
         <p className="text-[0.9375rem] font-semibold text-muted-foreground">{kicker}</p>
         <Heading id={headingId} className="text-title mt-3 text-3xl sm:text-4xl lg:text-[2.75rem]">
@@ -44,7 +46,8 @@ function TicketShell({
       <Perforation />
 
       <div className="bg-foreground p-6 text-background sm:p-7">{stub}</div>
-    </article>
+      </article>
+    </CutFrame>
   );
 }
 
@@ -253,7 +256,8 @@ export function EventTicketRow({
   const state = registrationState(event);
 
   return (
-    <article className="cut-tr grid border-2 border-foreground bg-background sm:grid-cols-[1fr_16rem]">
+    <CutFrame corner="tr">
+      <article className="grid sm:grid-cols-[1fr_16rem]">
       <div className="p-5 sm:p-6">
         <p className="text-[0.9375rem] font-semibold text-muted-foreground">{eventLabel(event)}</p>
         <Heading className="text-title mt-2 text-2xl">
@@ -291,6 +295,7 @@ export function EventTicketRow({
           </Started>
         )}
       </div>
-    </article>
+      </article>
+    </CutFrame>
   );
 }

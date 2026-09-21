@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { CutFrame } from "@/components/cut";
 import { CommunityForm } from "@/components/forms/community-form";
 import { shareMetadata } from "@/lib/metadata";
 
@@ -24,9 +25,9 @@ export default function CommunityPage() {
         </p>
         <p className="mt-4 text-lg font-semibold">Free to join.</p>
       </div>
-      <div className="cut-bl self-start border-2 border-foreground p-6 sm:p-8">
+      <CutFrame corner="bl" className="self-start" innerClassName="p-6 sm:p-8">
         <CommunityForm idPrefix="page-community" />
-      </div>
+      </CutFrame>
     </div>
   );
 }

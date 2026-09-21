@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CutFrame } from "@/components/cut";
 import { PaymentForm } from "@/components/forms/payment-form";
 import { RegistrationForm } from "@/components/forms/registration-form";
 import { JsonLd } from "@/components/json-ld";
@@ -93,7 +94,7 @@ export default async function EventPage({ params }: PageProps<"/events/[slug]">)
         id="register"
         className="scroll-mt-4 self-start lg:sticky lg:top-8 lg:col-start-2 lg:row-span-2 lg:row-start-1"
       >
-        <div className="cut-bl border-2 border-foreground p-6 sm:p-8">
+        <CutFrame corner="bl" innerClassName="p-6 sm:p-8">
           {state !== "open" ? (
             <Closed state={state} running={state === "closed" && !isOver(event)} />
           ) : isPaid(event) ? (
@@ -106,20 +107,22 @@ export default async function EventPage({ params }: PageProps<"/events/[slug]">)
           ) : (
             <RegistrationForm slug={event.slug} startsAt={event.startsAt} title={event.title} />
           )}
-        </div>
+        </CutFrame>
       </div>
 
       <div className="lg:col-start-1">
         {event.imageUrl ? (
-          <div className="cut-tr relative mb-8 aspect-video w-full overflow-hidden bg-muted">
-            <Image
-              src={event.imageUrl}
-              alt=""
-              fill
-              sizes="(min-width: 1024px) 36rem, 100vw"
-              className="object-cover"
-            />
-          </div>
+          <CutFrame corner="tr" className="mb-8">
+            <div className="relative aspect-video w-full overflow-hidden bg-muted">
+              <Image
+                src={event.imageUrl}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 36rem, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </CutFrame>
         ) : null}
 
         {event.description ? (
