@@ -24,7 +24,7 @@ export default function CommunityPage() {
         </p>
         <p className="mt-4 text-lg font-semibold">Free to join.</p>
       </div>
-      <div className="self-start border border-foreground p-6 sm:p-8">
+      <div className="cut-bl self-start border-2 border-foreground p-6 sm:p-8">
         <CommunityForm idPrefix="page-community" />
       </div>
     </div>

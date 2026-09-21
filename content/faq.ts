@@ -1,6 +1,6 @@
 import type { PublicProgram } from "@/lib/api";
-import { countWord, formatKobo, plural } from "@/lib/format";
-import { capitalise as cap, durationLabel } from "@/lib/programs";
+import { formatDay, formatKobo, countWord, plural } from "@/lib/format";
+import { durationLabel } from "@/lib/programs";
 
 export interface FaqItem {
   question: string;
@@ -8,81 +8,81 @@ export interface FaqItem {
 }
 
 /**
- * The eleven questions from the Antitect DLI document, edited for length, with
- * "DLI" replaced by "Antitect", plus the two the copy doc adds. Cost stays near
- * the end, after the value has been made.
+ * The home page answers for Antitect, never for one programme. It lists
+ * several, so a price or a length here would be wrong for most of them — and
+ * wrong the moment a cohort changes. Anything cohort-specific lives on the
+ * programme's own page, built from its record.
  *
- * Answers that carry a price, a duration or a session count are built from the
- * programme record and left out entirely when there is none. A figure written
- * here would outlive the cohort it was true for.
+ * Two sentences each, hard limit.
  */
-export function buildFaq(program: PublicProgram | null): FaqItem[] {
-  const items: Array<FaqItem | null | false> = [
-    {
-      question: "What is Antitect?",
-      answer:
-        "Antitect develops practical, economically relevant capability through guided, project-based learning. Learning should lead to the ability to do.",
-    },
-    {
-      question: "How is Antitect different from a regular online course?",
-      answer:
-        "It is project-first. You start with a defined project and learn the concepts, tools and processes needed to build it. Your instructor reviews your work and helps you improve it until the project is complete.",
-    },
-    {
-      question: "How does the learning work?",
-      answer:
-        "You learn, build and receive feedback throughout the programme. Each project comes with the resources, live instruction and support you need to complete it.",
-    },
-    {
-      question: "What will I actually build?",
-      answer: "Real, practical projects based on the capability you are developing.",
-    },
-    program && program.durationWeeks !== null && {
-      question: "How long is the programme?",
+export const generalFaq: ReadonlyArray<FaqItem> = [
+  {
+    question: "What is Antitect?",
+    answer:
+      "Antitect develops practical AI capability through guided, project-based learning. You build real things, and an instructor reviews what you build.",
+  },
+  {
+    question: "How is this different from an online course?",
+    answer:
+      "You start with a project rather than a syllabus, and learn what that project needs. You finish when the thing works.",
+  },
+  {
+    question: "Do I need to be technical?",
+    answer: "No. The work is applying tools to real problems, not writing code.",
+  },
+  {
+    question: "What will I actually build?",
+    answer:
+      "Projects you can use in your own work. Each programme page lists what that cohort builds.",
+  },
+  {
+    question: "When are sessions held?",
+    answer:
+      "Live sessions are scheduled around working people: weekday evenings and a weekend session. Exact times come with each cohort.",
+  },
+  {
+    question: "What if I miss a live session?",
+    answer: "Sessions are recorded. Nothing in your progress depends on attendance.",
+  },
+];
+
+/**
+ * The questions a cohort can answer for itself: what it costs, how long it
+ * runs, what it asks of your week, and when payment is due. Every figure is
+ * read from the record, and a question whose figure is missing is left out
+ * rather than guessed.
+ */
+export function programmeFaq(program: PublicProgram): FaqItem[] {
+  const items: Array<FaqItem | false> = [
+    program.durationWeeks !== null && {
+      question: "How long does it run?",
       answer: `${program.title} runs for ${durationLabel(program)}.`,
     },
-    program && program.sessionsPerWeek !== null && program.hoursPerSession !== null && {
-      question: "How much time will I need?",
-      answer:
-        `${cap(countWord(program.sessionsPerWeek))} live ${plural(program.sessionsPerWeek, "session", "sessions")} each week, ` +
-        `${countWord(program.hoursPerSession)} ${plural(program.hoursPerSession, "hour", "hours")} per session, ` +
-        "plus time to work on your projects on your own.",
-    },
+    program.sessionsPerWeek !== null &&
+      program.hoursPerSession !== null && {
+        question: "How much time will I need each week?",
+        answer: `${cap(countWord(program.sessionsPerWeek))} live ${plural(program.sessionsPerWeek, "session", "sessions")} a week, ${countWord(program.hoursPerSession)} ${plural(program.hoursPerSession, "hour", "hours")} each, plus your own project time.`,
+      },
     {
-      question: "When are the classes?",
-      answer:
-        "Live sessions are scheduled around working professionals, with weekday evening sessions and a weekend session. Exact times are given for each cohort.",
-    },
-    {
-      question: "What if I miss a live session?",
-      answer:
-        "Sessions are recorded. The one-to-one project review is rescheduled, not skipped — it is the part that matters most.",
-    },
-    {
-      question: "Will I get personal support?",
-      answer:
-        "Yes. You get a thirty-minute one-to-one project review every week, as well as the live sessions and support from the community.",
-    },
-    {
-      question: "Do I need to be technical?",
-      answer:
-        "No. You do not need advanced technical or coding experience. The programme is built around practical application and guided building.",
-    },
-    {
-      question: "What will I gain from the programme?",
-      answer:
-        "A practical capability and a portfolio of completed projects you can use in your business, your work or your career.",
-    },
-    program && {
       question: "How much does it cost?",
-      answer: `${formatKobo(program.priceKobo)} for ${program.title}. That covers the live sessions, the projects, a weekly one-to-one review, learning resources and community support.`,
+      answer: `${formatKobo(program.priceKobo)}. That covers the live sessions, the projects, the weekly review, resources and community support.`,
     },
-    program && {
-      question: "Do I need to pay before the cohort starts?",
-      answer: "Yes. Your place is confirmed when payment clears.",
+    {
+      question: "Do I need to pay before it starts?",
+      answer: program.startsAt
+        ? `Yes. Your place is confirmed when payment clears, and the cohort starts on ${formatDay(program.startsAt)}.`
+        : "Yes. Your place is confirmed when payment clears.",
+    },
+    {
+      question: "When are sessions held?",
+      answer:
+        "Weekday evenings and a weekend session, so you can keep working. Exact times are sent to everybody enrolled.",
     },
   ];
 
   return items.filter((item): item is FaqItem => Boolean(item));
 }
 
+function cap(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

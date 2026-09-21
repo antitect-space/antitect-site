@@ -1,20 +1,39 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { HeroPanel } from "@/components/hero-panel";
+import { Fresh } from "@/components/live";
+import { Reveal } from "@/components/motion/reveal";
+import { CommunityTicket, EventTicket, ProgrammeTicket } from "@/components/ticket";
 import { Button } from "@/components/ui/button";
+import { heroPhoto } from "@/content/gallery";
 import type { PublicEvent, PublicProgram } from "@/lib/api";
 
+/**
+ * The page opens on a blade: a red diagonal at the mark's angle, passing
+ * behind the headline block and out the other side. The headline sits on the
+ * page's own white, so the blade never runs under type — red under black
+ * fails contrast, and the blade is there to cut, not to tint.
+ *
+ * Beside it, the ticket: the next real thing somebody can hold a place at.
+ */
 export function Hero({ event, program }: { event: PublicEvent | null; program: PublicProgram | null }) {
   return (
-    <section aria-labelledby="hero-title" className="border-b">
-      <div className="container-page grid gap-10 py-10 sm:py-16 lg:grid-cols-[1.25fr_1fr] lg:gap-16 lg:py-24">
-        <div className="flex flex-col justify-center">
+    <section aria-labelledby="hero-title" className="relative overflow-hidden border-b">
+      <Reveal
+        kind="blade"
+        trigger="load"
+        className="pointer-events-none absolute -top-16 left-[52%] h-[150%] w-[5rem] sm:left-[58%] sm:w-[7rem] lg:left-[33%] lg:w-[8.5rem]"
+      >
+        <div aria-hidden="true" className="blade h-full w-full" />
+      </Reveal>
+
+      <div className="container-page relative grid gap-10 py-10 sm:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-20">
+        <div className="relative self-start bg-background py-3 lg:max-w-[33rem] lg:py-8">
           <h1 id="hero-title" className="text-display text-[2.75rem] sm:text-6xl lg:text-7xl">
             Learn AI by building with it.
           </h1>
-          <p className="mt-6 max-w-[56ch] text-lg leading-[1.6] text-muted-foreground">
-            Antitect runs hands-on AI programmes in Nigeria for people who want to leave with something
-            they built — not notes they will never open again.
+          <p className="mt-6 max-w-[42ch] text-lg leading-[1.5] text-muted-foreground sm:text-xl">
+            Hands-on AI programmes in Nigeria, for people who want to leave with something they built.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
@@ -25,8 +44,49 @@ export function Hero({ event, program }: { event: PublicEvent | null; program: P
             </Button>
           </div>
         </div>
-        <HeroPanel event={event} program={program} />
+
+        <div className="relative flex flex-col gap-6">
+          <NextUp event={event} program={program} />
+
+          <div className="cut-bl relative aspect-[4/3] w-full overflow-hidden bg-muted lg:order-first">
+            <Image
+              src={heroPhoto.src}
+              alt={heroPhoto.alt}
+              fill
+              priority
+              sizes="(min-width: 1024px) 40rem, 100vw"
+              className="object-cover"
+            />
+          </div>
+        </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * The ticket, or the next best real thing. Never empty, and never "coming
+ * soon": a cohort, or the community, is always something somebody can do now.
+ *
+ * `Fresh` is the last guard against a page that has been sitting in a cache:
+ * once the browser knows the time, a finished event stops inviting anybody.
+ */
+function NextUp({ event, program }: { event: PublicEvent | null; program: PublicProgram | null }) {
+  const fallback = program ? (
+    <ProgrammeTicket program={program} headingId="next-up" />
+  ) : (
+    <CommunityTicket headingId="next-up" />
+  );
+
+  if (!event) return fallback;
+
+  return (
+    <Fresh startsAt={event.startsAt} fallback={fallback}>
+      <EventTicket
+        event={event}
+        headingId="next-up"
+        next={program ? { href: `/programmes/${program.slug}`, label: "See the programme" } : { href: "/community", label: "Join the community" }}
+      />
+    </Fresh>
   );
 }

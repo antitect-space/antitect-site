@@ -18,8 +18,11 @@ export default async function PaymentCompletePage({ searchParams }: PageProps<"/
   const reference = typeof raw === "string" && raw.trim() ? raw.trim() : null;
 
   return (
-    <div className="container-page py-16 sm:py-20 lg:py-28">
-      <PaymentStatus reference={reference} />
+    <div className="container-page py-12 sm:py-16 lg:py-24">
+      {/* Restyled only. What it reports, and when, is decided by PaymentStatus. */}
+      <div className="cut-tr max-w-3xl border-2 border-foreground p-6 sm:p-10">
+        <PaymentStatus reference={reference} />
+      </div>
     </div>
   );
 }

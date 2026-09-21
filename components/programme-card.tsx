@@ -1,58 +1,79 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import type { PublicProgram } from "@/lib/api";
 import { placesNote } from "@/lib/events";
-import { commitmentSentence, durationLabel, enrolmentState, priceAndCohort } from "@/lib/programs";
+import { formatDay, formatKobo } from "@/lib/format";
+import { durationLabel, enrolmentState } from "@/lib/programs";
 
 /**
- * A programme as a hard-edged block: what it is, what it demands, what you
- * leave with, and what it costs. Every figure comes from the record; the
- * sentences around them are fixed.
+ * A programme, showing only what its own record holds.
+ *
+ * Nothing here is written for "programmes in general": a card that claimed
+ * three sessions a week would have been wrong for the one-week cohort sitting
+ * beside it. Every line below is a field, or it is absent.
  */
-export function ProgrammeCard({ program, headingLevel = "h3" }: { program: PublicProgram; headingLevel?: "h2" | "h3" }) {
-  const Heading = headingLevel;
-  const commitment = commitmentSentence(program);
+export function ProgrammeCard({
+  program,
+  headingLevel: Heading = "h3",
+}: {
+  program: PublicProgram;
+  headingLevel?: "h2" | "h3";
+}) {
   const state = enrolmentState(program);
-  const note = state === "open" ? placesNote(program) : null;
+  const places = state === "open" ? placesNote(program) : null;
+
+  const facts = [
+    durationLabel(program),
+    "Online",
+    formatKobo(program.priceKobo),
+    program.startsAt ? `Starts ${formatDay(program.startsAt)}` : null,
+  ].filter(Boolean) as string[];
 
   return (
-    <article className="grid border border-foreground bg-background lg:grid-cols-[1.4fr_1fr]">
-      <div className="p-6 sm:p-8 lg:p-10">
-        <p className="text-[0.9375rem] font-medium text-muted-foreground">
-          {[durationLabel(program), "Instructor-led", "Online"].filter(Boolean).join(" · ")}
+    <article className="cut-tr grid border-2 border-foreground bg-background lg:grid-cols-[1.5fr_1fr]">
+      <div className="p-6 sm:p-8">
+        <p className="text-[0.9375rem] font-semibold text-muted-foreground">
+          Capability Development Programme
         </p>
         <Heading className="text-title mt-3 text-3xl sm:text-4xl">
           <Link href={`/programmes/${program.slug}`} className="hover:underline hover:underline-offset-4">
             {program.title}
           </Link>
         </Heading>
-        <p className="mt-5 max-w-[62ch] text-lg leading-[1.6]">{program.summary}</p>
-        <p className="mt-4 max-w-[62ch] leading-[1.6] text-muted-foreground">
-          {commitment ? `${commitment} ` : ""}You progress by finishing projects, not by attending.
-        </p>
+        {program.summary ? (
+          <p className="mt-4 max-w-[52ch] text-lg leading-[1.5]">{program.summary}</p>
+        ) : null}
+
+        <dl className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[0.9375rem]">
+          {facts.map((fact) => (
+            <div key={fact} className="flex items-center gap-2">
+              <dt className="sr-only">Detail</dt>
+              <dd className="font-semibold">{fact}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
-      <div className="flex flex-col justify-between gap-8 border-t border-foreground p-6 sm:p-8 lg:border-t-0 lg:border-l lg:p-10">
-        {program.outcomes.length > 0 ? (
-          <div>
-            <p className="font-semibold">What you leave with</p>
-            <ul className="mt-3 space-y-2">
-              {program.outcomes.map((outcome) => (
-                <li key={outcome} className="flex gap-3 leading-[1.5]">
-                  <span aria-hidden="true" className="mt-[0.55em] size-1.5 shrink-0 bg-foreground" />
-                  <span>{outcome}</span>
-                </li>
-              ))}
-            </ul>
+      <div className="flex flex-col justify-between gap-6 border-t-2 border-foreground p-6 sm:p-8 lg:border-t-0 lg:border-l-2">
+        {program.imageUrl ? (
+          <div className="cut-bl relative aspect-[4/3] w-full overflow-hidden bg-muted">
+            <Image
+              src={program.imageUrl}
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 22rem, 100vw"
+              className="object-cover"
+            />
           </div>
         ) : null}
+
         <div>
-          <p className="text-title text-2xl">{priceAndCohort(program)}</p>
-          {note ? <p className="mt-2 font-medium">{note}</p> : null}
-          {state === "full" ? <p className="mt-2 font-medium">This cohort is full.</p> : null}
-          <Button asChild variant="secondary" size="lg" className="mt-5 w-full sm:w-auto">
-            <Link href={`/programmes/${program.slug}`} aria-label={`Enrol: ${program.title}`}>
+          {state === "full" ? <p className="font-semibold">This cohort is full.</p> : null}
+          {places ? <p className="font-semibold">{places}</p> : null}
+          <Button asChild size="lg" className="mt-4 w-full" variant={state === "open" ? "default" : "secondary"}>
+            <Link href={`/programmes/${program.slug}`} aria-label={`${state === "open" ? "Enrol" : "See"}: ${program.title}`}>
               {state === "open" ? "Enrol" : "See the programme"}
             </Link>
           </Button>

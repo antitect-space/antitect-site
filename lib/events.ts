@@ -1,6 +1,33 @@
 import type { PublicEvent, PublicProgram } from "./api";
 import { formatKobo, hasStarted } from "./format";
 
+/**
+ * How long an event stays on the site after it starts.
+ *
+ * The API sends a start time and, for now, nothing that says when an event
+ * actually ends, so the site cannot know it is over. Two hours covers a
+ * session in progress — long enough for somebody arriving late to see
+ * "Happening now" rather than nothing, short enough that yesterday's webinar
+ * never invites anybody to register.
+ */
+export const HAPPENING_NOW_MS = 2 * 60 * 60 * 1000;
+
+/**
+ * Past, as far as the site is concerned. Everything that lists events filters
+ * through this, so a stale page or an API that ever starts returning finished
+ * events cannot advertise one.
+ */
+export function isOver(event: Pick<PublicEvent, "startsAt">, now: number = Date.now()): boolean {
+  return new Date(event.startsAt).getTime() + HAPPENING_NOW_MS <= now;
+}
+
+/** Events worth showing: not finished, soonest first. */
+export function upcoming(events: PublicEvent[], now: number = Date.now()): PublicEvent[] {
+  return events
+    .filter((event) => !isOver(event, now))
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+}
+
 export type RegistrationState = "open" | "full" | "closed";
 
 /**
@@ -39,14 +66,15 @@ export function eventAction(event: PublicEvent): string {
   return isPaid(event) ? "Reserve a place" : "Register free";
 }
 
-const NEARLY_FULL = 10;
+/** Below a fifth of the places left, it is worth saying. Above it, "47 of 50 left" argues against you. */
+const LOW_FRACTION = 0.2;
 
-/**
- * "Only 4 places left", or null. Shown only when places are genuinely low: a
- * counter reading "47 of 50 left" argues against you. Null capacity is unlimited.
- */
-export function placesNote(item: Pick<PublicEvent | PublicProgram, "spotsRemaining" | "isFull">): string | null {
-  const remaining = item.spotsRemaining;
-  if (remaining === null || item.isFull || remaining > NEARLY_FULL) return null;
-  return `Only ${remaining} ${remaining === 1 ? "place" : "places"} left`;
+/** "12 places left", or null. Null capacity means unlimited, not zero. */
+export function placesNote(
+  item: Pick<PublicEvent | PublicProgram, "spotsRemaining" | "capacity" | "isFull">,
+): string | null {
+  const { spotsRemaining: remaining, capacity } = item;
+  if (remaining === null || capacity === null || item.isFull) return null;
+  if (remaining > Math.max(1, Math.ceil(capacity * LOW_FRACTION))) return null;
+  return `${remaining} ${remaining === 1 ? "place" : "places"} left`;
 }

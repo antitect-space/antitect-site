@@ -8,11 +8,9 @@ export function ProgrammesSection({ programs }: { programs: PublicProgram[] }) {
         <h2 id="programmes-title" className="text-display text-4xl sm:text-5xl">
           Capability Development Programmes
         </h2>
-        <p className="mt-6 max-w-[62ch] text-lg leading-[1.6] text-muted-foreground">
-          Longer, structured programmes for people who want to develop a capability properly rather than
-          sample it.
-        </p>
-        <div className="mt-10 grid gap-6">
+        <p className="mt-4 text-lg text-muted-foreground">Weeks, not an afternoon.</p>
+
+        <div className="mt-10 grid gap-6 lg:mt-12">
           {programs.map((program) => (
             <ProgrammeCard key={program.slug} program={program} />
           ))}

@@ -1,31 +1,38 @@
 import Link from "next/link";
 
+import { Reveal } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
 
 /**
- * For everyone not ready for a webinar or a programme yet. Black, so it reads
- * as the page's closing offer rather than one more block.
- *
- * The action leads to /community rather than holding the form here: the form
- * brings its validation code with it, and the home page is the one most
- * visitors open on mobile data.
+ * The page closes as it opened: on a blade. Black, notched into the section
+ * above it at the mark's angle, with red cutting across behind the type —
+ * behind, never under, because red beneath white type fails contrast.
  */
 export function CommunitySection() {
   return (
-    <section id="community" aria-labelledby="community-title" className="scroll-mt-4 bg-foreground text-background">
-      <div className="container-page grid gap-8 py-16 lg:grid-cols-[1.2fr_1fr] lg:items-end lg:gap-20 lg:py-24">
-        <div>
-          <h2 id="community-title" className="text-display text-4xl sm:text-5xl">
+    <section
+      id="community"
+      aria-labelledby="community-title"
+      className="notch-top relative -mt-[var(--notch-rise)] scroll-mt-4 overflow-hidden bg-foreground text-background"
+    >
+      <Reveal
+        kind="blade"
+        className="pointer-events-none absolute -top-10 right-[12%] h-[150%] w-[6rem] sm:w-[9rem] lg:right-[28%]"
+      >
+        <div aria-hidden="true" className="blade h-full w-full opacity-90" />
+      </Reveal>
+
+      <div className="container-page relative grid gap-8 pt-[calc(var(--notch-rise)+3rem)] pb-16 lg:grid-cols-[1.2fr_1fr] lg:items-end lg:gap-16 lg:pb-24">
+        <div className="relative bg-foreground py-2">
+          <h2 id="community-title" className="text-display text-4xl sm:text-5xl lg:text-6xl">
             Be a builder, not just a spectator.
           </h2>
-          <p className="mt-6 max-w-[52ch] text-lg leading-[1.6] text-background/80">
-            Antitect&apos;s community is where most people start. You will hear about webinars before they are
-            announced publicly, get practical resources, and build alongside people doing the same thing.
+          <p className="mt-6 max-w-[40ch] text-lg leading-[1.5] text-background/80">
+            Hear about webinars before they are announced, and build alongside people doing the same thing.
           </p>
         </div>
-        <div className="lg:justify-self-end">
-          <p className="text-lg font-semibold">Free to join.</p>
-          <Button asChild size="lg" className="mt-5 w-full sm:w-auto">
+        <div className="relative lg:justify-self-end">
+          <Button asChild size="lg" className="w-full sm:w-auto">
             <Link href="/community">Join the community</Link>
           </Button>
         </div>

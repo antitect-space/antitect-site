@@ -55,6 +55,7 @@ export const NAV = [
   { label: "Programmes", href: "/programmes" },
   { label: "Events", href: "/events" },
   { label: "How it works", href: "/#how-it-works" },
+  { label: "About", href: "/about" },
 ] as const;
 
 export function absoluteUrl(path: string): string {
