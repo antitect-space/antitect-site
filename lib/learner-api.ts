@@ -228,9 +228,11 @@ export async function getLearner(): Promise<Learner> {
 /**
  * Every programme this learner is on, which is what the switcher lists.
  *
- * Null, not an empty list, while the API does not serve this yet: "we cannot
- * ask" and "you are on nothing" are different things to tell somebody, and
- * only one of them is a reason to point them at the programmes page.
+ * Three answers, and they are not the same: 404 is the endpoint not being
+ * built yet, an empty list is a learner on nothing, and 401 is no session at
+ * all. Only the middle one is a reason to point somebody at the programmes
+ * page, so a 404 returns null and the fallback retires itself the day the
+ * endpoint lands.
  */
 export async function getEnrollments(): Promise<LearnerEnrollment[] | null> {
   try {

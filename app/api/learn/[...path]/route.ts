@@ -8,7 +8,7 @@ import {
   firstForwardedFor,
   learnerCookieHeader,
   learnerCookieOptions,
-  tokenFromSetCookie,
+  sessionFromSetCookie,
 } from "@/lib/learner-session";
 
 /**
@@ -88,9 +88,13 @@ async function forward(request: NextRequest, segments: string[]) {
 
   // Whatever the API decided about the session, this site's cookie follows it:
   // a token to hold, or an empty one, which is how a logout arrives.
-  const issued = tokenFromSetCookie(upstream.headers);
-  if (issued) {
-    response.cookies.set(LEARNER_COOKIE, issued, learnerCookieOptions);
+  const issued = sessionFromSetCookie(upstream.headers);
+  if (issued?.value) {
+    response.cookies.set(LEARNER_COOKIE, issued.value, {
+      ...learnerCookieOptions,
+      // Never longer than the token it holds.
+      ...(issued.maxAge !== null && issued.maxAge > 0 ? { maxAge: issued.maxAge } : {}),
+    });
   } else if (upstream.ok && SESSION_GRANTING.has(path)) {
     // A sign-in that grants no session leaves somebody bounced back to the
     // login page with nothing to explain it. The likeliest cause by far is the
@@ -100,7 +104,7 @@ async function forward(request: NextRequest, segments: string[]) {
         `Cookies seen: ${upstream.headers.getSetCookie().map((c) => c.split("=")[0]).join(", ") || "none"}. ` +
         "Set LEARNER_API_COOKIE to the name the API uses.",
     );
-  } else if (issued === "" || path === "auth/logout") {
+  } else if (issued?.value === "" || path === "auth/logout") {
     // Cleared with the same path it was set on, or the browser keeps the old one.
     response.cookies.set(LEARNER_COOKIE, "", { ...learnerCookieOptions, maxAge: 0 });
   }

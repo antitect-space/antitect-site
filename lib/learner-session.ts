@@ -14,16 +14,22 @@ import { cookies, headers } from "next/headers";
  * `/api/learn/*` on this origin; everything else is server-to-server.
  */
 
-/** Ours, on this site's origin. */
-export const LEARNER_COOKIE = "antitect_learner";
+/**
+ * Ours, on this site's origin. Deliberately not the API's name: if the API is
+ * ever configured with a cookie domain that covers this site, a browser would
+ * hold two cookies of the same name for one request and send both.
+ */
+export const LEARNER_COOKIE = "antitect_learn_session";
 
 /**
  * The API's own cookie name, which is what it reads the token back out of.
- * Set `LEARNER_API_COOKIE` if the API calls it something else.
+ * Set `LEARNER_API_COOKIE` if the API is ever configured to call it something
+ * else. It avoids the word "token" on purpose: a learner session is not the
+ * admin bearer token, and the two must never be mistaken for each other.
  */
-export const API_LEARNER_COOKIE = process.env.LEARNER_API_COOKIE ?? "learner_token";
+export const API_LEARNER_COOKIE = process.env.LEARNER_API_COOKIE ?? "antitect_learner";
 
-/** Seven days, matching the token the API issues. */
+/** Seven days, which is what the API issues unless it has been told otherwise. */
 const MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
 export const learnerCookieOptions = {
@@ -74,16 +80,27 @@ export async function visitorIp(): Promise<string | null> {
 }
 
 /**
- * The token out of a `Set-Cookie` the API sent us, or null when it sent none.
- * An empty value is how a logout arrives, and is treated as a clearance.
+ * The session out of a `Set-Cookie` the API sent us, or null when it sent
+ * none. An empty value is how a logout arrives, and is treated as a clearance.
+ *
+ * Its `Max-Age` comes back too, and this site's cookie is set to match: a
+ * cookie that outlives the token inside it means somebody looks signed in
+ * right up until the first page refuses to load.
  */
-export function tokenFromSetCookie(headers: Headers): string | null {
+export function sessionFromSetCookie(
+  headers: Headers,
+): { value: string; maxAge: number | null } | null {
   for (const cookie of headers.getSetCookie()) {
-    const [pair] = cookie.split(";");
+    const [pair, ...attributes] = cookie.split(";");
     const separator = pair?.indexOf("=") ?? -1;
     if (!pair || separator < 0) continue;
     if (pair.slice(0, separator).trim() !== API_LEARNER_COOKIE) continue;
-    return pair.slice(separator + 1).trim();
+
+    const maxAge = attributes
+      .map((attribute) => attribute.trim().match(/^max-age=(-?\d+)$/i))
+      .find(Boolean);
+
+    return { value: pair.slice(separator + 1).trim(), maxAge: maxAge ? Number(maxAge[1]) : null };
   }
   return null;
 }
