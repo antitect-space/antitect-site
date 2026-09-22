@@ -1,24 +1,28 @@
 "use client";
 
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import { useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NIGERIAN_STATES, OUTSIDE_NIGERIA, stateLabel } from "@/lib/locations";
+import type { PersonBody, PersonInput } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
-import type { PersonInput } from "@/lib/schemas";
 
 /**
  * The same person, asked the same way, on every form: event, checkout,
  * enrolment and community. The phone is labelled as the WhatsApp number
  * because reminders can go there; the checkbox is consent, not a preference.
+ * Location is a state, or "Outside Nigeria" and a country.
  */
 export function PersonFields({
   register,
+  control,
   errors,
   idPrefix,
   consentLabel = "You can message me on WhatsApp about this",
 }: {
   register: UseFormRegister<PersonInput>;
+  control: Control<PersonInput, unknown, PersonBody>;
   errors: FieldErrors<PersonInput>;
   /** Keeps ids unique when two forms share a page. */
   idPrefix: string;
@@ -27,6 +31,7 @@ export function PersonFields({
   const id = (name: string) => `${idPrefix}-${name}`;
   const describedBy = (name: keyof PersonInput, hint = false) =>
     errors[name] ? id(`${name}-error`) : hint ? id(`${name}-hint`) : undefined;
+  const outside = useWatch({ control, name: "state" }) === OUTSIDE_NIGERIA;
 
   return (
     <div className="grid gap-5">
@@ -82,6 +87,39 @@ export function PersonFields({
         />
       </Field>
 
+      <Field id={id("state")} label="State" error={errors.state?.message}>
+        <Select
+          id={id("state")}
+          autoComplete="address-level1"
+          aria-invalid={errors.state ? true : undefined}
+          aria-describedby={describedBy("state")}
+          {...register("state")}
+        >
+          <option value="" disabled>
+            Choose your state
+          </option>
+          {NIGERIAN_STATES.map((state) => (
+            <option key={state} value={state}>
+              {stateLabel(state)}
+            </option>
+          ))}
+          <option disabled>──────────</option>
+          <option value={OUTSIDE_NIGERIA}>{OUTSIDE_NIGERIA}</option>
+        </Select>
+      </Field>
+
+      {outside ? (
+        <Field id={id("country")} label="Country" error={errors.country?.message}>
+          <Input
+            id={id("country")}
+            autoComplete="country-name"
+            aria-invalid={errors.country ? true : undefined}
+            aria-describedby={describedBy("country")}
+            {...register("country")}
+          />
+        </Field>
+      ) : null}
+
       <div className="flex items-start gap-3">
         <input
           id={id("whatsappOptIn")}
@@ -93,6 +131,30 @@ export function PersonFields({
           {consentLabel}
         </label>
       </div>
+    </div>
+  );
+}
+
+/** A native select dressed like the inputs: the phone's own picker, and no JavaScript of its own. */
+function Select({ className, children, ...props }: React.ComponentProps<"select">) {
+  return (
+    <div className="relative">
+      <select
+        className={cn(
+          "h-11 w-full appearance-none rounded-md border border-input bg-background pr-10 pl-3 text-base text-foreground outline-none focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-ring/20 aria-invalid:border-brand aria-invalid:ring-2 aria-invalid:ring-brand/15",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </select>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 12 8"
+        className="pointer-events-none absolute top-1/2 right-3.5 h-2 w-3 -translate-y-1/2 fill-none stroke-foreground stroke-[1.5]"
+      >
+        <path d="M1 1.5 6 6.5 11 1.5" />
+      </svg>
     </div>
   );
 }

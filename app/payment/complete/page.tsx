@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { CutFrame } from "@/components/cut";
 import { PaymentStatus } from "@/components/payment-status";
 
 export const metadata: Metadata = {
@@ -18,8 +19,11 @@ export default async function PaymentCompletePage({ searchParams }: PageProps<"/
   const reference = typeof raw === "string" && raw.trim() ? raw.trim() : null;
 
   return (
-    <div className="container-page py-16 sm:py-20 lg:py-28">
-      <PaymentStatus reference={reference} />
+    <div className="container-page py-12 sm:py-16 lg:py-24">
+      {/* Restyled only. What it reports, and when, is decided by PaymentStatus. */}
+      <CutFrame corner="tr" className="max-w-3xl" innerClassName="p-6 sm:p-10">
+        <PaymentStatus reference={reference} />
+      </CutFrame>
     </div>
   );
 }

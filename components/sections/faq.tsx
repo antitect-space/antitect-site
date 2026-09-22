@@ -1,12 +1,24 @@
 import type { FaqItem } from "@/content/faq";
+import { cn } from "@/lib/utils";
 
-/** Native disclosure elements: no JavaScript, and they work before anything hydrates. */
-export function FaqSection({ items }: { items: FaqItem[] }) {
+/** Native disclosure elements: they open before any JavaScript arrives, and work if none does. */
+export function FaqSection({
+  items,
+  title = "Questions people ask",
+  id = "faq",
+  className,
+}: {
+  items: readonly FaqItem[];
+  title?: string;
+  id?: string;
+  /** For `notch-clearance` where a notched section follows. */
+  className?: string;
+}) {
   return (
-    <section id="faq" aria-labelledby="faq-title" className="scroll-mt-4 border-b">
+    <section id={id} aria-labelledby={`${id}-title`} className={cn("scroll-mt-4 border-b", className)}>
       <div className="container-page grid gap-10 py-16 lg:grid-cols-[1fr_1.6fr] lg:gap-20 lg:py-24">
-        <h2 id="faq-title" className="text-display text-4xl sm:text-5xl">
-          Questions people ask
+        <h2 id={`${id}-title`} className="text-display text-4xl sm:text-5xl">
+          {title}
         </h2>
         <div className="divide-y divide-border border-y border-border">
           {items.map((item) => (
@@ -18,7 +30,7 @@ export function FaqSection({ items }: { items: FaqItem[] }) {
                   <span className="hidden group-open:inline">−</span>
                 </span>
               </summary>
-              <p className="max-w-[65ch] pb-6 leading-[1.6] text-muted-foreground">{item.answer}</p>
+              <p className="max-w-[62ch] pb-6 leading-[1.6] text-muted-foreground">{item.answer}</p>
             </details>
           ))}
         </div>

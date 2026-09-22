@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { CutFrame } from "@/components/cut";
 import { ProgrammeCard } from "@/components/programme-card";
 import { Button } from "@/components/ui/button";
 import { getPrograms } from "@/lib/api";
@@ -23,8 +24,8 @@ export default async function ProgrammesPage() {
   return (
     <div className="container-page py-12 sm:py-16 lg:py-20">
       <h1 className="text-display text-5xl sm:text-6xl">Capability Development Programmes</h1>
-      <p className="mt-6 max-w-[62ch] text-lg leading-[1.6] text-muted-foreground">
-        Longer, structured programmes for people who want to develop a capability properly rather than sample it.
+      <p className="mt-5 max-w-[46ch] text-lg text-muted-foreground">
+        Weeks of guided work, with your own project reviewed every week.
       </p>
 
       {programs.length > 0 ? (
@@ -34,7 +35,7 @@ export default async function ProgrammesPage() {
           ))}
         </div>
       ) : (
-        <div className="mt-12 max-w-2xl border border-foreground p-6 sm:p-8">
+        <CutFrame corner="tr" className="mt-12 max-w-2xl" innerClassName="p-6 sm:p-8">
           <p className="text-title text-2xl">No cohort is open for enrolment right now.</p>
           <p className="mt-3 text-lg leading-[1.6] text-muted-foreground">
             Join the community and you will hear first when the next one opens.
@@ -42,7 +43,7 @@ export default async function ProgrammesPage() {
           <Button asChild size="lg" className="mt-6">
             <Link href="/community">Join the community</Link>
           </Button>
-        </div>
+        </CutFrame>
       )}
     </div>
   );
