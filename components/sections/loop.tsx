@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { CutFrame } from "@/components/cut";
+import { Cut, CutFrame } from "@/components/cut";
 import { Reveal } from "@/components/motion/reveal";
 import { method } from "@/content/method";
 
@@ -28,17 +28,18 @@ export function LoopSection() {
             Every programme runs on the same loop.
           </p>
 
-          <CutFrame corner="br" className="mt-10 hidden sm:block">
-            <div className="relative aspect-[3/2] w-full overflow-hidden bg-background">
-              <Image
-                src="/images/why-image.jpg"
-                alt="Four people working together on laptops around a table."
-                fill
-                sizes="(min-width: 1024px) 26rem, 50vw"
-                className="object-cover"
-              />
-            </div>
-          </CutFrame>
+          <Cut
+            corner="br"
+            className="relative mt-10 hidden aspect-[3/2] w-full overflow-hidden bg-background sm:block"
+          >
+            <Image
+              src="/images/why-image.jpg"
+              alt="Four people working together on laptops around a table."
+              fill
+              sizes="(min-width: 1024px) 26rem, 50vw"
+              className="object-cover"
+            />
+          </Cut>
         </div>
 
         <Reveal kind="wipe">

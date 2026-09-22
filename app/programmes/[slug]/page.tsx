@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { CutFrame } from "@/components/cut";
+import { Cut, CutFrame } from "@/components/cut";
 import { PaymentForm } from "@/components/forms/payment-form";
 import { JsonLd } from "@/components/json-ld";
 import { FaqSection } from "@/components/sections/faq";
@@ -117,17 +117,15 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
 
         <div className="space-y-10 lg:col-start-1">
           {program.imageUrl ? (
-            <CutFrame corner="tr">
-              <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                <Image
-                  src={program.imageUrl}
-                  alt=""
-                  fill
-                  sizes="(min-width: 1024px) 36rem, 100vw"
-                  className="object-cover"
-                />
-              </div>
-            </CutFrame>
+            <Cut corner="tr" className="relative aspect-video w-full overflow-hidden bg-muted">
+              <Image
+                src={program.imageUrl}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 36rem, 100vw"
+                className="object-cover"
+              />
+            </Cut>
           ) : null}
 
           {program.description ? (

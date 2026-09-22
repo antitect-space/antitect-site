@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { CutFrame } from "@/components/cut";
+import { Cut, CutFrame } from "@/components/cut";
 import { Button } from "@/components/ui/button";
 import { about, team } from "@/content/about";
 import { workshopPhotos } from "@/content/gallery";
@@ -38,18 +38,19 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <CutFrame corner="tr" className="self-start">
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                sizes="(min-width: 1024px) 32rem, 100vw"
-                style={{ objectPosition: photo.position }}
-                className="object-cover"
-              />
-            </div>
-          </CutFrame>
+          <Cut
+            corner="tr"
+            className="relative aspect-[4/3] w-full self-start overflow-hidden bg-muted"
+          >
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              fill
+              sizes="(min-width: 1024px) 32rem, 100vw"
+              style={{ objectPosition: photo.position }}
+              className="object-cover"
+            />
+          </Cut>
         </div>
       </section>
 
@@ -64,17 +65,17 @@ export default function AboutPage() {
                 <li key={member.name}>
                   <CutFrame corner="tr">
                     <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
-                    <Image
-                      src={member.photo}
-                      alt={`${member.name}, ${member.role} at Antitect.`}
-                      fill
-                      sizes="(min-width: 1024px) 22rem, (min-width: 640px) 45vw, 100vw"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <h3 className="text-title text-xl">{member.name}</h3>
-                    <p className="mt-1 text-[0.9375rem] font-semibold text-muted-foreground">{member.role}</p>
+                      <Image
+                        src={member.photo}
+                        alt={`${member.name}, ${member.role} at Antitect.`}
+                        fill
+                        sizes="(min-width: 1024px) 22rem, (min-width: 640px) 45vw, 100vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="p-5">
+                      <h3 className="text-title text-xl">{member.name}</h3>
+                      <p className="mt-1 text-[0.9375rem] font-semibold text-muted-foreground">{member.role}</p>
                       <p className="mt-3 leading-[1.5] text-muted-foreground">{member.bio}</p>
                     </div>
                   </CutFrame>

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { CutFrame } from "@/components/cut";
+import { Cut, CutFrame } from "@/components/cut";
 import { Button } from "@/components/ui/button";
 import type { PublicProgram } from "@/lib/api";
 import { placesNote } from "@/lib/events";
@@ -60,17 +60,15 @@ export function ProgrammeCard({
 
       <div className="flex flex-col justify-between gap-6 border-t-2 border-foreground p-6 sm:p-8 lg:border-t-0 lg:border-l-2">
         {program.imageUrl ? (
-          <CutFrame corner="bl">
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-              <Image
-                src={program.imageUrl}
-                alt=""
-                fill
-                sizes="(min-width: 1024px) 22rem, 100vw"
-                className="object-cover"
-              />
-            </div>
-          </CutFrame>
+          <Cut corner="bl" className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+            <Image
+              src={program.imageUrl}
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 22rem, 100vw"
+              className="object-cover"
+            />
+          </Cut>
         ) : null}
 
         <div>

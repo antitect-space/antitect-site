@@ -194,6 +194,16 @@
   );
 }
 
+/*
+ * Room for a notch. A notched section climbs `--notch-rise` into the one
+ * above it, which on a large screen is more than that section's own bottom
+ * padding: without this the diagonal arrives under the last line of text.
+ * Give the section above this, and its padding is its own again.
+ */
+@utility notch-clearance {
+  padding-bottom: var(--notch-rise);
+}
+
 /* A section that ends on a diagonal. */
 @utility notch-bottom {
   clip-path: polygon(

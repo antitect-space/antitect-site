@@ -54,7 +54,8 @@ export default async function HomePage() {
       ) : null}
       {programs.length > 0 ? <ProgrammesSection programs={programs} /> : null}
       <WhySection />
-      <FaqSection items={generalFaq} />
+      {/* The section below is notched, and climbs into this one. */}
+      <FaqSection items={generalFaq} className="notch-clearance" />
       <CommunitySection />
     </>
   );

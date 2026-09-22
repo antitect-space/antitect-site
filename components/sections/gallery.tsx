@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { CutFrame } from "@/components/cut";
+import { Cut } from "@/components/cut";
 import { GalleryViewer } from "@/components/gallery-viewer";
 import { Reveal } from "@/components/motion/reveal";
 import { StripCounter } from "@/components/strip-counter";
@@ -60,7 +60,7 @@ function Tile({ photo, index }: { photo: Photo; index: number }) {
 
   return (
     <Reveal kind="wipe" delay={index * 70} className={`w-[85%] shrink-0 snap-center md:w-auto ${span}`}>
-      <CutFrame corner={cut} className="h-full">
+      <Cut corner={cut} className="h-full">
         <button
           type="button"
           data-photo={index}
@@ -78,7 +78,7 @@ function Tile({ photo, index }: { photo: Photo; index: number }) {
           />
           </span>
         </button>
-      </CutFrame>
+      </Cut>
     </Reveal>
   );
 }

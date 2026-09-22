@@ -19,6 +19,25 @@ export type Corner = keyof typeof CORNERS;
  * surface inset inside it by the line's width. What is left showing along
  * every edge, diagonal included, is the line.
  */
+/**
+ * The same cut with no line, for photographs.
+ *
+ * A picture already has an edge of its own, so a frame around it only thickens
+ * the page. The line is for boxes, where it is the thing holding the shape
+ * together.
+ */
+export function Cut({
+  corner = "tr",
+  className,
+  children,
+}: {
+  corner?: Corner;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return <div className={cn(CORNERS[corner], className)}>{children}</div>;
+}
+
 export function CutFrame({
   corner = "tr",
   tone = "page",

@@ -1,17 +1,21 @@
 import type { FaqItem } from "@/content/faq";
+import { cn } from "@/lib/utils";
 
 /** Native disclosure elements: they open before any JavaScript arrives, and work if none does. */
 export function FaqSection({
   items,
   title = "Questions people ask",
   id = "faq",
+  className,
 }: {
   items: readonly FaqItem[];
   title?: string;
   id?: string;
+  /** For `notch-clearance` where a notched section follows. */
+  className?: string;
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-4 border-b">
+    <section id={id} aria-labelledby={`${id}-title`} className={cn("scroll-mt-4 border-b", className)}>
       <div className="container-page grid gap-10 py-16 lg:grid-cols-[1fr_1.6fr] lg:gap-20 lg:py-24">
         <h2 id={`${id}-title`} className="text-display text-4xl sm:text-5xl">
           {title}
