@@ -4,7 +4,11 @@ import Link from "next/link";
 import { Cut } from "@/components/cut";
 import { Fresh } from "@/components/live";
 import { Reveal } from "@/components/motion/reveal";
-import { CommunityTicket, EventTicket, ProgrammeTicket } from "@/components/ticket";
+import {
+  CommunityTicket,
+  EventTicket,
+  ProgrammeTicket,
+} from "@/components/ticket";
 import { Button } from "@/components/ui/button";
 import { heroPhoto } from "@/content/gallery";
 import type { PublicEvent, PublicProgram } from "@/lib/api";
@@ -17,9 +21,18 @@ import type { PublicEvent, PublicProgram } from "@/lib/api";
  *
  * Beside it, the ticket: the next real thing somebody can hold a place at.
  */
-export function Hero({ event, program }: { event: PublicEvent | null; program: PublicProgram | null }) {
+export function Hero({
+  event,
+  program,
+}: {
+  event: PublicEvent | null;
+  program: PublicProgram | null;
+}) {
   return (
-    <section aria-labelledby="hero-title" className="relative overflow-hidden border-b">
+    <section
+      aria-labelledby="hero-title"
+      className="relative overflow-hidden border-b"
+    >
       <Reveal
         kind="blade"
         trigger="load"
@@ -30,11 +43,15 @@ export function Hero({ event, program }: { event: PublicEvent | null; program: P
 
       <div className="container-page relative grid gap-10 py-10 sm:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-20">
         <div className="relative self-start bg-background py-3 lg:max-w-[33rem] lg:py-8">
-          <h1 id="hero-title" className="text-display text-[2.75rem] sm:text-6xl lg:text-7xl">
+          <h1
+            id="hero-title"
+            className="text-display text-[2.75rem] sm:text-6xl lg:text-7xl"
+          >
             Learn AI by building with it.
           </h1>
           <p className="mt-6 max-w-[42ch] text-lg leading-[1.5] text-muted-foreground sm:text-xl">
-            Hands-on AI programmes in Nigeria, for people who want to leave with something they built.
+            Learn what you need. Build what you learn. Develop capabilities you
+            can actually apply.{" "}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
@@ -75,7 +92,13 @@ export function Hero({ event, program }: { event: PublicEvent | null; program: P
  * `Fresh` is the last guard against a page that has been sitting in a cache:
  * once the browser knows the time, a finished event stops inviting anybody.
  */
-function NextUp({ event, program }: { event: PublicEvent | null; program: PublicProgram | null }) {
+function NextUp({
+  event,
+  program,
+}: {
+  event: PublicEvent | null;
+  program: PublicProgram | null;
+}) {
   const fallback = program ? (
     <ProgrammeTicket program={program} headingId="next-up" />
   ) : (
@@ -89,7 +112,14 @@ function NextUp({ event, program }: { event: PublicEvent | null; program: Public
       <EventTicket
         event={event}
         headingId="next-up"
-        next={program ? { href: `/programmes/${program.slug}`, label: "See the programme" } : { href: "/community", label: "Join the community" }}
+        next={
+          program
+            ? {
+                href: `/programmes/${program.slug}`,
+                label: "See the programme",
+              }
+            : { href: "/community", label: "Join the community" }
+        }
       />
     </Fresh>
   );
