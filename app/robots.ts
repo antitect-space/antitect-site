@@ -4,7 +4,8 @@ import { absoluteUrl } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: "*", allow: "/", disallow: "/payment/" },
+    // Nothing behind a sign-in, and nothing about one payment, belongs in an index.
+    rules: { userAgent: "*", allow: "/", disallow: ["/payment/", "/learn/", "/api/"] },
     sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

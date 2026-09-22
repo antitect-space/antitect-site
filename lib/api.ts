@@ -4,7 +4,9 @@ import type { PersonBody } from "./schemas";
 import { API_URL } from "./site";
 
 /**
- * The only place this site talks to the API. Components never call fetch.
+ * Where this site talks to the API about anything public. Components never
+ * call fetch. The learner area has its own door, `lib/learner-api.ts`, because
+ * nothing it reads may ever be cached.
  *
  * Reads run on the server and are cached for 60 seconds. That is not a
  * nicety: the API allows 100 public reads per 15 minutes per IP, and the
@@ -154,7 +156,8 @@ export class ApiError extends Error {
   }
 }
 
-async function readError(response: Response): Promise<ApiError> {
+/** Also used by the learner client, so one API error reads the same wherever it came from. */
+export async function readApiError(response: Response): Promise<ApiError> {
   try {
     const body = (await response.json()) as Partial<ApiErrorBody>;
     if (body.error) {
@@ -181,7 +184,8 @@ export function isValidSlug(slug: string): boolean {
   return slug.length > 0 && slug.length <= 80 && SLUG.test(slug);
 }
 
-function serverApiUrl(): string {
+/** Server-side origin for API calls. Exported for the learner client. */
+export function serverApiUrl(): string {
   // A private-network address when the host has one; otherwise the public URL.
   const internal = process.env.INTERNAL_API_URL?.replace(/\/+$/, "");
   return internal || API_URL;
@@ -204,7 +208,7 @@ async function read<T>(path: string, revalidate = REVALIDATE_SECONDS): Promise<T
     throw new ApiError(0, "NETWORK", `Could not reach the API for ${path}: ${reason}`);
   }
 
-  if (!response.ok) throw await readError(response);
+  if (!response.ok) throw await readApiError(response);
   return (await response.json()) as T;
 }
 
@@ -288,7 +292,7 @@ async function send<T>(method: "GET" | "POST", path: string, body?: unknown, tim
     throw new ApiError(0, "NETWORK", "We could not reach our server.");
   }
 
-  if (!response.ok) throw await readError(response);
+  if (!response.ok) throw await readApiError(response);
   return (await response.json()) as T;
 }
 
