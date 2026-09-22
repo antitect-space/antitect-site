@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo } from "next/font/google";
 
-import { Footer } from "@/components/sections/footer";
-import { SiteHeader } from "@/components/site-header";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 import "./globals.css";
@@ -27,22 +25,17 @@ export const viewport: Viewport = {
   themeColor: "#FEFEFE",
 };
 
+/**
+ * The document, and nothing else. The chrome belongs to the two areas of the
+ * site, which do not share one: `(site)` is the public company site, header
+ * and footer and all; `(learn)` is where a learner works, and carries only
+ * what they need. Both render inside this, so there is one `<html>`, one font
+ * and one stylesheet.
+ */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en-NG" className={archivo.variable}>
-      <body className="flex min-h-dvh flex-col">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"
-        >
-          Skip to content
-        </a>
-        <SiteHeader />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <Footer />
-      </body>
+      <body className="flex min-h-dvh flex-col">{children}</body>
     </html>
   );
 }
