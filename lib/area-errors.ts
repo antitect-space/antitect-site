@@ -33,8 +33,15 @@ export function describeAreaFailure(error: unknown): AreaFailure {
 
   switch (error.code) {
     case "INVALID_CREDENTIALS":
-      // Never "no such account": that would say who has one.
-      return { kind: "message", message: "That email address and password do not match." };
+    case "UNAUTHORIZED":
+      // The API's own words, which are written for a person and say the right
+      // thing whether this was a wrong password or a session that ran out. It
+      // never says whether the address has an account: that would tell a
+      // stranger who is enrolled.
+      return {
+        kind: "message",
+        message: error.message || "That email address and password do not match.",
+      };
     case "ACCOUNT_DISABLED":
       return {
         kind: "message",
