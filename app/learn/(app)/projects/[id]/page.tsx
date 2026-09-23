@@ -9,6 +9,7 @@ import {
   StateChip,
   SubmissionEntry,
 } from "@/components/learner/project-pieces";
+import { SubmissionForm } from "@/components/learner/submission-form";
 import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api";
@@ -57,6 +58,8 @@ export default async function ProjectPage({ params, searchParams }: PageProps<"/
   const state = PROJECT_STATE[project.state];
   const locked = project.state === "locked";
   const newestFirst = [...submissions].sort((a, b) => b.version - a.version);
+  // The API decides who may send work, per learner. This only renders it.
+  const canSubmit = project.state === "in_progress" || project.state === "revision_required";
 
   return (
     <div className="container-page grid gap-10 py-10 sm:py-14 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
@@ -121,6 +124,26 @@ export default async function ProjectPage({ params, searchParams }: PageProps<"/
           </section>
         ) : null}
 
+        {canSubmit ? (
+          <section aria-labelledby="send-title" className="mt-10 border-t-2 border-foreground pt-6">
+            <h2 id="send-title" className="text-title text-2xl">
+              {project.state === "revision_required" ? "Send a new version" : "Send your work in"}
+            </h2>
+            <p className="mt-3 max-w-[62ch] leading-[1.6] text-muted-foreground">
+              Links only — a recording, the thing itself, anything else worth seeing. Once it is
+              sent you cannot edit it; if your tutor asks for changes you send a new version.
+            </p>
+            <div className="mt-6 max-w-[42rem]">
+              <SubmissionForm
+                programId={enrollment.program.id}
+                projectId={project.id}
+                deadlineAt={project.deadlineAt}
+                isRevision={project.state === "revision_required"}
+              />
+            </div>
+          </section>
+        ) : null}
+
         {submissions.length > 0 ? (
           <section aria-labelledby="history-title" className="mt-10 border-t-2 border-foreground pt-6">
             <h2 id="history-title" className="text-title text-2xl">
@@ -145,7 +168,9 @@ export default async function ProjectPage({ params, searchParams }: PageProps<"/
               ? "Read ahead all you like — the sessions run ahead of the work. Submitting opens when the project before this one is approved."
               : project.state === "approved"
                 ? "Nothing more to do here. The next project is open."
-                : "Sending work in is the next thing to arrive here. Until it does, your tutor will take it the way they told you in the session."}
+                : canSubmit
+                  ? "Send links to your work below. Your tutor reads it against this brief."
+                  : "It is with your tutor. Nothing to do until they come back to you."}
           </p>
           {project.whatYoullGain ? (
             <>

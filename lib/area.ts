@@ -42,6 +42,9 @@ export interface Area {
 }
 
 const AUTH_PATHS = /^auth\/(login|logout|forgot|reset|accept-invite|resend-invite)$/;
+
+/** Sending work in. Ids are opaque to this site, so the shape is all it checks. */
+const LEARNER_SUBMISSIONS = /^programs\/[\w-]{1,64}\/projects\/[\w-]{1,64}\/submissions$/;
 const SESSION_GRANTING = new Set(["auth/login", "auth/accept-invite", "auth/reset"]);
 
 export const AREAS: Readonly<Record<AreaName, Area>> = {
@@ -53,7 +56,10 @@ export const AREAS: Readonly<Record<AreaName, Area>> = {
     home: AREA_HOME.learn,
     publicPages: new Set(["/learn/login", "/learn/forgot"]),
     publicPrefixes: ["/learn/invite/", "/learn/reset/"],
-    allowed: [{ method: "POST", path: AUTH_PATHS }],
+    allowed: [
+      { method: "POST", path: AUTH_PATHS },
+      { method: "POST", path: LEARNER_SUBMISSIONS },
+    ],
     sessionGranting: SESSION_GRANTING,
   },
   teach: {
