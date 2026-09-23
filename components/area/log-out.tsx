@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { areaPost } from "@/lib/area-client";
 import { AREA_HOME, type AreaName } from "@/lib/area-view";
 
@@ -30,13 +31,14 @@ export function LogOut({ area }: { area: AreaName }) {
   }
 
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
       onClick={logOut}
       disabled={leaving}
-      className="text-[0.9375rem] font-semibold underline underline-offset-4 hover:no-underline disabled:opacity-60"
+      className="h-9 px-3 text-[0.9375rem]"
     >
       {leaving ? "Signing out…" : "Sign out"}
-    </button>
+    </Button>
   );
 }

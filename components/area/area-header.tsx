@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AreaNav } from "@/components/area/area-nav";
 import { LogOut } from "@/components/area/log-out";
 import { Logo } from "@/components/logo";
 import { AREA_HOME, type AreaName } from "@/lib/area-view";
@@ -36,20 +37,9 @@ export function AreaHeader({
         </div>
 
         {links.length > 0 ? (
-          <nav aria-label={label} className="order-3 w-full sm:order-2 sm:w-auto sm:flex-1">
-            <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 sm:justify-end">
-              {links.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-[0.9375rem] font-semibold hover:underline hover:underline-offset-4"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <div className="order-3 w-full sm:order-2 sm:w-auto sm:flex-1">
+            <AreaNav label={label} links={links} />
+          </div>
         ) : null}
       </div>
     </header>
