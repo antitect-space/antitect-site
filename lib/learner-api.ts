@@ -204,3 +204,81 @@ export async function getEnrollments(): Promise<LearnerEnrollment[] | null> {
 export function getProgramOverview(programId: string): Promise<ProgramOverview> {
   return areaRead<ProgramOverview>(LEARN, `/programs/${encodeURIComponent(programId)}`);
 }
+
+/** Every session in the run, cancelled ones included: a cancelled session is news, not an absence. */
+export async function getSessions(programId: string): Promise<LearnerSession[]> {
+  const { items } = await areaRead<{ items: LearnerSession[] }>(
+    LEARN,
+    `/programs/${encodeURIComponent(programId)}/sessions`,
+  );
+  return items;
+}
+
+/**
+ * All six projects, whatever state they are in. Locked ones are listed with
+ * everything but the way to submit, because the live sessions run ahead of the
+ * work and somebody following along needs to read what is coming.
+ */
+export async function getProjects(programId: string): Promise<ProjectSummary[]> {
+  const { items } = await areaRead<{ items: ProjectSummary[] }>(
+    LEARN,
+    `/programs/${encodeURIComponent(programId)}/projects`,
+  );
+  return items;
+}
+
+export function getProject(programId: string, projectId: string): Promise<ProjectDetail> {
+  return areaRead<ProjectDetail>(
+    LEARN,
+    `/programs/${encodeURIComponent(programId)}/projects/${encodeURIComponent(projectId)}`,
+  );
+}
+
+/**
+ * Which run a page is about.
+ *
+ * Three answers, because three things can be true. Somebody who asked for a
+ * run they are not on is told so — silently showing them a different
+ * programme would be a lie about whose work they are looking at, and it is the
+ * one case where a quiet fallback is worse than a refusal. Somebody who asked
+ * for nothing gets the run they are actually doing.
+ */
+export type ChosenRun =
+  | { kind: "ok"; enrollment: LearnerEnrollment }
+  | { kind: "not-yours" }
+  | { kind: "none" };
+
+export function chooseEnrollment(
+  enrollments: readonly LearnerEnrollment[],
+  wanted?: string,
+): ChosenRun {
+  if (wanted) {
+    const asked = enrollments.find((enrollment) => enrollment.program.id === wanted);
+    return asked ? { kind: "ok", enrollment: asked } : { kind: "not-yours" };
+  }
+
+  const enrollment =
+    enrollments.find((e) => e.program.phase === "running") ??
+    enrollments.find((e) => e.status !== "completed") ??
+    enrollments[0];
+
+  return enrollment ? { kind: "ok", enrollment } : { kind: "none" };
+}
+
+/**
+ * The tutor's booking page with the learner's name and email already in it.
+ * Cal.com reads both from the query; without them a learner retypes what we
+ * already know, on a phone, to book a call we arranged.
+ */
+export function bookingLink(bookingUrl: string, learner: Learner): string {
+  try {
+    const url = new URL(bookingUrl);
+    const name = [learner.firstName, learner.lastName].filter(Boolean).join(" ");
+    if (name) url.searchParams.set("name", name);
+    url.searchParams.set("email", learner.email);
+    return url.toString();
+  } catch {
+    // Not a URL we can add to. Better to send them there plain than not at all.
+    return bookingUrl;
+  }
+}

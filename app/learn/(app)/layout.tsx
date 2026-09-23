@@ -28,7 +28,15 @@ export default function LearnerLayout({ children }: LayoutProps<"/learn">) {
       >
         Skip to content
       </a>
-      <AreaHeader area="learn" label="Your programme" />
+      <AreaHeader
+        area="learn"
+        label="Your programme"
+        links={[
+          { href: "/learn", label: "Dashboard" },
+          { href: "/learn/schedule", label: "Schedule" },
+          { href: "/learn/projects", label: "Projects" },
+        ]}
+      />
       <main id="main" className="flex-1">
         {children}
       </main>
