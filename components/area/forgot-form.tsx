@@ -9,9 +9,10 @@ import { Field, FormAlert, SlowNote } from "@/components/forms/person-fields";
 import { useSubmission } from "@/components/forms/use-submission";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { learnerPost } from "@/lib/learner-client";
-import { describeLearnerFailure } from "@/lib/learner-errors";
-import { forgotSchema, type ForgotInput } from "@/lib/learner-schemas";
+import { areaPost } from "@/lib/area-client";
+import { AREA_HOME, type AreaName } from "@/lib/area-view";
+import { describeAreaFailure } from "@/lib/area-errors";
+import { forgotSchema, type ForgotInput } from "@/lib/area-schemas";
 
 /**
  * Asking for a new password.
@@ -20,7 +21,7 @@ import { forgotSchema, type ForgotInput } from "@/lib/learner-schemas";
  * anything else would tell a stranger who is enrolled. The API answers 200
  * either way; this page says the same thing either way.
  */
-export function ForgotForm() {
+export function ForgotForm({ area }: { area: AreaName }) {
   const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const { slow, run } = useSubmission();
@@ -38,10 +39,10 @@ export function ForgotForm() {
   async function onSubmit(values: ForgotInput) {
     setFormError(null);
     try {
-      await run(() => learnerPost("auth/forgot", values));
+      await run(() => areaPost(area, "auth/forgot", values));
       setSent(true);
     } catch (error) {
-      const failure = describeLearnerFailure(error);
+      const failure = describeAreaFailure(error);
       const emailError = failure.kind === "fields" && failure.fields.find((f) => f.field === "email");
       if (emailError) {
         setError("email", { type: "server", message: emailError.message }, { shouldFocus: true });
@@ -53,7 +54,7 @@ export function ForgotForm() {
     }
   }
 
-  if (sent) return <Sent />;
+  if (sent) return <Sent area={area} />;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate aria-label="Reset your password">
@@ -81,7 +82,7 @@ export function ForgotForm() {
   );
 }
 
-function Sent() {
+function Sent({ area }: { area: AreaName }) {
   const headingRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -98,7 +99,7 @@ function Sent() {
         hour.
       </p>
       <p className="mt-5 text-[0.9375rem]">
-        <Link href="/learn/login" className="underline underline-offset-4 hover:no-underline">
+        <Link href={`${AREA_HOME[area]}/login`} className="underline underline-offset-4 hover:no-underline">
           Back to sign in
         </Link>
       </p>

@@ -8,22 +8,23 @@ import { useForm } from "react-hook-form";
 
 import { Field, FormAlert, SlowNote } from "@/components/forms/person-fields";
 import { useSubmission } from "@/components/forms/use-submission";
-import { PasswordField } from "@/components/learner/password-field";
+import { PasswordField } from "@/components/area/password-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { learnerPost, safeNext } from "@/lib/learner-client";
-import { describeLearnerFailure } from "@/lib/learner-errors";
-import { loginSchema, type LoginInput } from "@/lib/learner-schemas";
+import { AREA_HOME, safeNext, type AreaName } from "@/lib/area-view";
+import { areaPost } from "@/lib/area-client";
+import { describeAreaFailure } from "@/lib/area-errors";
+import { loginSchema, type LoginInput } from "@/lib/area-schemas";
 
 /**
- * Signing in. The password goes to this site, which forwards it, and the
- * session comes back as a cookie no script here can read.
+ * Signing in, to either area. The password goes to this site, which forwards
+ * it, and the session comes back as a cookie no script here can read.
  *
  * On success it replaces this page rather than pushing over it, so Back does
  * not land on a sign-in form somebody has already used, and refreshes so the
  * server renders the next page with the session it has just been given.
  */
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({ area, next }: { area: AreaName; next?: string }) {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
   const { slow, run } = useSubmission();
@@ -41,11 +42,11 @@ export function LoginForm({ next }: { next?: string }) {
   async function onSubmit(values: LoginInput) {
     setFormError(null);
     try {
-      await run(() => learnerPost("auth/login", values));
-      router.replace(safeNext(next));
+      await run(() => areaPost(area, "auth/login", values));
+      router.replace(safeNext(area, next));
       router.refresh();
     } catch (error) {
-      const failure = describeLearnerFailure(error);
+      const failure = describeAreaFailure(error);
       if (failure.kind === "fields") {
         failure.fields.forEach(({ field, message }, index) =>
           setError(field, { type: "server", message }, { shouldFocus: index === 0 }),
@@ -95,7 +96,7 @@ export function LoginForm({ next }: { next?: string }) {
       <SlowNote show={busy && slow} />
 
       <p className="mt-5 text-[0.9375rem]">
-        <Link href="/learn/forgot" className="underline underline-offset-4 hover:no-underline">
+        <Link href={`${AREA_HOME[area]}/forgot`} className="underline underline-offset-4 hover:no-underline">
           Forgotten your password?
         </Link>
       </p>

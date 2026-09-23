@@ -8,11 +8,12 @@ import { useForm } from "react-hook-form";
 
 import { FormAlert, SlowNote } from "@/components/forms/person-fields";
 import { useSubmission } from "@/components/forms/use-submission";
-import { PasswordField } from "@/components/learner/password-field";
+import { PasswordField } from "@/components/area/password-field";
 import { Button } from "@/components/ui/button";
-import { learnerPost } from "@/lib/learner-client";
-import { describeLearnerFailure } from "@/lib/learner-errors";
-import { passwordSchema, type PasswordInput } from "@/lib/learner-schemas";
+import { areaPost } from "@/lib/area-client";
+import { AREA_HOME, type AreaName } from "@/lib/area-view";
+import { describeAreaFailure } from "@/lib/area-errors";
+import { passwordSchema, type PasswordInput } from "@/lib/area-schemas";
 
 /**
  * Setting a password: from an invitation, or from a reset link. The same form
@@ -21,7 +22,15 @@ import { passwordSchema, type PasswordInput } from "@/lib/learner-schemas";
  *
  * The token is never shown and never editable. It came from the link.
  */
-export function PasswordForm({ token, purpose }: { token: string; purpose: "invite" | "reset" }) {
+export function PasswordForm({
+  area,
+  token,
+  purpose,
+}: {
+  area: AreaName;
+  token: string;
+  purpose: "invite" | "reset";
+}) {
   const router = useRouter();
   const [expired, setExpired] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -41,14 +50,14 @@ export function PasswordForm({ token, purpose }: { token: string; purpose: "invi
     setFormError(null);
     try {
       await run(() =>
-        learnerPost(purpose === "invite" ? "auth/accept-invite" : "auth/reset", { token, password }),
+        areaPost(area, purpose === "invite" ? "auth/accept-invite" : "auth/reset", { token, password }),
       );
       // Replaced, not pushed: the link in the email is spent, and Back should
       // not return to a form that can no longer be submitted.
-      router.replace("/learn");
+      router.replace(AREA_HOME[area]);
       router.refresh();
     } catch (error) {
-      const failure = describeLearnerFailure(error);
+      const failure = describeAreaFailure(error);
       // The API owns the password rules, so whatever it says about one goes
       // on the field itself rather than being summarised above the button.
       const rule = failure.kind === "fields" && failure.fields.find((f) => f.field === "password");
@@ -64,7 +73,12 @@ export function PasswordForm({ token, purpose }: { token: string; purpose: "invi
     }
   }
 
-  if (expired) return purpose === "invite" ? <ExpiredInvite token={token} /> : <ExpiredReset />;
+  if (expired)
+    return purpose === "invite" ? (
+      <ExpiredInvite area={area} token={token} />
+    ) : (
+      <ExpiredReset area={area} />
+    );
 
   const busy = isSubmitting || (isSubmitSuccessful && !formError);
 
@@ -96,7 +110,7 @@ export function PasswordForm({ token, purpose }: { token: string; purpose: "invi
  * address already on file. Letting somebody type an address here would turn
  * this page into a way of asking whether a given person is enrolled.
  */
-function ExpiredInvite({ token }: { token: string }) {
+function ExpiredInvite({ area, token }: { area: AreaName; token: string }) {
   const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const { slow, run } = useSubmission();
@@ -111,10 +125,10 @@ function ExpiredInvite({ token }: { token: string }) {
     setFormError(null);
     setSending(true);
     try {
-      await run(() => learnerPost("auth/resend-invite", { token }));
+      await run(() => areaPost(area, "auth/resend-invite", { token }));
       setSent(true);
     } catch (error) {
-      const failure = describeLearnerFailure(error);
+      const failure = describeAreaFailure(error);
       setFormError(
         failure.kind === "message"
           ? failure.message
@@ -149,7 +163,7 @@ function ExpiredInvite({ token }: { token: string }) {
   );
 }
 
-function ExpiredReset() {
+function ExpiredReset({ area }: { area: AreaName }) {
   const headingRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -166,7 +180,7 @@ function ExpiredReset() {
         a moment.
       </p>
       <Button asChild size="lg" className="mt-6 w-full">
-        <Link href="/learn/forgot">Ask for a new link</Link>
+        <Link href={`${AREA_HOME[area]}/forgot`}>Ask for a new link</Link>
       </Button>
     </div>
   );

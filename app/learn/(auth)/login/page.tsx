@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { AuthShell } from "@/components/learner/auth-shell";
-import { LoginForm } from "@/components/learner/login-form";
+import { AuthShell } from "@/components/area/auth-shell";
+import { LoginForm } from "@/components/area/login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/learn/logi
         </p>
       }
     >
-      <LoginForm next={typeof next === "string" ? next : undefined} />
+      <LoginForm area="learn" next={typeof next === "string" ? next : undefined} />
     </AuthShell>
   );
 }

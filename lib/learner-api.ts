@@ -1,16 +1,13 @@
-import { ApiError, readApiError, serverApiUrl } from "./api";
-import { clientHeaders, learnerCookieHeader, learnerToken, visitorIp } from "./learner-session";
+import { ApiError } from "./api";
+import { LEARN } from "./area";
+import { areaRead } from "./area-api";
 
 /**
  * Everything the learner area reads, and the only place it reads it.
  *
- * Nothing here is ever cached. A learner's schedule, feedback and progress are
- * theirs and change without warning, so every page fetches per request with
- * `no-store` — never the sixty-second cache the public pages run on.
- *
- * Reads happen on the server, with the token forwarded from the cookie. The
- * browser never calls the API directly; writes go through `/api/learn/*` on
- * this origin.
+ * The reading itself — no caching, the session forwarded, 401 and 403 told
+ * apart — is `area-api`, shared with the tutor area. What is here is the
+ * contract: the shapes this half of the API returns.
  */
 
 // ---------------------------------------------------------------------------
@@ -180,48 +177,8 @@ export interface Certificate {
 // Reads
 // ---------------------------------------------------------------------------
 
-/** Long enough for an API waking from sleep, short enough that a page is not held open forever. */
-const TIMEOUT_MS = 20_000;
-
-/** Thrown when there is no usable session. Pages turn this into a redirect to the login page. */
-export class NoSession extends Error {
-  constructor() {
-    super("No learner session");
-    this.name = "NoSession";
-  }
-}
-
-/**
- * A learner read. Throws `NoSession` when there is no token or the API rejects
- * the one we have — being logged out is not an error worth a stack trace.
- */
-export async function learnerRead<T>(path: string): Promise<T> {
-  const token = await learnerToken();
-  if (!token) throw new NoSession();
-
-  let response: Response;
-  try {
-    response = await fetch(`${serverApiUrl()}/api/learner${path}`, {
-      headers: {
-        Accept: "application/json",
-        Cookie: learnerCookieHeader(token),
-        ...clientHeaders(await visitorIp()),
-      },
-      cache: "no-store",
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-  } catch (cause) {
-    const reason = cause instanceof Error ? cause.message : String(cause);
-    throw new ApiError(0, "NETWORK", `Could not reach the API for ${path}: ${reason}`);
-  }
-
-  if (response.status === 401) throw new NoSession();
-  if (!response.ok) throw await readApiError(response);
-  return (await response.json()) as T;
-}
-
 export async function getLearner(): Promise<Learner> {
-  const { learner } = await learnerRead<{ learner: Learner }>("/me");
+  const { learner } = await areaRead<{ learner: Learner }>(LEARN, "/me");
   return learner;
 }
 
@@ -236,7 +193,7 @@ export async function getLearner(): Promise<Learner> {
  */
 export async function getEnrollments(): Promise<LearnerEnrollment[] | null> {
   try {
-    const { items } = await learnerRead<{ items: LearnerEnrollment[] }>("/enrollments");
+    const { items } = await areaRead<{ items: LearnerEnrollment[] }>(LEARN, "/enrollments");
     return items;
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
@@ -245,5 +202,5 @@ export async function getEnrollments(): Promise<LearnerEnrollment[] | null> {
 }
 
 export function getProgramOverview(programId: string): Promise<ProgramOverview> {
-  return learnerRead<ProgramOverview>(`/programs/${encodeURIComponent(programId)}`);
+  return areaRead<ProgramOverview>(LEARN, `/programs/${encodeURIComponent(programId)}`);
 }

@@ -2,29 +2,29 @@ import { ApiError } from "./api";
 import { CONTACT } from "./site";
 
 /**
- * What a failed learner request means for the form it came from. Same job as
- * `describeFailure` does for the public forms, and kept apart from it because
- * none of the answers are the same: a learner is never told a cohort is full,
- * and a visitor is never told their link has expired.
+ * What a failed sign-in means for the form it came from, in either area. Same
+ * job as `describeFailure` does for the public forms, and kept apart from it
+ * because none of the answers are the same: somebody signing in is never told
+ * a cohort is full, and a visitor is never told their link has expired.
  */
 
-export type LearnerField = "email" | "password";
+export type AreaField = "email" | "password";
 
-export type LearnerFailure =
+export type AreaFailure =
   /** The invitation or reset link is spent. The page offers a fresh one. */
   | { kind: "expired" }
   /** Field messages to put back on their inputs. */
-  | { kind: "fields"; fields: Array<{ field: LearnerField; message: string }> }
+  | { kind: "fields"; fields: Array<{ field: AreaField; message: string }> }
   /** A message above the submit button. */
   | { kind: "message"; message: string };
 
 const GENERIC = "Something went wrong on our side. Try again in a moment.";
 
-function isLearnerField(name: string): name is LearnerField {
+function isAreaField(name: string): name is AreaField {
   return name === "email" || name === "password";
 }
 
-export function describeLearnerFailure(error: unknown): LearnerFailure {
+export function describeAreaFailure(error: unknown): AreaFailure {
   if (!(error instanceof ApiError)) return { kind: "message", message: GENERIC };
 
   if (error.status === 410 || error.code === "TOKEN_EXPIRED" || error.code === "TOKEN_USED") {
@@ -50,7 +50,7 @@ export function describeLearnerFailure(error: unknown): LearnerFailure {
       };
     case "VALIDATION_ERROR": {
       const fields = Object.entries(error.details ?? {}).flatMap(([field, messages]) =>
-        isLearnerField(field) && messages[0] ? [{ field, message: messages[0] }] : [],
+        isAreaField(field) && messages[0] ? [{ field, message: messages[0] }] : [],
       );
       if (fields.length > 0) return { kind: "fields", fields };
       return { kind: "message", message: error.message || "Check those details and try again." };

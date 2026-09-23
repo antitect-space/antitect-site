@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { AuthShell } from "@/components/learner/auth-shell";
-import { PasswordForm } from "@/components/learner/password-form";
+import { AuthShell } from "@/components/area/auth-shell";
+import { PasswordForm } from "@/components/area/password-form";
 
 export const metadata: Metadata = { title: "Set your password" };
 
@@ -18,7 +18,7 @@ export default async function InvitePage({ params }: PageProps<"/learn/invite/[t
       title="Welcome to Antitect"
       lead="Choose a password, and you are in. You will use it every time you come back."
     >
-      <PasswordForm token={token} purpose="invite" />
+      <PasswordForm area="learn" token={token} purpose="invite" />
     </AuthShell>
   );
 }

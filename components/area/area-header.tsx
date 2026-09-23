@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { LogOut } from "@/components/learner/log-out";
+import { LogOut } from "@/components/area/log-out";
+import { AREA_HOME, type AreaName } from "@/lib/area-view";
 import { Logo } from "@/components/logo";
 
 /**
@@ -10,14 +11,14 @@ import { Logo } from "@/components/logo";
  * More arrives with the pages that need it: the schedule and projects links
  * once those exist, and a programme switcher for anybody on more than one.
  */
-export function LearnerHeader() {
+export function AreaHeader({ area, label }: { area: AreaName; label: string }) {
   return (
     <header className="border-b">
       <div className="container-page flex h-16 items-center justify-between gap-4">
-        <Link href="/learn" className="inline-flex" aria-label="Your programme">
+        <Link href={AREA_HOME[area]} className="inline-flex" aria-label={label}>
           <Logo />
         </Link>
-        <LogOut />
+        <LogOut area={area} />
       </div>
     </header>
   );

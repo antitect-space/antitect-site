@@ -15,11 +15,11 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 /**
- * Everything behind the sign-in. Each page reads the learner's own data per
- * request; nothing under here is ever cached or prerendered, and nothing it
- * does changes how the public pages are.
+ * Everything behind a tutor's sign-in. Read per request, never cached, and
+ * every page asks the API — teaching a run is what grants access to it, just
+ * as enrolment does on the learner side.
  */
-export default function LearnerLayout({ children }: LayoutProps<"/learn">) {
+export default function TutorLayout({ children }: LayoutProps<"/teach">) {
   return (
     <>
       <a
@@ -28,7 +28,7 @@ export default function LearnerLayout({ children }: LayoutProps<"/learn">) {
       >
         Skip to content
       </a>
-      <AreaHeader area="learn" label="Your programme" />
+      <AreaHeader area="teach" label="Your runs" />
       <main id="main" className="flex-1">
         {children}
       </main>

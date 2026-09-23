@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * What the learner's forms check before spending a round trip. Nothing more:
+ * What a sign-in form checks before spending a round trip. Nothing more:
  * the API owns the password rules and says what they are in `details.password`
  * when a password is refused, so guessing them here would only be a second
  * answer to disagree with.

@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 
 import { CutFrame } from "@/components/cut";
 import { Button } from "@/components/ui/button";
+import { NoSession } from "@/lib/area-api";
 import { formatDay } from "@/lib/format";
-import { getEnrollments, getLearner, NoSession, type LearnerEnrollment } from "@/lib/learner-api";
+import { getEnrollments, getLearner, type LearnerEnrollment } from "@/lib/learner-api";
 
 export const metadata: Metadata = { title: "Your programme" };
 
