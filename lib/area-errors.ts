@@ -56,8 +56,10 @@ export function describeAreaFailure(error: unknown): AreaFailure {
         message: "We could not reach our server. Check your connection and try again.",
       };
     case "VALIDATION_ERROR": {
+      // One entry per message, so a field that failed three ways says all
+      // three. Callers wanting only the first can still take it.
       const fields = Object.entries(error.details ?? {}).flatMap(([field, messages]) =>
-        isAreaField(field) && messages[0] ? [{ field, message: messages[0] }] : [],
+        isAreaField(field) ? messages.map((message) => ({ field, message })) : [],
       );
       if (fields.length > 0) return { kind: "fields", fields };
       return { kind: "message", message: error.message || "Check those details and try again." };

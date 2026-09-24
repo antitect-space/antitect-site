@@ -171,9 +171,16 @@ export function Field({
   label: string;
   optional?: boolean;
   hint?: string;
-  error?: string;
+  /**
+   * One thing wrong, or several. A password can miss three requirements at
+   * once, and telling somebody about them one failed attempt at a time is a
+   * way of wasting their afternoon.
+   */
+  error?: string | string[];
   children: React.ReactNode;
 }) {
+  const problems = error === undefined ? [] : Array.isArray(error) ? error : [error];
+
   return (
     <div className="grid gap-2">
       <Label htmlFor={id} className="text-[0.9375rem] font-semibold">
@@ -181,15 +188,22 @@ export function Field({
         {optional ? <span className="font-normal text-muted-foreground">(optional)</span> : null}
       </Label>
       {children}
-      {hint && !error ? (
+      {hint && problems.length === 0 ? (
         <p id={`${id}-hint`} className="text-sm leading-[1.5] text-muted-foreground">
           {hint}
         </p>
       ) : null}
-      {error ? (
+      {problems.length === 1 ? (
         <p id={`${id}-error`} className="text-sm leading-[1.5] font-medium text-brand">
-          {error}
+          {problems[0]}
         </p>
+      ) : null}
+      {problems.length > 1 ? (
+        <ul id={`${id}-error`} className="grid gap-1 text-sm leading-[1.5] font-medium text-brand">
+          {problems.map((problem) => (
+            <li key={problem}>{problem}</li>
+          ))}
+        </ul>
       ) : null}
     </div>
   );

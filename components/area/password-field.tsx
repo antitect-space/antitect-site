@@ -21,7 +21,7 @@ export function PasswordField({
   id: string;
   label: string;
   hint?: string;
-  error?: string;
+  error?: string | string[];
   autoComplete: "current-password" | "new-password";
   registration: React.ComponentProps<"input">;
 }) {
@@ -37,8 +37,14 @@ export function PasswordField({
           autoCapitalize="none"
           spellCheck={false}
           className="pr-16"
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+          aria-invalid={error && (!Array.isArray(error) || error.length > 0) ? true : undefined}
+          aria-describedby={
+            error && (!Array.isArray(error) || error.length > 0)
+              ? `${id}-error`
+              : hint
+                ? `${id}-hint`
+                : undefined
+          }
           {...registration}
         />
         <button
