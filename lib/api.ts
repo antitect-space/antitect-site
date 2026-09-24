@@ -53,8 +53,39 @@ export interface PublicEvent {
 
 export interface ProgramProject {
   title: string;
-  /** Plain text. */
+  /** Plain text. The same words as `whatYoullBuild`, kept for older readers. */
   description: string;
+  // The four below are additive (plan §7.1) and absent until the CRM deploys
+  // them, so every one is optional and the page reads the old shape unchanged.
+  /** Use this, not the array position. */
+  order?: number;
+  week?: number | null;
+  /** May be "". */
+  whatYoullBuild?: string;
+  /** May be "". */
+  whatYoullGain?: string;
+}
+
+/** One slot of a run's weekly pattern. */
+export interface ScheduleSlot {
+  /** 0–6, Sunday as 0, as in JavaScript. */
+  day: number;
+  /** HH:mm, Lagos wall time. */
+  startTime: string;
+  endTime: string;
+  title: string | null;
+}
+
+export interface ProgramFaq {
+  question: string;
+  /** Markdown. */
+  answer: string;
+}
+
+/** The weekly one-to-one on a run that has it. Its figures are the booking rules. */
+export interface ProjectReview {
+  minutes: number;
+  perWeek: number;
 }
 
 /** One run of a Capability Development Programme. Each cohort is its own record, always online. */
@@ -81,6 +112,18 @@ export interface PublicProgram {
   spotsRemaining: number | null;
   isFull: boolean;
   imageUrl: string | null;
+  // Additive (plan §7.1), absent until the CRM deploys them.
+  /** The weekly pattern, sorted by day then start. [] until the team sets it. */
+  schedule?: ScheduleSlot[];
+  /** The team's questions, in order. [] when they wrote none. */
+  faq?: ProgramFaq[];
+  certificateEnabled?: boolean;
+  /**
+   * The weekly Project Review Session. null means this run has none, which
+   * is not the same as the field being absent: that only means the API has
+   * not been updated yet.
+   */
+  projectReview?: ProjectReview | null;
 }
 
 export interface Page<T> {
