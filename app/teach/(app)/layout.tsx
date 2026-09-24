@@ -34,6 +34,7 @@ export default function TutorLayout({ children }: LayoutProps<"/teach">) {
         links={[
           { href: "/teach", label: "Dashboard" },
           { href: "/teach/review", label: "Review queue" },
+          { href: "/teach/reviewed", label: "Reviewed" },
         ]}
       />
       <main id="main" className="flex-1">

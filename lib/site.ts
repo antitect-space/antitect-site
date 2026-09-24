@@ -31,9 +31,10 @@ export const CONTACT = {
   /** A one-to-one chat with the team, from the current site. */
   whatsappChatUrl: "https://wa.me/message/E7UM7E5LZ4RBJ1",
   address: {
-    street: "No 6, University Road, Akoka",
-    locality: "Yaba, Lagos",
-    region: "Lagos",
+    /** As it is written on the page. */
+    display: "Abuja, Nigeria",
+    locality: "Abuja",
+    region: "Federal Capital Territory",
     country: "NG",
   },
 } as const;

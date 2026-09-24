@@ -73,7 +73,6 @@ export function organizationJsonLd(): Json {
     telephone: CONTACT.phoneHref.replace("tel:", ""),
     address: {
       "@type": "PostalAddress",
-      streetAddress: CONTACT.address.street,
       addressLocality: CONTACT.address.locality,
       addressRegion: CONTACT.address.region,
       addressCountry: CONTACT.address.country,

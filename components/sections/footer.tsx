@@ -61,11 +61,7 @@ export function Footer() {
                 WhatsApp us
               </a>
             </p>
-            <p className="leading-[1.5] text-muted-foreground">
-              {CONTACT.address.street},
-              <br />
-              {CONTACT.address.locality}
-            </p>
+            <p className="leading-[1.5] text-muted-foreground">{CONTACT.address.display}</p>
           </address>
         </div>
       </div>

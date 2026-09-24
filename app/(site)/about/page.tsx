@@ -93,11 +93,7 @@ export default function AboutPage() {
               Where to find us
             </h2>
             <address className="mt-6 space-y-3 text-lg not-italic">
-              <p className="leading-[1.5] text-muted-foreground">
-                {CONTACT.address.street},
-                <br />
-                {CONTACT.address.locality}
-              </p>
+              <p className="leading-[1.5] text-muted-foreground">{CONTACT.address.display}</p>
               <p>
                 <a href={`mailto:${CONTACT.email}`} className="underline underline-offset-4 hover:no-underline">
                   {CONTACT.email}

@@ -56,10 +56,9 @@ export default async function ProjectPage({ params, searchParams }: PageProps<"/
 
   const { project, resources, submissions } = detail;
   const state = PROJECT_STATE[project.state];
-  const locked = project.state === "locked";
   const newestFirst = [...submissions].sort((a, b) => b.version - a.version);
   // The API decides who may send work, per learner. This only renders it.
-  const canSubmit = project.state === "in_progress" || project.state === "revision_required";
+  const canSubmit = canSend(project.state);
 
   return (
     <div className="container-page grid gap-10 py-10 sm:py-14 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
@@ -81,6 +80,14 @@ export default async function ProjectPage({ params, searchParams }: PageProps<"/
           ) : null}
         </div>
         <p className="mt-3 max-w-[52ch] leading-[1.5] text-muted-foreground">{state.meaning}</p>
+
+        {/* On a phone the sidebar stacks after everything else, which put a
+            card saying "send links below" underneath the form it meant. So on
+            a phone it sits here instead, and the sidebar copy is hidden. Only
+            one is ever displayed, so it is only ever read once. */}
+        <div className="mt-8 lg:hidden">
+          <StatusCard project={project} />
+        </div>
 
         {project.whatYoullBuild ? (
           <section aria-labelledby="build-title" className="mt-10 border-t-2 border-foreground pt-6">
@@ -159,26 +166,9 @@ export default async function ProjectPage({ params, searchParams }: PageProps<"/
       </div>
 
       <aside className="space-y-8 lg:col-start-2">
-        <CutFrame corner="bl" innerClassName="p-6">
-          <h2 className="text-title text-xl">
-            {locked ? "Not open yet" : project.state === "approved" ? "Approved" : "Submitting"}
-          </h2>
-          <p className="mt-3 leading-[1.5] text-muted-foreground">
-            {locked
-              ? "Read ahead all you like — the sessions run ahead of the work. Submitting opens when the project before this one is approved."
-              : project.state === "approved"
-                ? "Nothing more to do here. The next project is open."
-                : canSubmit
-                  ? "Send links to your work below. Your tutor reads it against this brief."
-                  : "It is with your tutor. Nothing to do until they come back to you."}
-          </p>
-          {project.whatYoullGain ? (
-            <>
-              <h3 className="text-title mt-6 text-lg">What you get out of it</h3>
-              <p className="mt-2 leading-[1.5] text-muted-foreground">{project.whatYoullGain}</p>
-            </>
-          ) : null}
-        </CutFrame>
+        <div className="hidden lg:block">
+          <StatusCard project={project} />
+        </div>
 
         <section aria-labelledby="resources-title">
           <h2 id="resources-title" className="text-title text-xl">
@@ -202,5 +192,37 @@ export default async function ProjectPage({ params, searchParams }: PageProps<"/
         </Button>
       </aside>
     </div>
+  );
+}
+
+function canSend(state: ProjectDetail["project"]["state"]): boolean {
+  return state === "in_progress" || state === "revision_required";
+}
+
+/** Where this project stands, and what it is for. */
+function StatusCard({ project }: { project: ProjectDetail["project"] }) {
+  const locked = project.state === "locked";
+
+  return (
+    <CutFrame corner="bl" innerClassName="p-6">
+      <h2 className="text-title text-xl">
+        {locked ? "Not open yet" : project.state === "approved" ? "Approved" : "Submitting"}
+      </h2>
+      <p className="mt-3 leading-[1.5] text-muted-foreground">
+        {locked
+          ? "Read ahead all you like — the sessions run ahead of the work. Submitting opens when the project before this one is approved."
+          : project.state === "approved"
+            ? "Nothing more to do here. The next project is open."
+            : canSend(project.state)
+              ? "Send links to your work below. Your tutor reads it against this brief."
+              : "It is with your tutor. Nothing to do until they come back to you."}
+      </p>
+      {project.whatYoullGain ? (
+        <>
+          <h3 className="text-title mt-6 text-lg">What you get out of it</h3>
+          <p className="mt-2 leading-[1.5] text-muted-foreground">{project.whatYoullGain}</p>
+        </>
+      ) : null}
+    </CutFrame>
   );
 }
