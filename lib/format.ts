@@ -209,3 +209,69 @@ export function firstSentence(text: string, max = 90): string | null {
   const sentence = end > 0 ? flat.slice(0, end + 1) : flat;
   return sentence.length > max ? summarise(sentence, max) : sentence;
 }
+
+// ---------------------------------------------------------------------------
+// Project Review Sessions: slots are grouped by Lagos day, weeks arrive as
+// Lagos calendar dates, and a tutor types a day and a time in Lagos.
+// ---------------------------------------------------------------------------
+
+const dayOnlyLong = new Intl.DateTimeFormat("en-GB", {
+  timeZone: TIME_ZONE,
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
+const dayMonth = new Intl.DateTimeFormat("en-GB", {
+  timeZone: TIME_ZONE,
+  day: "numeric",
+  month: "long",
+});
+
+/** "7:00 pm", in Lagos. */
+export function formatTime(instant: string): string {
+  return timeOnly.format(new Date(instant));
+}
+
+/** "Tuesday 4 November", in Lagos. */
+export function formatDayLong(instant: string): string {
+  return dayOnlyLong.format(new Date(instant));
+}
+
+/** The Lagos calendar date of an instant, as YYYY-MM-DD, for grouping and comparing. */
+export function lagosDate(instant: string | number): string {
+  return dayKey.format(new Date(instant));
+}
+
+/**
+ * "2 – 8 November", or "30 November – 6 December" across a month end, from
+ * two Lagos calendar dates. Noon is used so no zone offset can tip either date
+ * into its neighbour.
+ */
+export function formatDateRange(startsOn: string, endsOn: string): string {
+  const from = new Date(`${startsOn}T12:00:00+01:00`);
+  const to = new Date(`${endsOn}T12:00:00+01:00`);
+  const sameMonth = startsOn.slice(0, 7) === endsOn.slice(0, 7);
+  const start = sameMonth ? dayNumber.format(from) : dayMonth.format(from);
+  return `${start} – ${dayMonth.format(to)}`;
+}
+
+/**
+ * A day and a time typed in Lagos, as the instant the API wants.
+ *
+ * West Africa Time is UTC+1 all year — Nigeria keeps no daylight saving — so
+ * the offset is a constant rather than something to look up per date.
+ */
+export function lagosInstant(date: string, time: string): string {
+  return new Date(`${date}T${time}:00+01:00`).toISOString();
+}
+
+/** Today's Lagos calendar date. For pages that are rendered per request, never cached. */
+export function lagosToday(now: number = Date.now()): string {
+  return lagosDate(now);
+}
+
+/** Whether something has finished, for a page rendered per request. */
+export function hasEnded(endsAt: string, now: number = Date.now()): boolean {
+  return new Date(endsAt).getTime() <= now;
+}

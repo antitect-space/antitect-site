@@ -35,6 +35,7 @@ export default function LearnerLayout({ children }: LayoutProps<"/learn">) {
           { href: "/learn", label: "Dashboard" },
           { href: "/learn/schedule", label: "Schedule" },
           { href: "/learn/projects", label: "Projects" },
+          { href: "/learn/reviews", label: "Reviews" },
         ]}
       />
       <main id="main" className="flex-1">

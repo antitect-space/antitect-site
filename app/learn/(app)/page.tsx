@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { NoSession, NotYours } from "@/lib/area-api";
 import { formatDay, formatEventWhen } from "@/lib/format";
 import {
-  bookingLink,
   chooseEnrollment,
   getEnrollments,
   getLearner,
@@ -194,17 +193,9 @@ export default async function LearnerHomePage({ searchParams }: PageProps<"/lear
           <Button asChild variant="outline">
             <Link href={`/learn/projects?run=${program.id}`}>All projects</Link>
           </Button>
-          {program.bookingUrl ? (
-            <Button asChild variant="outline">
-              <a
-                href={bookingLink(program.bookingUrl, learner)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Book your project review
-              </a>
-            </Button>
-          ) : null}
+          <Button asChild variant="outline">
+            <Link href={`/learn/reviews?run=${program.id}`}>Book your Project Review Session</Link>
+          </Button>
         </div>
       </section>
     </div>

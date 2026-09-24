@@ -182,3 +182,51 @@ export function earlierVersions(detail: ReviewDetail): EarlierVersion[] {
     .filter((version) => version.id !== detail.submission.id)
     .sort((a, b) => a.version - b.version);
 }
+
+// ---------------------------------------------------------------------------
+// Project Review Sessions, from the tutor's side (tutor plan §3). The tutor
+// opens windows of time; the API cuts them into slots and learners book them.
+// ---------------------------------------------------------------------------
+
+export interface WindowSlot {
+  startsAt: string;
+  endsAt: string;
+  week: number;
+  booking: { id: string; learnerName: string; learnerEmail?: string } | null;
+}
+
+export interface ReviewWindow {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  joinUrl: string | null;
+  slots: WindowSlot[];
+}
+
+export interface TutorReviews {
+  minutes: number;
+  perWeek: number;
+  cancelCutoffHours: number;
+  minNoticeHours: number;
+  windows: ReviewWindow[];
+}
+
+export function getTutorReviews(programId: string): Promise<TutorReviews> {
+  return areaRead<TutorReviews>(TEACH, `/programs/${encodeURIComponent(programId)}/reviews`);
+}
+
+/**
+ * Windows still to come, soonest first, and those already over, most recent
+ * first. Worked out per request: /teach is never cached, so the server's clock
+ * is the right one.
+ */
+export function splitWindows(
+  windows: readonly ReviewWindow[],
+  now: number = Date.now(),
+): { upcoming: ReviewWindow[]; earlier: ReviewWindow[] } {
+  const sorted = [...windows].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  return {
+    upcoming: sorted.filter((w) => new Date(w.endsAt).getTime() > now),
+    earlier: sorted.filter((w) => new Date(w.endsAt).getTime() <= now).reverse(),
+  };
+}

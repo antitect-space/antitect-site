@@ -59,13 +59,25 @@ export default async function TutorHomePage() {
           <h2 id="runs-title" className="text-title text-2xl">
             What you teach
           </h2>
-          <ul className="mt-5 space-y-2">
+          <ul className="mt-5 grid gap-px border-2 border-foreground bg-foreground">
             {programs.map((program) => (
-              <li key={program.id} className="text-lg">
-                {program.title}
-                {program.runLabel ? (
-                  <span className="text-muted-foreground"> · {program.runLabel}</span>
-                ) : null}
+              <li
+                key={program.id}
+                className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 bg-background p-5"
+              >
+                <p className="text-lg">
+                  {program.title}
+                  {program.runLabel ? (
+                    <span className="text-muted-foreground"> · {program.runLabel}</span>
+                  ) : null}
+                </p>
+                <Link
+                  href={`/teach/programmes/${program.id}/reviews`}
+                  className="border-2 border-foreground px-4 py-2 font-semibold hover:bg-foreground hover:text-background"
+                >
+                  Project Review Sessions
+                  <span className="sr-only"> for {program.title}</span>
+                </Link>
               </li>
             ))}
           </ul>
