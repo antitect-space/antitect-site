@@ -137,6 +137,41 @@ export async function getQueue(programId?: string): Promise<Queue> {
   };
 }
 
+/**
+ * Every page of one status, oldest first.
+ *
+ * The API takes one status at a time and pages at up to 100, so a cohort's
+ * worth of reviewed work is a few requests at most. The loop is capped so a
+ * `totalPages` that never stops growing cannot hold a page open forever.
+ */
+async function everyPage(status: ReviewStatus, programId?: string): Promise<QueueItem[]> {
+  const items: QueueItem[] = [];
+  for (let page = 1; page <= 20; page += 1) {
+    const query = new URLSearchParams({ status, limit: "100", page: String(page) });
+    if (programId) query.set("programId", programId);
+    const result = await areaRead<{ items: QueueItem[]; totalPages?: number }>(
+      TEACH,
+      `/submissions?${query}`,
+    );
+    items.push(...result.items);
+    if (!result.totalPages || page >= result.totalPages) break;
+  }
+  return items;
+}
+
+/**
+ * Work that has been decided — approved, or sent back for changes. The queue
+ * is what is waiting; this is what is done, kept so a tutor can go back to
+ * what somebody sent and what they were told about it.
+ */
+export async function getReviewed(programId?: string): Promise<QueueItem[]> {
+  const [approved, revising] = await Promise.all([
+    everyPage("approved", programId),
+    everyPage("revision_required", programId),
+  ]);
+  return [...approved, ...revising];
+}
+
 export function getReview(submissionId: string): Promise<ReviewDetail> {
   return areaRead<ReviewDetail>(TEACH, `/submissions/${encodeURIComponent(submissionId)}`);
 }

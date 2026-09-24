@@ -55,9 +55,16 @@ export default async function ReviewPage({ params }: PageProps<"/teach/review/[i
     <div className="container-page grid gap-10 py-10 sm:py-14 lg:grid-cols-[1fr_1fr] lg:gap-14">
       <div className="lg:col-start-1">
         <p className="text-[0.9375rem] font-semibold text-muted-foreground">
-          <Link href="/teach/review" className="hover:underline">
-            Review queue
-          </Link>{" "}
+          {/* Back to wherever this piece of work now lives. */}
+          {isOpen(submission.status) ? (
+            <Link href="/teach/review" className="hover:underline">
+              Review queue
+            </Link>
+          ) : (
+            <Link href="/teach/reviewed" className="hover:underline">
+              Reviewed work
+            </Link>
+          )}{" "}
           · {submission.program.title}
           {submission.program.runLabel ? ` · ${submission.program.runLabel}` : ""}
         </p>
@@ -181,7 +188,11 @@ function Version({ version }: { version: EarlierVersion }) {
   return (
     <li className="border-t-2 border-border pt-5 first:border-t-0 first:pt-0">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="text-title text-lg">Version {version.version}</h3>
+        <h3 className="text-title text-lg">
+          <Link href={`/teach/review/${version.id}`} className="hover:underline hover:underline-offset-4">
+            Version {version.version}
+          </Link>
+        </h3>
         <p className="text-[0.9375rem] text-muted-foreground">
           {formatDay(version.submittedAt)}
         </p>
