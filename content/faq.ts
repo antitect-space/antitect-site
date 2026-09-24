@@ -1,10 +1,12 @@
 import type { PublicProgram } from "@/lib/api";
 import { formatDay, formatKobo, countWord, plural } from "@/lib/format";
-import { durationLabel } from "@/lib/programs";
+import { durationLabel, scheduleSummary } from "@/lib/programs";
 
 export interface FaqItem {
   question: string;
   answer: string;
+  /** The team's own answers are Markdown; the site's are plain sentences. */
+  markdown?: boolean;
 }
 
 /**
@@ -53,6 +55,14 @@ export const generalFaq: ReadonlyArray<FaqItem> = [
  * rather than guessed.
  */
 export function programmeFaq(program: PublicProgram): FaqItem[] {
+  // The team's questions, when they have written some, in their order. They
+  // replace these rather than join them: two answers to one question is how
+  // a page ends up contradicting itself.
+  if (program.faq && program.faq.length > 0) {
+    return program.faq.map((item) => ({ ...item, markdown: true }));
+  }
+
+  const schedule = scheduleSummary(program);
   const items: Array<FaqItem | false> = [
     program.durationWeeks !== null && {
       question: "How long does it run?",
@@ -75,7 +85,10 @@ export function programmeFaq(program: PublicProgram): FaqItem[] {
     },
     {
       question: "When are sessions held?",
+      // The real times once the team has set the weekly pattern; until then,
+      // the shape of it, and never a guess at the hours.
       answer:
+        schedule ??
         "Weekday evenings and a weekend session, so you can keep working. Exact times are sent to everybody enrolled.",
     },
   ];

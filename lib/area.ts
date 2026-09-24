@@ -45,8 +45,16 @@ const AUTH_PATHS = /^auth\/(login|logout|forgot|reset|accept-invite|resend-invit
 
 /** Sending work in. Ids are opaque to this site, so the shape is all it checks. */
 const LEARNER_SUBMISSIONS = /^programs\/[\w-]{1,64}\/projects\/[\w-]{1,64}\/submissions$/;
-/** Claiming a submission, and deciding it. Nothing else a tutor does is a write from a browser. */
+/** Booking a Project Review Session, and cancelling one's own. */
+const LEARNER_BOOK = /^programs\/[\w-]{1,64}\/reviews$/;
+const LEARNER_CANCEL = /^reviews\/[\w-]{1,64}\/cancel$/;
+
+/** Claiming a submission, and deciding it. */
 const TUTOR_REVIEW = /^submissions\/[\w-]{1,64}\/(start-review|decision)$/;
+/** Opening time for Project Review Sessions, closing it, and cancelling a booking. */
+const TUTOR_OPEN_WINDOW = /^programs\/[\w-]{1,64}\/review-windows$/;
+const TUTOR_CLOSE_WINDOW = /^review-windows\/[\w-]{1,64}$/;
+const TUTOR_CANCEL_BOOKING = /^reviews\/[\w-]{1,64}\/cancel$/;
 
 const SESSION_GRANTING = new Set(["auth/login", "auth/accept-invite", "auth/reset"]);
 
@@ -62,6 +70,8 @@ export const AREAS: Readonly<Record<AreaName, Area>> = {
     allowed: [
       { method: "POST", path: AUTH_PATHS },
       { method: "POST", path: LEARNER_SUBMISSIONS },
+      { method: "POST", path: LEARNER_BOOK },
+      { method: "POST", path: LEARNER_CANCEL },
     ],
     sessionGranting: SESSION_GRANTING,
   },
@@ -76,6 +86,9 @@ export const AREAS: Readonly<Record<AreaName, Area>> = {
     allowed: [
       { method: "POST", path: AUTH_PATHS },
       { method: "POST", path: TUTOR_REVIEW },
+      { method: "POST", path: TUTOR_OPEN_WINDOW },
+      { method: "DELETE", path: TUTOR_CLOSE_WINDOW },
+      { method: "POST", path: TUTOR_CANCEL_BOOKING },
     ],
     sessionGranting: SESSION_GRANTING,
   },

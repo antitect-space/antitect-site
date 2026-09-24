@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { Cut, CutFrame } from "@/components/cut";
 import { PaymentForm } from "@/components/forms/payment-form";
 import { JsonLd } from "@/components/json-ld";
+import { ProjectsTable, WeeklySchedule } from "@/components/programme-details";
 import { FaqSection } from "@/components/sections/faq";
 import { Button } from "@/components/ui/button";
 import { programmeFaq } from "@/content/faq";
@@ -13,7 +14,14 @@ import { getProgram } from "@/lib/api";
 import { placesNote } from "@/lib/events";
 import { formatDay, formatKobo } from "@/lib/format";
 import { courseJsonLd, shareMetadata } from "@/lib/metadata";
-import { commitmentSentence, durationLabel, enrolmentClosesNote, enrolmentState } from "@/lib/programs";
+import {
+  commitmentSentence,
+  durationLabel,
+  enrolmentClosesNote,
+  enrolmentState,
+  projectRows,
+  weeklySchedule,
+} from "@/lib/programs";
 
 export const revalidate = 60;
 
@@ -52,6 +60,14 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
   const commitment = commitmentSentence(program);
   const closes = enrolmentClosesNote(program);
   const places = state === "open" ? placesNote(program) : null;
+  const schedule = weeklySchedule(program);
+  const projects = projectRows(program);
+  // What the run leaves you with: its outcomes, and the certificate when it
+  // issues one. The certificate is said here because that is what it is.
+  const leaveWith = [
+    ...(program.certificateEnabled ? ["A digital certificate when you complete the programme."] : []),
+    ...program.outcomes,
+  ];
 
   const facts = [
     { label: "Length", value: durationLabel(program) },
@@ -141,36 +157,35 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
             </section>
           ) : null}
 
-          {program.projects.length > 0 ? (
+          {schedule.length > 0 ? (
+            <section aria-labelledby="schedule-title" className="border-t-2 border-foreground pt-6">
+              <h2 id="schedule-title" className="text-title text-2xl">
+                Every week
+              </h2>
+              <div className="mt-5">
+                <WeeklySchedule rows={schedule} />
+              </div>
+            </section>
+          ) : null}
+
+          {projects.length > 0 ? (
             <section aria-labelledby="projects-title" className="border-t-2 border-foreground pt-6">
               <h2 id="projects-title" className="text-title text-2xl">
                 What you will build
               </h2>
-              <ol className="mt-6 grid gap-px border-2 border-foreground bg-foreground sm:grid-cols-2">
-                {program.projects.map((project, index) => (
-                  <li key={project.title} className="bg-background p-5 sm:odd:last:col-span-2">
-                    <span aria-hidden="true" className="text-[0.8125rem] font-semibold tabular-nums text-muted-foreground">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <h3 className="text-title mt-2 text-xl">{project.title}</h3>
-                    {project.description ? (
-                      <p className="mt-2 leading-[1.5] whitespace-pre-line text-muted-foreground">
-                        {project.description}
-                      </p>
-                    ) : null}
-                  </li>
-                ))}
-              </ol>
+              <div className="mt-6">
+                <ProjectsTable rows={projects} />
+              </div>
             </section>
           ) : null}
 
-          {program.outcomes.length > 0 ? (
+          {leaveWith.length > 0 ? (
             <section aria-labelledby="outcomes-title" className="border-t-2 border-foreground pt-6">
               <h2 id="outcomes-title" className="text-title text-2xl">
                 What you leave with
               </h2>
               <ul className="mt-4 space-y-3">
-                {program.outcomes.map((outcome) => (
+                {leaveWith.map((outcome) => (
                   <li key={outcome} className="flex gap-3 text-lg leading-[1.5]">
                     <span aria-hidden="true" className="mt-[0.55em] size-2 shrink-0 bg-brand" />
                     <span>{outcome}</span>

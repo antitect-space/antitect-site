@@ -1,3 +1,4 @@
+import { Markdown } from "@/components/markdown";
 import type { FaqItem } from "@/content/faq";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +31,13 @@ export function FaqSection({
                   <span className="hidden group-open:inline">−</span>
                 </span>
               </summary>
-              <p className="max-w-[62ch] pb-6 leading-[1.6] text-muted-foreground">{item.answer}</p>
+              {item.markdown ? (
+                <div className="pb-6 text-muted-foreground">
+                  <Markdown>{item.answer}</Markdown>
+                </div>
+              ) : (
+                <p className="max-w-[62ch] pb-6 leading-[1.6] text-muted-foreground">{item.answer}</p>
+              )}
             </details>
           ))}
         </div>

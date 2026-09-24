@@ -265,20 +265,50 @@ export function chooseEnrollment(
   return enrollment ? { kind: "ok", enrollment } : { kind: "none" };
 }
 
-/**
- * The tutor's booking page with the learner's name and email already in it.
- * Cal.com reads both from the query; without them a learner retypes what we
- * already know, on a phone, to book a call we arranged.
- */
-export function bookingLink(bookingUrl: string, learner: Learner): string {
-  try {
-    const url = new URL(bookingUrl);
-    const name = [learner.firstName, learner.lastName].filter(Boolean).join(" ");
-    if (name) url.searchParams.set("name", name);
-    url.searchParams.set("email", learner.email);
-    return url.toString();
-  } catch {
-    // Not a URL we can add to. Better to send them there plain than not at all.
-    return bookingUrl;
-  }
+// ---------------------------------------------------------------------------
+// Project Review Sessions (plan §3.3). The rules come back with every read,
+// so nothing here is a figure of its own: not the 30 minutes, not the one a
+// week, not the 12 hours' notice to cancel.
+// ---------------------------------------------------------------------------
+
+export interface ReviewBooking {
+  id: string;
+  week: number;
+  startsAt: string;
+  endsAt: string;
+  joinUrl: string | null;
+  status: "booked" | "cancelled";
+  /** False inside the last `cancelCutoffHours`, and once it has begun. */
+  canCancel: boolean;
+}
+
+export interface ReviewWeek {
+  week: number;
+  /** Lagos calendar dates, YYYY-MM-DD. */
+  startsOn: string;
+  endsOn: string;
+  booking: ReviewBooking | null;
+}
+
+export interface ReviewSlot {
+  startsAt: string;
+  endsAt: string;
+  week: number;
+}
+
+export interface ReviewSessions {
+  /** False for a run with no Project Review Sessions: weeks and slots are then empty. */
+  enabled: boolean;
+  minutes: number;
+  perWeek: number;
+  cancelCutoffHours: number;
+  minNoticeHours: number;
+  tutorName: string | null;
+  weeks: ReviewWeek[];
+  /** Only what this learner can book: open, far enough ahead, in a week they have not booked. */
+  slots: ReviewSlot[];
+}
+
+export function getReviewSessions(programId: string): Promise<ReviewSessions> {
+  return areaRead<ReviewSessions>(LEARN, `/programs/${encodeURIComponent(programId)}/reviews`);
 }

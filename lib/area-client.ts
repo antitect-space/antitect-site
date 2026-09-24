@@ -14,13 +14,30 @@ import type { AreaName } from "./area-view";
 /** Long enough to outlast an API waking from sleep. */
 const TIMEOUT_MS = 60_000;
 
-export async function areaPost<T>(area: AreaName, path: string, body: unknown = {}): Promise<T> {
+export function areaPost<T>(area: AreaName, path: string, body: unknown = {}): Promise<T> {
+  return areaSend<T>(area, "POST", path, body);
+}
+
+/** Removing something. Only a tutor closing a review window does this today. */
+export function areaDelete<T>(area: AreaName, path: string): Promise<T> {
+  return areaSend<T>(area, "DELETE", path);
+}
+
+async function areaSend<T>(
+  area: AreaName,
+  method: "POST" | "DELETE",
+  path: string,
+  body?: unknown,
+): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`/api/${area}/${path}`, {
-      method: "POST",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      method,
+      headers: {
+        Accept: "application/json",
+        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch {
