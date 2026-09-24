@@ -32,6 +32,10 @@ export function ForgotForm({ area }: { area: AreaName }) {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<ForgotInput>({
+    // Checked as they go: an error on the field they just left, rather
+    // than a list of them after a round trip nobody needed to spend.
+    mode: "onTouched",
+    reValidateMode: "onChange",
     resolver: zodResolver(forgotSchema),
     defaultValues: { email: "" },
   });

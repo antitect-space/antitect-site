@@ -45,6 +45,9 @@ const AUTH_PATHS = /^auth\/(login|logout|forgot|reset|accept-invite|resend-invit
 
 /** Sending work in. Ids are opaque to this site, so the shape is all it checks. */
 const LEARNER_SUBMISSIONS = /^programs\/[\w-]{1,64}\/projects\/[\w-]{1,64}\/submissions$/;
+/** Claiming a submission, and deciding it. Nothing else a tutor does is a write from a browser. */
+const TUTOR_REVIEW = /^submissions\/[\w-]{1,64}\/(start-review|decision)$/;
+
 const SESSION_GRANTING = new Set(["auth/login", "auth/accept-invite", "auth/reset"]);
 
 export const AREAS: Readonly<Record<AreaName, Area>> = {
@@ -70,7 +73,10 @@ export const AREAS: Readonly<Record<AreaName, Area>> = {
     home: AREA_HOME.teach,
     publicPages: new Set(["/teach/login", "/teach/forgot"]),
     publicPrefixes: ["/teach/invite/", "/teach/reset/"],
-    allowed: [{ method: "POST", path: AUTH_PATHS }],
+    allowed: [
+      { method: "POST", path: AUTH_PATHS },
+      { method: "POST", path: TUTOR_REVIEW },
+    ],
     sessionGranting: SESSION_GRANTING,
   },
 };

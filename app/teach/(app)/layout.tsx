@@ -28,7 +28,14 @@ export default function TutorLayout({ children }: LayoutProps<"/teach">) {
       >
         Skip to content
       </a>
-      <AreaHeader area="teach" label="Your runs" />
+      <AreaHeader
+        area="teach"
+        label="Your runs"
+        links={[
+          { href: "/teach", label: "Dashboard" },
+          { href: "/teach/review", label: "Review queue" },
+        ]}
+      />
       <main id="main" className="flex-1">
         {children}
       </main>

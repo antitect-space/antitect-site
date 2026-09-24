@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldError } from "react-hook-form";
 
 import { FormAlert, SlowNote } from "@/components/forms/person-fields";
 import { useSubmission } from "@/components/forms/use-submission";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { areaPost } from "@/lib/area-client";
 import { AREA_HOME, type AreaName } from "@/lib/area-view";
 import { describeAreaFailure } from "@/lib/area-errors";
-import { passwordSchema, type PasswordInput } from "@/lib/area-schemas";
+import { PASSWORD_HINT, passwordSchema, type PasswordInput } from "@/lib/area-schemas";
 
 /**
  * Setting a password: from an invitation, or from a reset link. The same form
@@ -33,6 +33,8 @@ export function PasswordForm({
 }) {
   const router = useRouter();
   const [expired, setExpired] = useState(false);
+  /** What the API said about the password, when it disagrees with the check here. */
+  const [refused, setRefused] = useState<string[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const { slow, run } = useSubmission();
 
@@ -42,12 +44,21 @@ export function PasswordForm({
     setError,
     formState: { errors, isSubmitting, isSubmitSuccessful },
   } = useForm<PasswordInput>({
+    // Checked as they go: an error on the field they just left, rather
+    // than a list of them after a round trip nobody needed to spend.
+    mode: "onTouched",
+    reValidateMode: "onChange",
+    // Every failing rule, not just the first: a password can be too short and
+    // miss a number and miss a symbol, and finding that out one attempt at a
+    // time is miserable.
+    criteriaMode: "all",
     resolver: zodResolver(passwordSchema),
     defaultValues: { password: "" },
   });
 
   async function onSubmit({ password }: PasswordInput) {
     setFormError(null);
+    setRefused([]);
     try {
       await run(() =>
         areaPost(area, purpose === "invite" ? "auth/accept-invite" : "auth/reset", { token, password }),
@@ -60,11 +71,17 @@ export function PasswordForm({
       const failure = describeAreaFailure(error);
       // The API owns the password rules, so whatever it says about one goes
       // on the field itself rather than being summarised above the button.
-      const rule = failure.kind === "fields" && failure.fields.find((f) => f.field === "password");
+      const rules =
+        failure.kind === "fields"
+          ? failure.fields.filter((f) => f.field === "password").map((f) => f.message)
+          : [];
       if (failure.kind === "expired") {
         setExpired(true);
-      } else if (rule) {
-        setError("password", { type: "server", message: rule.message }, { shouldFocus: true });
+      } else if (rules.length > 0) {
+        // Shown as the API worded them. If these ever differ from the check
+        // above, the copy of the rule in area-schemas has drifted.
+        setRefused(rules);
+        setError("password", { type: "server" }, { shouldFocus: true });
       } else {
         setFormError(
           failure.kind === "message" ? failure.message : "Check that password and try again.",
@@ -87,10 +104,15 @@ export function PasswordForm({
       <PasswordField
         id="learn-new-password"
         label="Choose a password"
-        hint="At least 10 characters."
+        hint={PASSWORD_HINT}
         autoComplete="new-password"
-        error={errors.password?.message}
-        registration={register("password")}
+        error={refused.length > 0 ? refused : unmet(errors.password)}
+        registration={register("password", {
+          // Our own check takes over again the moment they edit it.
+          onChange: () => {
+            if (refused.length > 0) setRefused([]);
+          },
+        })}
       />
 
       <FormAlert message={formError} className="mt-6" />
@@ -101,6 +123,25 @@ export function PasswordForm({
       <SlowNote show={busy && slow} />
     </form>
   );
+}
+
+/**
+ * Every rule this password fails, in the order they are checked.
+ *
+ * With `criteriaMode: "all"` react-hook-form collects them under `types`,
+ * keyed by rule; without it there is one message. Both shapes arrive here.
+ */
+function unmet(error: FieldError | undefined): string[] {
+  if (!error) return [];
+
+  const all: string[] = [];
+  for (const message of Object.values(error.types ?? {})) {
+    if (typeof message === "string") all.push(message);
+    else if (Array.isArray(message)) all.push(...message.filter((m) => typeof m === "string"));
+  }
+
+  if (all.length > 0) return all;
+  return typeof error.message === "string" && error.message ? [error.message] : [];
 }
 
 /**
