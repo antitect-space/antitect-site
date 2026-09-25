@@ -29,7 +29,7 @@ export const CONTACT = {
   phoneDisplay: "0915 765 2774",
   phoneHref: "tel:+2349157652774",
   /** A one-to-one chat with the team, from the current site. */
-  whatsappChatUrl: "https://wa.me/message/E7UM7E5LZ4RBJ1",
+  whatsappChatUrl: "https://wa.me/2349133180239",
   address: {
     /** As it is written on the page. */
     display: "Abuja, Nigeria",
