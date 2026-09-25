@@ -181,8 +181,11 @@ export function Field({
 }) {
   const problems = error === undefined ? [] : Array.isArray(error) ? error : [error];
 
+  // content-start: side by side with a field showing an error, this one is
+  // stretched to the same height, and without it the extra space is shared
+  // among its rows and its label and input drift down out of line.
   return (
-    <div className="grid gap-2">
+    <div className="grid content-start gap-2">
       <Label htmlFor={id} className="text-[0.9375rem] font-semibold">
         {label}
         {optional ? <span className="font-normal text-muted-foreground">(optional)</span> : null}

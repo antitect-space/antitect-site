@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Field, FormAlert, SlowNote } from "@/components/forms/person-fields";
 import { useSubmission } from "@/components/forms/use-submission";
@@ -156,12 +156,28 @@ export function OpenWindowForm({ programId, minutes }: { programId: string; minu
  * about it. A booked window cannot be closed — each learner in it has to be
  * cancelled first, so that each is told — and the button says so rather than
  * failing when pressed.
+ *
+ * Closing asks first. Focus moves to the safe answer while it asks, and back
+ * to the button after, so a keyboard is never left on the page body.
  */
 export function WindowCard({ window, past }: { window: ReviewWindow; past: boolean }) {
   const router = useRouter();
+  const [confirming, setConfirming] = useState(false);
   const [closing, setClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const keepButton = useRef<HTMLButtonElement>(null);
+  const asked = useRef(false);
   const booked = window.slots.filter((slot) => slot.booking).length;
+
+  useEffect(() => {
+    if (confirming) {
+      asked.current = true;
+      keepButton.current?.focus();
+    } else if (asked.current) {
+      closeButton.current?.focus();
+    }
+  }, [confirming]);
 
   async function close() {
     setError(null);
@@ -171,6 +187,7 @@ export function WindowCard({ window, past }: { window: ReviewWindow; past: boole
       router.refresh();
     } catch (cause) {
       setClosing(false);
+      setConfirming(false);
       setError(
         cause instanceof ApiError && cause.message
           ? cause.message
@@ -209,16 +226,35 @@ export function WindowCard({ window, past }: { window: ReviewWindow; past: boole
         ))}
       </ul>
 
-      {!past ? (
-        <div className="mt-4">
+      {!past && confirming ? (
+        <div role="group" aria-label="Close this window?" className="mt-4 flex flex-wrap items-center gap-3">
+          <span className="font-semibold">Close it? Learners will no longer see these times.</span>
+          <Button type="button" variant="secondary" onClick={close} disabled={closing}>
+            {closing ? "Closing…" : "Yes, close it"}
+          </Button>
           <Button
+            ref={keepButton}
             type="button"
             variant="outline"
-            onClick={close}
-            disabled={booked > 0 || closing}
+            onClick={() => setConfirming(false)}
+            disabled={closing}
+          >
+            Keep it open
+          </Button>
+        </div>
+      ) : null}
+
+      {!past && !confirming ? (
+        <div className="mt-4">
+          <Button
+            ref={closeButton}
+            type="button"
+            variant="outline"
+            onClick={() => setConfirming(true)}
+            disabled={booked > 0}
             aria-describedby={booked > 0 ? `why-${window.id}` : undefined}
           >
-            {closing ? "Closing…" : "Close this window"}
+            Close this window
           </Button>
           {booked > 0 ? (
             <p id={`why-${window.id}`} className="mt-2 text-[0.9375rem] text-muted-foreground">
