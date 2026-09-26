@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { NAV } from "@/lib/site";
 
 /**
- * Three destinations and one action. "Join the community" is always valid,
- * which is why it earns the header: events come and go.
+ * The destinations, and the way in for learners. Sign in is outlined, not
+ * filled: it is for the few with an account, and the hero's "Join the
+ * community" stays the loudest thing for everyone else. Somebody already
+ * signed in is sent on to their dashboard by the proxy.
  *
  * On a phone the menu is a native <details>, so it opens before any
- * JavaScript arrives, and the community button stays outside it.
+ * JavaScript arrives, and the sign-in button stays outside it.
  */
 export function SiteHeader() {
   return (
@@ -25,14 +27,14 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
-          <Button asChild variant="secondary">
-            <Link href="/community">Join the community</Link>
+          <Button asChild variant="outline">
+            <Link href="/learn/login">Sign in</Link>
           </Button>
         </nav>
 
         <div className="flex items-center gap-2 md:hidden">
-          <Button asChild variant="secondary" className="h-11 px-3 text-[0.9375rem]">
-            <Link href="/community">Join the community</Link>
+          <Button asChild variant="outline" className="h-11 px-4 text-[0.9375rem]">
+            <Link href="/learn/login">Sign in</Link>
           </Button>
           <details className="group">
             <summary
