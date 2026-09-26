@@ -20,6 +20,9 @@ function useFocusOnMount<T extends HTMLElement>() {
  * A place that is confirmed. Names the channel and the masked address so
  * people know where to look. A repeat sends nothing new, so it is worded in
  * the past tense rather than "check your inbox now".
+ *
+ * With `community`, the WhatsApp community invite becomes the main thing to do
+ * next: the form's red button has gone, so the invite takes its place.
  */
 export function PlaceConfirmed({
   heading,
@@ -28,6 +31,7 @@ export function PlaceConfirmed({
   sentTo,
   title,
   next,
+  community,
 }: {
   heading: string;
   /** True when they already had the place. */
@@ -36,6 +40,7 @@ export function PlaceConfirmed({
   sentTo: string | null;
   title: string;
   next: { href: string; label: string };
+  community?: { href: string; label: string };
 }) {
   const headingRef = useFocusOnMount<HTMLHeadingElement>();
   const via = channel === "whatsapp" ? "on WhatsApp" : "by email";
@@ -66,9 +71,23 @@ export function PlaceConfirmed({
         </a>
         .
       </p>
-      <Button asChild variant="outline" className="mt-6">
-        <Link href={next.href}>{next.label}</Link>
-      </Button>
+      {community ? (
+        <p className="mt-6 text-lg leading-[1.6]">
+          Join our WhatsApp community too. You will hear about the next webinar before it is announced.
+        </p>
+      ) : null}
+      <div className="mt-6 flex flex-wrap gap-3">
+        {community ? (
+          <Button asChild size="lg" className="w-full sm:w-auto">
+            <a href={community.href} target="_blank" rel="noopener noreferrer">
+              {community.label}
+            </a>
+          </Button>
+        ) : null}
+        <Button asChild variant="outline" size={community ? "lg" : "default"}>
+          <Link href={next.href}>{next.label}</Link>
+        </Button>
+      </div>
     </div>
   );
 }
