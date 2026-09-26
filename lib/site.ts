@@ -40,11 +40,11 @@ export const CONTACT = {
 } as const;
 
 /**
- * The WhatsApp community invite, shown after someone joins through the form.
- * TODO(content): the real chat.whatsapp.com invite link. While it is empty the
- * button opens a chat with the team instead, so it is never a dead link.
+ * The WhatsApp community invite, shown after someone joins through the form
+ * and after they register for a free event. If it is ever emptied, the button
+ * opens a chat with the team instead, so it is never a dead link.
  */
-export const COMMUNITY_INVITE_URL = "";
+export const COMMUNITY_INVITE_URL = "https://chat.whatsapp.com/CgHdBJWmPtG03BI4mmJ6vs";
 
 export function communityLink(): { href: string; label: string } {
   return COMMUNITY_INVITE_URL

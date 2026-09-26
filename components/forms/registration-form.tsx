@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { registerForEvent, type RegistrationResponse } from "@/lib/api";
 import { describeFailure } from "@/lib/form-errors";
 import { hasStarted } from "@/lib/format";
+import { communityLink } from "@/lib/site";
 import { EMPTY_PERSON, personSchema, type PersonBody, type PersonInput } from "@/lib/schemas";
 
 type Outcome =
@@ -76,6 +77,7 @@ export function RegistrationForm({ slug, title, startsAt }: { slug: string; titl
         sentTo={outcome.response.sentTo}
         title={title}
         next={{ href: "/programmes", label: "See our programmes" }}
+        community={communityLink()}
       />
     );
   }
