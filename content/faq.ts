@@ -1,6 +1,6 @@
 import type { PublicProgram } from "@/lib/api";
 import { formatDay, formatKobo, countWord, plural } from "@/lib/format";
-import { durationLabel, scheduleSummary } from "@/lib/programs";
+import { durationLabel, isPriced, scheduleSummary } from "@/lib/programs";
 
 export interface FaqItem {
   question: string;
@@ -75,7 +75,10 @@ export function programmeFaq(program: PublicProgram): FaqItem[] {
       },
     {
       question: "How much does it cost?",
-      answer: `${formatKobo(program.priceKobo)}. That covers the live sessions, the projects, the weekly review, resources and community support.`,
+      // Zero is a price not set yet, never a free programme.
+      answer: isPriced(program)
+        ? `${formatKobo(program.priceKobo)}. That covers the live sessions, the projects, the weekly review, resources and community support.`
+        : "The price is still to be confirmed. It will be on this page before enrolment opens.",
     },
     {
       question: "Do I need to pay before it starts?",

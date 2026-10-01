@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Cut, CutFrame } from "@/components/cut";
-import { PaymentForm } from "@/components/forms/payment-form";
 import { JsonLd } from "@/components/json-ld";
 import { ProjectsTable, WeeklySchedule } from "@/components/programme-details";
+import { ProgrammePanel } from "@/components/programme-panel";
 import { FaqSection } from "@/components/sections/faq";
-import { Button } from "@/components/ui/button";
 import { programmeFaq } from "@/content/faq";
 import { getProgram } from "@/lib/api";
 import { placesNote } from "@/lib/events";
@@ -18,8 +16,11 @@ import {
   commitmentSentence,
   durationLabel,
   enrolmentClosesNote,
-  enrolmentState,
+  isPriced,
+  isUnderWay,
+  programmeOffer,
   projectRows,
+  runName,
   weeklySchedule,
 } from "@/lib/programs";
 
@@ -56,10 +57,12 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
   const program = await getProgram(slug);
   if (!program) notFound();
 
-  const state = enrolmentState(program);
+  const offer = programmeOffer(program);
+  const run = runName(program);
   const commitment = commitmentSentence(program);
-  const closes = enrolmentClosesNote(program);
-  const places = state === "open" ? placesNote(program) : null;
+  // A closing date and places left only mean something while a place can be bought.
+  const closes = offer.enrol ? enrolmentClosesNote(program) : null;
+  const places = offer.enrol ? placesNote(program) : null;
   const schedule = weeklySchedule(program);
   const projects = projectRows(program);
   // What the run leaves you with: its outcomes, and the certificate when it
@@ -72,9 +75,16 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
   const facts = [
     { label: "Length", value: durationLabel(program) },
     { label: "Format", value: "Live, online" },
-    { label: "Price", value: formatKobo(program.priceKobo) },
-    { label: "Next cohort", value: program.startsAt ? formatDay(program.startsAt) : "To be announced" },
+    // A run up before it is ready to sell may have neither yet. Never "Free":
+    // a programme is never free.
+    { label: "Price", value: isPriced(program) ? formatKobo(program.priceKobo) : "To be confirmed" },
+    {
+      label: isUnderWay(program) ? "Started" : "Next cohort",
+      value: program.startsAt ? formatDay(program.startsAt) : "To be confirmed",
+    },
   ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value));
+  // Three facts when the length is not set yet, which a draft often is not.
+  const factColumns = facts.length === 4 ? "sm:grid-cols-4" : "sm:grid-cols-3";
 
   return (
     <>
@@ -83,14 +93,17 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
 
         <header className="lg:col-start-1">
           <p className="text-[0.9375rem] font-semibold text-muted-foreground">
-            Capability Development Programme
+            Capability Development Programme{run ? ` · ${run}` : ""}
           </p>
           <h1 className="text-display mt-3 text-[2.5rem] sm:text-6xl">{program.title}</h1>
           {program.summary ? (
             <p className="mt-6 max-w-[52ch] text-xl leading-[1.5]">{program.summary}</p>
           ) : null}
 
-          <dl className="mt-8 grid grid-cols-2 gap-px border-2 border-foreground bg-foreground sm:grid-cols-4">
+          {/* On a phone an odd last fact takes the whole row, rather than leaving a black gap beside it. */}
+          <dl
+            className={`mt-8 grid grid-cols-2 gap-px border-2 border-foreground bg-foreground [&>:last-child:nth-child(odd)]:col-span-2 sm:[&>:last-child:nth-child(odd)]:col-span-1 ${factColumns}`}
+          >
             {facts.map((fact) => (
               <div key={fact.label} className="bg-background p-4">
                 <dt className="text-[0.8125rem] font-semibold text-muted-foreground">{fact.label}</dt>
@@ -102,32 +115,13 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
           {places ? <p className="mt-1 font-semibold">{places}</p> : null}
         </header>
 
-        {/* On a phone this lands directly under the heading block: enrolling is the point of the page. */}
+        {/* On a phone this lands directly under the heading block: a place, or the waitlist, is the point of the page. */}
         <div
           id="enrol"
           className="scroll-mt-4 self-start lg:sticky lg:top-8 lg:col-start-2 lg:row-span-2 lg:row-start-1"
         >
           <CutFrame corner="bl" innerClassName="p-6 sm:p-8">
-            {state === "open" ? (
-              <PaymentForm
-                payable={{ kind: "program", slug: program.slug }}
-                title={program.title}
-                priceKobo={program.priceKobo}
-                closesAt={program.enrollmentClosesAt ?? program.startsAt}
-              />
-            ) : (
-              <div>
-                <h2 className="text-title text-2xl">
-                  {state === "full" ? "This cohort is full." : "Enrolment has closed."}
-                </h2>
-                <p className="mt-3 leading-[1.6] text-muted-foreground">
-                  Join the community and you will hear first when the next cohort opens.
-                </p>
-                <Button asChild className="mt-6">
-                  <Link href="/community">Join the community</Link>
-                </Button>
-              </div>
-            )}
+            <ProgrammePanel program={program} offer={offer} />
           </CutFrame>
         </div>
 

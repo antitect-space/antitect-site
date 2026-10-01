@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
-import type { Channel } from "@/lib/api";
+import type { Channel, WaitlistResponse } from "@/lib/api";
 import { CONTACT } from "@/lib/site";
 
 /** Moves focus to the new heading, so a screen reader announces what just happened. */
@@ -85,6 +85,68 @@ export function PlaceConfirmed({
           </Button>
         ) : null}
         <Button asChild variant="outline" size={community ? "lg" : "default"}>
+          <Link href={next.href}>{next.label}</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * On the waitlist, which is for the programme rather than this run. All three
+ * answers are a success. Only a new place on the list sends anything, so the
+ * other two say nothing about an inbox.
+ */
+export function OnWaitlist({
+  response,
+  title,
+  next,
+  community,
+}: {
+  response: WaitlistResponse;
+  title: string;
+  next: { href: string; label: string };
+  community: { href: string; label: string };
+}) {
+  const headingRef = useFocusOnMount<HTMLHeadingElement>();
+  const { alreadyEnrolled, alreadyOnWaitlist, channel, sentTo } = response;
+  const sent = !alreadyEnrolled && !alreadyOnWaitlist && sentTo !== null;
+
+  const heading = alreadyEnrolled
+    ? `You already have a place on ${title}.`
+    : alreadyOnWaitlist
+      ? `You are already on the waitlist for ${title}.`
+      : `You are on the waitlist for ${title}.`;
+
+  return (
+    <div role="status">
+      <h2 ref={headingRef} tabIndex={-1} className="text-title text-3xl outline-none">
+        {heading}
+      </h2>
+      {sent ? (
+        <p className="mt-4 text-lg leading-[1.6]">
+          We have sent a confirmation {channel === "whatsapp" ? "on WhatsApp " : ""}to {sentTo}.
+        </p>
+      ) : alreadyEnrolled ? null : (
+        <p className="mt-4 text-lg leading-[1.6]">We will be in touch.</p>
+      )}
+      <p className="mt-4 leading-[1.6] text-muted-foreground">
+        {sent ? "Not there in a few minutes? Check your spam folder, or write to " : "Questions? Write to "}
+        <a href={`mailto:${CONTACT.email}`} className="font-medium text-foreground underline underline-offset-4">
+          {CONTACT.email}
+        </a>
+        .
+      </p>
+      <p className="mt-6 text-lg leading-[1.6]">
+        Join our WhatsApp community too. You will hear about the next webinar before it is announced.
+      </p>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Button asChild size="lg" className="w-full sm:w-auto">
+          <a href={community.href} target="_blank" rel="noopener noreferrer">
+            {community.label}
+          </a>
+        </Button>
+        <Button asChild variant="outline" size="lg">
           <Link href={next.href}>{next.label}</Link>
         </Button>
       </div>

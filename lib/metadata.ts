@@ -121,12 +121,17 @@ export function courseJsonLd(program: PublicProgram): Json {
     url: absoluteUrl(`/programmes/${program.slug}`),
     provider: organizationRef,
     ...(program.imageUrl ? { image: [program.imageUrl] } : {}),
-    offers: {
-      "@type": "Offer",
-      price: (program.priceKobo / 100).toFixed(2),
-      priceCurrency: program.currency,
-      category: "Paid",
-    },
+    // No offer until there is a price: a zero here would read as free.
+    ...(program.priceKobo > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: (program.priceKobo / 100).toFixed(2),
+            priceCurrency: program.currency,
+            category: "Paid",
+          },
+        }
+      : {}),
     hasCourseInstance: {
       "@type": "CourseInstance",
       courseMode: "Online",

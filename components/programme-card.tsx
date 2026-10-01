@@ -5,8 +5,15 @@ import { Cut, CutFrame } from "@/components/cut";
 import { Button } from "@/components/ui/button";
 import type { PublicProgram } from "@/lib/api";
 import { placesNote } from "@/lib/events";
-import { formatDay, formatKobo } from "@/lib/format";
-import { durationLabel, enrolmentState } from "@/lib/programs";
+import { formatDay } from "@/lib/format";
+import {
+  durationLabel,
+  isUnderWay,
+  priceLabel,
+  programmeOffer,
+  runName,
+  type ProgrammeOffer,
+} from "@/lib/programs";
 
 /**
  * A programme, showing only what its own record holds.
@@ -22,14 +29,17 @@ export function ProgrammeCard({
   program: PublicProgram;
   headingLevel?: "h2" | "h3";
 }) {
-  const state = enrolmentState(program);
-  const places = state === "open" ? placesNote(program) : null;
+  const offer = programmeOffer(program);
+  const run = runName(program);
+  const places = offer.enrol ? placesNote(program) : null;
 
   const facts = [
     durationLabel(program),
     "Online",
-    formatKobo(program.priceKobo),
-    program.startsAt ? `Starts ${formatDay(program.startsAt)}` : null,
+    priceLabel(program),
+    program.startsAt
+      ? `${isUnderWay(program) ? "Started" : "Starts"} ${formatDay(program.startsAt)}`
+      : "Dates to be confirmed",
   ].filter(Boolean) as string[];
 
   return (
@@ -37,7 +47,7 @@ export function ProgrammeCard({
       <article className="grid lg:grid-cols-[1.5fr_1fr]">
       <div className="p-6 sm:p-8">
         <p className="text-[0.9375rem] font-semibold text-muted-foreground">
-          Capability Development Programme
+          Capability Development Programme{run ? ` · ${run}` : ""}
         </p>
         <Heading className="text-title mt-3 text-3xl sm:text-4xl">
           <Link href={`/programmes/${program.slug}`} className="hover:underline hover:underline-offset-4">
@@ -72,16 +82,40 @@ export function ProgrammeCard({
         ) : null}
 
         <div>
-          {state === "full" ? <p className="font-semibold">This cohort is full.</p> : null}
+          {offer.closed ? <p className="font-semibold">{offer.closed}</p> : null}
           {places ? <p className="font-semibold">{places}</p> : null}
-          <Button asChild size="lg" className="mt-4 w-full" variant={state === "open" ? "default" : "secondary"}>
-            <Link href={`/programmes/${program.slug}`} aria-label={`${state === "open" ? "Enrol" : "See"}: ${program.title}`}>
-              {state === "open" ? "Enrol" : "See the programme"}
-            </Link>
-          </Button>
+          <CardActions offer={offer} slug={program.slug} title={program.title} />
         </div>
       </div>
       </article>
     </CutFrame>
+  );
+}
+
+/**
+ * The same choices as the programme's own page, as links to it. Joining goes
+ * to #waitlist, which opens the page on the waitlist form.
+ */
+function CardActions({ offer, slug, title }: { offer: ProgrammeOffer; slug: string; title: string }) {
+  const href = `/programmes/${slug}`;
+  const actions: Array<{ label: string; href: string; variant: "default" | "outline" | "secondary" }> = offer.enrol
+    ? [
+        { label: "Secure your spot", href, variant: "default" },
+        ...(offer.waitlist ? [{ label: "Show interest", href: `${href}#waitlist`, variant: "outline" as const }] : []),
+      ]
+    : offer.waitlist
+      ? [{ label: "Join waitlist", href: `${href}#waitlist`, variant: "default" }]
+      : [{ label: "See the programme", href, variant: "secondary" }];
+
+  return (
+    <div className="mt-4 grid gap-3">
+      {actions.map((action) => (
+        <Button key={action.label} asChild size="lg" className="w-full" variant={action.variant}>
+          <Link href={action.href} aria-label={`${action.label}: ${title}`}>
+            {action.label}
+          </Link>
+        </Button>
+      ))}
+    </div>
   );
 }
