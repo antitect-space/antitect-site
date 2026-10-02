@@ -14,27 +14,25 @@ import type { WaitlistWording } from "@/lib/programs";
 import { EMPTY_PERSON, personSchema, type PersonBody, type PersonInput } from "@/lib/schemas";
 import { communityLink } from "@/lib/site";
 
-const COPY: Record<WaitlistWording, { heading: string; action: string; lead: string }> = {
+const COPY: Record<WaitlistWording, { heading: string; lead: string }> = {
   interest: {
     heading: "Show interest",
-    action: "Show interest",
     lead: "Not ready to pay yet? Leave your details and we will keep you posted.",
   },
   join: {
     heading: "Join the waitlist",
-    action: "Join waitlist",
     lead: "Leave your details and you will hear first when enrolment opens.",
   },
   next: {
     heading: "Join the waitlist for the next cohort",
-    action: "Join waitlist",
     lead: "Leave your details and you will hear when the next one opens.",
   },
 };
 
 /**
  * Interest in a programme, with no payment and no place held. "Show interest"
- * and "Join waitlist" are this one form, worded for where it sits.
+ * and "Join waitlist" are this one form: the heading is worded for where it
+ * sits, and the button always joins the waitlist.
  *
  * The form never clears on a failed submit, and submitting twice is harmless:
  * the API answers a repeat with `alreadyOnWaitlist`. When the waitlist turns
@@ -117,13 +115,10 @@ export function WaitlistForm({
         />
       </div>
 
-      <p className="mt-6 text-[0.9375rem] leading-[1.5] text-muted-foreground">
-        Updates about {title} come by email and on WhatsApp. Reply STOP on WhatsApp to stop them.
-      </p>
-
       <FormAlert message={formError} className="mt-6" />
+      {/* "Join waitlist" whichever heading led here: what the button does is the same. */}
       <Button type="submit" size="lg" className="mt-6 w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Sending…" : copy.action}
+        {isSubmitting ? "Joining…" : "Join waitlist"}
       </Button>
       <SlowNote show={isSubmitting && slow} />
     </form>
