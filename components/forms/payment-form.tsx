@@ -41,8 +41,8 @@ const COPY = {
     confirmedNext: { href: "/programmes", label: "See our programmes" },
   },
   program: {
-    heading: "Enrol",
-    freeAction: "Enrol",
+    heading: "Secure your spot",
+    freeAction: "Secure your spot",
     already: "You are already enrolled.",
     full: "This cohort is full.",
     closed: "Enrolment for this cohort has closed.",

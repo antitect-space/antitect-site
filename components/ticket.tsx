@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { PublicEvent, PublicProgram } from "@/lib/api";
 import { eventAction, eventLabel, placesNote, registrationState } from "@/lib/events";
 import { firstSentence, ticketDate } from "@/lib/format";
-import { enrolmentState, priceAndCohort } from "@/lib/programs";
+import { isUnderWay, priceAndCohort, programmeOffer } from "@/lib/programs";
 
 /**
  * A ticket, because everybody already knows what one is: a thing you hold a
@@ -172,7 +172,10 @@ function Note({ heading, link }: { heading: string; link: { href: string; label:
   );
 }
 
-/** The same shape for a cohort, when there is no event to show. */
+/**
+ * The same shape for a cohort, when there is no event to show. It offers what
+ * the programme's page offers: a place, the waitlist, or both.
+ */
 export function ProgrammeTicket({
   program,
   headingLevel,
@@ -185,12 +188,13 @@ export function ProgrammeTicket({
   className?: string;
 }) {
   const date = program.startsAt ? ticketDate(program.startsAt) : null;
-  const open = enrolmentState(program) === "open";
-  const places = placesNote(program);
+  const offer = programmeOffer(program);
+  const places = offer.enrol ? placesNote(program) : null;
+  const href = `/programmes/${program.slug}`;
 
   return (
     <TicketShell
-      kicker={open ? "Programme · Enrolling now" : "Programme"}
+      kicker={offer.enrol ? "Programme · Enrolling now" : offer.waitlist ? "Programme · Waitlist open" : "Programme"}
       title={program.title}
       line={firstSentence(program.summary)}
       headingLevel={headingLevel}
@@ -198,15 +202,30 @@ export function ProgrammeTicket({
       className={className}
       stub={
         <>
-          {date && program.startsAt ? (
+          {/* A run under way has a start date in the past: say it has closed, not when it "starts". */}
+          {date && program.startsAt && !isUnderWay(program) ? (
             <StubDate day={date.day} month={date.month} when="Cohort starts" startsAt={program.startsAt} />
           ) : (
-            <p className="text-lg font-semibold">{priceAndCohort(program)}</p>
+            <p className="text-lg font-semibold">{offer.closed ?? priceAndCohort(program)}</p>
           )}
           <Button asChild size="lg" className="mt-6 w-full">
-            <Link href={`/programmes/${program.slug}`}>{open ? "Enrol" : "See the programme"}</Link>
+            {offer.enrol ? (
+              <Link href={href}>Secure your spot</Link>
+            ) : offer.waitlist ? (
+              <Link href={`${href}#waitlist`}>Join waitlist</Link>
+            ) : (
+              <Link href={href}>See the programme</Link>
+            )}
           </Button>
-          {open && places ? <p className="mt-3 text-[0.9375rem] text-background/80">{places}</p> : null}
+          {places ? <p className="mt-3 text-[0.9375rem] text-background/80">{places}</p> : null}
+          {offer.enrol && offer.waitlist ? (
+            <p className="mt-3 text-[0.9375rem] text-background/80">
+              Not ready to pay?{" "}
+              <Link href={`${href}#waitlist`} className="font-semibold text-background underline underline-offset-4 hover:no-underline">
+                Show interest
+              </Link>
+            </p>
+          ) : null}
         </>
       }
     />

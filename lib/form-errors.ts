@@ -10,7 +10,7 @@ import { CONTACT } from "./site";
 export type Failure =
   /** The thing is full. Replace the form. */
   | { kind: "full" }
-  /** Registration or enrolment has closed. Replace the form. */
+  /** Registration, enrolment or the waitlist has closed. Replace the form. */
   | { kind: "closed" }
   /** Field messages to put back on their inputs. */
   | { kind: "fields"; fields: Array<{ field: FormField; message: string }> }
@@ -34,6 +34,8 @@ export function describeFailure(error: unknown): Failure {
       return { kind: "full" };
     case "EVENT_NOT_FOUND":
     case "PROGRAM_NOT_FOUND":
+    // The waitlist was switched off after the page was cached.
+    case "WAITLIST_CLOSED":
       return { kind: "closed" };
     case "RATE_LIMITED":
       return { kind: "message", message: "Too many attempts from this connection. Wait a minute, then try again." };

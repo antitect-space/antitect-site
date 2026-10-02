@@ -142,10 +142,53 @@ export function durationLabel(program: PublicProgram): string | null {
   return weeks === null ? null : `${weeks} ${plural(weeks, "week", "weeks")}`;
 }
 
-/** "₦100,000 · Next cohort starts 12 October 2026", or just the price when no date is set. */
+/**
+ * Whether the record carries a price. A run taking sign-ups before it is ready
+ * to sell has 0 until the team sets one, and 0 is "not settled", never free:
+ * a programme is never free.
+ */
+export function isPriced(program: PublicProgram): boolean {
+  return program.priceKobo > 0;
+}
+
+/** "₦100,000", or "Price to be confirmed". Never "Free", never "₦0". */
+export function priceLabel(program: PublicProgram): string {
+  return isPriced(program) ? formatKobo(program.priceKobo) : "Price to be confirmed";
+}
+
+/** "12 October 2026", or "Dates to be confirmed". */
+export function startLabel(program: PublicProgram): string {
+  return program.startsAt ? formatDay(program.startsAt) : "Dates to be confirmed";
+}
+
+/** "Cohort 1", or null while the team has not named the run. */
+export function runName(program: Pick<PublicProgram, "runLabel">): string | null {
+  return program.runLabel?.trim() || null;
+}
+
+/**
+ * A run under way or finished. Its page stays up, so shared links keep
+ * working, and its start date is history rather than something to wait for.
+ */
+export function isUnderWay(program: PublicProgram): boolean {
+  return program.phase === "running" || program.phase === "finished";
+}
+
+/** A run up for waitlist sign-ups before it is ready to sell. Never paid for. */
+export function isDraft(program: PublicProgram): boolean {
+  return program.phase === "draft";
+}
+
+/**
+ * "₦100,000 · Next cohort starts 12 October 2026", "₦100,000 · Dates to be
+ * confirmed", or "Price and dates to be confirmed".
+ */
 export function priceAndCohort(program: PublicProgram): string {
-  const price = formatKobo(program.priceKobo);
-  return program.startsAt ? `${price} · Next cohort starts ${formatDay(program.startsAt)}` : price;
+  if (!isPriced(program) && !program.startsAt) return "Price and dates to be confirmed";
+  const price = priceLabel(program);
+  return program.startsAt
+    ? `${price} · Next cohort starts ${formatDay(program.startsAt)}`
+    : `${price} · Dates to be confirmed`;
 }
 
 /** "Enrolment closes 5 October 2026", or null. It closes at the start when no date is set. */
@@ -165,6 +208,81 @@ export function enrolmentState(program: PublicProgram, now: number = Date.now())
   const closes = program.enrollmentClosesAt ?? program.startsAt;
   if (!program.enrollmentOpen || (closes && new Date(closes).getTime() <= now)) return "closed";
   return "open";
+}
+
+/**
+ * How the waitlist is offered: `interest` beside paid enrolment, as the lesser
+ * choice; `join` on a draft, as the only thing to do; `next` on a run that is
+ * full or closed, where joining means hearing about whichever run comes next.
+ */
+export type WaitlistWording = "interest" | "join" | "next";
+
+export interface ProgrammeOffer {
+  /** Paid enrolment: "Secure your spot". */
+  enrol: boolean;
+  /** Null while the waitlist is off. */
+  waitlist: WaitlistWording | null;
+  /** Why enrolment is not on offer. Null while it is, and on a draft, which never enrolled. */
+  closed: string | null;
+  /** The run to go to instead. */
+  nextRun: { href: string; label: string } | null;
+  /** Nothing else to offer, so the community is the next step. */
+  community: boolean;
+}
+
+/**
+ * What a run offers, decided from `enrollmentOpen` and `waitlistOpen` together
+ * and never from the phase alone. The page, its card and the hero ticket all
+ * read this, so they cannot disagree.
+ *
+ * A draft is never paid for, whatever else the record says. An API that
+ * predates the waitlist sends neither field, and reads as it did before: no
+ * waitlist, and the community for a closed run.
+ */
+export function programmeOffer(program: PublicProgram, now: number = Date.now()): ProgrammeOffer {
+  const draft = isDraft(program);
+  const state = enrolmentState(program, now);
+  const enrol = !draft && state === "open";
+  const waitlistOpen = program.waitlistOpen === true;
+
+  // A full run's waitlist catches people for the next one, as a closed run's does.
+  const waitlist: WaitlistWording | null = !waitlistOpen ? null : enrol ? "interest" : draft ? "join" : "next";
+
+  let closed: string | null = null;
+  if (!enrol && !draft) {
+    const run = runName(program);
+    closed =
+      state === "full" ? "This cohort is full." : run ? `Enrolment for ${run} has closed.` : "Enrolment has closed.";
+  }
+
+  const nextRun = enrol ? null : nextRunLink(program, { draft, waitlistOpen });
+
+  return { enrol, waitlist, closed, nextRun, community: !enrol && !waitlist && !nextRun };
+}
+
+/**
+ * The link to the next run. `nextRun` is the run now enrolling or, with none
+ * enrolling, one taking sign-ups. A draft links only to one known to be
+ * enrolling: pointing one waitlist at another helps nobody. With this run's
+ * own waitlist on, the next run's waitlist is the same list, so the link just
+ * names the run.
+ */
+function nextRunLink(
+  program: PublicProgram,
+  { draft, waitlistOpen }: { draft: boolean; waitlistOpen: boolean },
+): ProgrammeOffer["nextRun"] {
+  const next = program.nextRun;
+  if (!next || next.slug === program.slug) return null;
+  if (draft && next.waitlistOpen) return null;
+
+  const run = runName(next);
+  const label = !next.waitlistOpen
+    ? `${run ?? "The next cohort"} is open for enrolment`
+    : waitlistOpen
+      ? `See ${run ?? "the next run"}`
+      : "Join the waitlist for the next run";
+
+  return { href: `/programmes/${next.slug}${next.waitlistOpen && !waitlistOpen ? "#waitlist" : ""}`, label };
 }
 
 export function capitalise(text: string): string {

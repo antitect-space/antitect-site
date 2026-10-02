@@ -88,6 +88,25 @@ export interface ProjectReview {
   perWeek: number;
 }
 
+/**
+ * Where a run is in its life. `draft` is a run taking waitlist sign-ups before
+ * it is ready to sell: never enrolling, with what is not settled yet as null.
+ * A cancelled run is never served; it is a 404.
+ */
+export type ProgramPhase = "draft" | "enrolling" | "running" | "finished";
+
+/**
+ * The run a closed page points at: the one now enrolling or, with none
+ * enrolling, one taking waitlist sign-ups. `startsAt` null and `runLabel` ""
+ * mean not settled yet.
+ */
+export interface NextRun {
+  slug: string;
+  runLabel: string;
+  startsAt: string | null;
+  waitlistOpen: boolean;
+}
+
 /** One run of a Capability Development Programme. Each cohort is its own record, always online. */
 export interface PublicProgram {
   title: string;
@@ -124,6 +143,15 @@ export interface PublicProgram {
    * not been updated yet.
    */
   projectReview?: ProjectReview | null;
+  // Additive (the waitlist, CRM milestone M11), absent until the CRM deploys
+  // it. Absent reads as today: no waitlist, and a closed run with nowhere to go.
+  /** Takes waitlist sign-ups now, beside enrolment or instead of it. */
+  waitlistOpen?: boolean;
+  phase?: ProgramPhase;
+  /** "Cohort 1". "" until the team names it. */
+  runLabel?: string;
+  /** Only ever filled on the detail; every list item has null. */
+  nextRun?: NextRun | null;
 }
 
 export interface Page<T> {
@@ -177,6 +205,18 @@ export interface PaymentStatus {
 
 export interface CommunityResponse {
   alreadyMember: boolean;
+}
+
+/**
+ * All three shapes are a success. Only a new place on the list (201) sends
+ * anything; `alreadyEnrolled` means they hold a place on a run of it already.
+ */
+export interface WaitlistResponse {
+  alreadyOnWaitlist: boolean;
+  alreadyEnrolled: boolean;
+  channel: Channel;
+  /** Masked, e.g. "a***@example.com". Null when there was nowhere to send. */
+  sentTo: string | null;
 }
 
 export type FieldErrors = Record<string, string[]>;
@@ -274,7 +314,7 @@ async function readList<T>(path: string, revalidate?: number): Promise<T[]> {
   }
 }
 
-/** One record by slug, or null when the API says it does not exist (drafts included). */
+/** One record by slug, or null when the API says it does not exist (a draft or a cancelled run). */
 async function readOne<T>(path: string, slug: string): Promise<T | null> {
   if (!isValidSlug(slug)) return null;
   try {
@@ -293,7 +333,11 @@ export const getUpcomingEvents = cache((limit: number = 25) =>
 /** Includes past events: an old link still reads. Registration is what closes. */
 export const getEvent = cache((slug: string) => readOne<PublicEvent>("/api/public/events", slug));
 
-/** Published programmes, soonest cohort first. */
+/**
+ * Runs open for enrolment, soonest first; then runs taking waitlist sign-ups
+ * and nothing else, drafts included. The first item is always something a
+ * visitor can buy, when there is one.
+ */
 export const getPrograms = cache(() => readList<PublicProgram>("/api/public/programs?limit=25"));
 
 export const getProgram = cache((slug: string) => readOne<PublicProgram>("/api/public/programs", slug));
@@ -376,6 +420,23 @@ export function getQuote(payable: Payable, code: string): Promise<Quote> {
 
 export function joinCommunity(person: PersonBody): Promise<CommunityResponse> {
   return send("POST", "/api/public/community", person);
+}
+
+/**
+ * Registers interest in a programme: no payment, no place held. They wait for
+ * the programme, not this run. Safe to retry: a repeat is `alreadyOnWaitlist`.
+ */
+export function joinWaitlist(slug: string, person: PersonBody): Promise<WaitlistResponse> {
+  return send("POST", `/api/public/programs/${segment(slug)}/waitlist`, person);
+}
+
+/**
+ * The programme as it stands now, read from the browser. Only after a submit
+ * was refused because the page was older than a change in the CRM: reloading
+ * would serve the same cached page, so this is how the panel catches up.
+ */
+export function getProgramFresh(slug: string): Promise<PublicProgram> {
+  return send("GET", `/api/public/programs/${segment(slug)}`, undefined, 15_000);
 }
 
 /** What the API issues: "ANT-" and 24 lowercase hex characters. Anything else is not worth a request. */
