@@ -211,16 +211,21 @@ export function enrolmentState(program: PublicProgram, now: number = Date.now())
 }
 
 /**
- * How the waitlist is offered: `interest` beside paid enrolment, as the lesser
- * choice; `join` on a draft, as the only thing to do; `next` on a run that is
- * full or closed, where joining means hearing about whichever run comes next.
+ * How the waitlist form is worded where it is the thing to do: `join` on a
+ * draft; `next` on a run that is full or closed, where joining means hearing
+ * about whichever run comes next.
  */
-export type WaitlistWording = "interest" | "join" | "next";
+export type WaitlistWording = "join" | "next";
 
 export interface ProgrammeOffer {
   /** Paid enrolment: "Secure your spot". */
   enrol: boolean;
-  /** Null while the waitlist is off. */
+  /**
+   * Paying with the waitlist on: the checkout's first step puts them on the
+   * waitlist, so somebody who leaves before paying is still a lead.
+   */
+  captureLead: boolean;
+  /** The waitlist form, in place of paying. Null while it is off, and while a place can be bought. */
   waitlist: WaitlistWording | null;
   /** Why enrolment is not on offer. Null while it is, and on a draft, which never enrolled. */
   closed: string | null;
@@ -245,8 +250,9 @@ export function programmeOffer(program: PublicProgram, now: number = Date.now())
   const enrol = !draft && state === "open";
   const waitlistOpen = program.waitlistOpen === true;
 
-  // A full run's waitlist catches people for the next one, as a closed run's does.
-  const waitlist: WaitlistWording | null = !waitlistOpen ? null : enrol ? "interest" : draft ? "join" : "next";
+  // Beside paying there is no form of its own: the checkout joins them. A full
+  // run's waitlist catches people for the next one, as a closed run's does.
+  const waitlist: WaitlistWording | null = !waitlistOpen || enrol ? null : draft ? "join" : "next";
 
   let closed: string | null = null;
   if (!enrol && !draft) {
@@ -257,7 +263,14 @@ export function programmeOffer(program: PublicProgram, now: number = Date.now())
 
   const nextRun = enrol ? null : nextRunLink(program, { draft, waitlistOpen });
 
-  return { enrol, waitlist, closed, nextRun, community: !enrol && !waitlist && !nextRun };
+  return {
+    enrol,
+    captureLead: enrol && waitlistOpen,
+    waitlist,
+    closed,
+    nextRun,
+    community: !enrol && !waitlist && !nextRun,
+  };
 }
 
 /**

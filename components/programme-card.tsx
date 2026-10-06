@@ -99,10 +99,7 @@ export function ProgrammeCard({
 function CardActions({ offer, slug, title }: { offer: ProgrammeOffer; slug: string; title: string }) {
   const href = `/programmes/${slug}`;
   const actions: Array<{ label: string; href: string; variant: "default" | "outline" | "secondary" }> = offer.enrol
-    ? [
-        { label: "Secure your spot", href, variant: "default" },
-        ...(offer.waitlist ? [{ label: "Show interest", href: `${href}#waitlist`, variant: "outline" as const }] : []),
-      ]
+    ? [{ label: "Secure your spot", href, variant: "default" }]
     : offer.waitlist
       ? [{ label: "Join waitlist", href: `${href}#waitlist`, variant: "default" }]
       : [{ label: "See the programme", href, variant: "secondary" }];
