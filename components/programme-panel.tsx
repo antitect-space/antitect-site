@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 
 import { Unavailable } from "@/components/forms/outcomes";
 import { PaymentForm } from "@/components/forms/payment-form";
@@ -15,26 +15,19 @@ type View =
   | { kind: "checking" }
   | { kind: "gone" };
 
-type Mode = "enrol" | "waitlist";
-
-function subscribeToHash(onChange: () => void): () => void {
-  window.addEventListener("hashchange", onChange);
-  return () => window.removeEventListener("hashchange", onChange);
-}
-
 /** The API refused a sign-up, so nothing here offers one again, whatever a record says. */
 function withoutWaitlist(offer: ProgrammeOffer): ProgrammeOffer {
-  return { ...offer, waitlist: null, community: !offer.enrol && !offer.nextRun };
+  return { ...offer, captureLead: false, waitlist: null, community: !offer.enrol && !offer.nextRun };
 }
 
 /**
  * What somebody can do about this run: pay for a place, join the waitlist,
- * both, or go somewhere else. The offer is decided on the server, from the
- * same record as the rest of the page, and taken as it is: deciding it again
- * here against a different clock would draw a different panel over the HTML.
+ * or go somewhere else. The offer is decided on the server, from the same
+ * record as the rest of the page, and taken as it is: deciding it again here
+ * against a different clock would draw a different panel over the HTML.
  *
- * With both on, paying leads and "Show interest" switches to the waitlist. A
- * link ending #waitlist, from a card or the hero, opens on the waitlist.
+ * With both on there is one form, the checkout, and its first step puts them
+ * on the waitlist. Links ending #waitlist, from a card or the hero, land here.
  *
  * If a sign-up is refused because the page was cached before the waitlist was
  * switched off, the panel reads the programme again from the browser and
@@ -42,18 +35,6 @@ function withoutWaitlist(offer: ProgrammeOffer): ProgrammeOffer {
  */
 export function ProgrammePanel({ program, offer }: { program: PublicProgram; offer: ProgrammeOffer }) {
   const [view, setView] = useState<View>({ kind: "ready", program, offer, notice: null });
-
-  const hash = useSyncExternalStore(subscribeToHash, () => window.location.hash, () => "");
-  const [chosen, setChosen] = useState<Mode | null>(null);
-  const mode: Mode = chosen ?? (hash === "#waitlist" ? "waitlist" : "enrol");
-
-  const enrolRef = useRef<HTMLDivElement>(null);
-  const waitlistRef = useRef<HTMLDivElement>(null);
-
-  // The button that was pressed has gone, so focus goes where the form now is.
-  useEffect(() => {
-    if (chosen) (chosen === "waitlist" ? waitlistRef : enrolRef).current?.focus();
-  }, [chosen]);
 
   async function recheck(current: Extract<View, { kind: "ready" }>) {
     setView({ kind: "checking" });
@@ -111,38 +92,13 @@ export function ProgrammePanel({ program, offer }: { program: PublicProgram; off
       ) : null}
 
       {current.enrol ? (
-        <>
-          {/* Both stay mounted, so switching back and forth keeps what was typed. */}
-          <div ref={enrolRef} tabIndex={-1} hidden={current.waitlist !== null && mode === "waitlist"} className="outline-none">
-            {current.waitlist ? (
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
-                <p className="font-semibold">Not ready to pay?</p>
-                <Button type="button" variant="outline" onClick={() => setChosen("waitlist")}>
-                  Show interest
-                </Button>
-              </div>
-            ) : null}
-            <PaymentForm
-              payable={{ kind: "program", slug: shown.slug }}
-              title={shown.title}
-              priceKobo={shown.priceKobo}
-              closesAt={shown.enrollmentClosesAt ?? shown.startsAt}
-            />
-          </div>
-
-          {current.waitlist ? (
-            <div ref={waitlistRef} tabIndex={-1} hidden={mode !== "waitlist"} className="outline-none">
-              {waitlistForm(current.waitlist)}
-              <button
-                type="button"
-                onClick={() => setChosen("enrol")}
-                className="mt-2 font-semibold underline underline-offset-4 hover:no-underline"
-              >
-                Back to Secure your spot
-              </button>
-            </div>
-          ) : null}
-        </>
+        <PaymentForm
+          payable={{ kind: "program", slug: shown.slug }}
+          title={shown.title}
+          priceKobo={shown.priceKobo}
+          closesAt={shown.enrollmentClosesAt ?? shown.startsAt}
+          captureLead={current.captureLead}
+        />
       ) : current.waitlist ? (
         <>
           {current.closed ? <p className="mb-6 text-lg font-semibold">{current.closed}</p> : null}

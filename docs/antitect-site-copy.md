@@ -306,7 +306,7 @@ The register shifts once: declarative in the hero for immediate clarity, confron
 ## Copy rules
 
 - **Second person.** "You build," never "participants develop capabilities."
-- **Buttons name what happens.** "Register free", "Secure your spot", "Join waitlist", "Show interest", "Join the community". Never "Submit", "Learn more", "Get started". "Secure your spot" is paying for a place on a programme, and matches the button in the waitlist email; "Show interest" is the waitlist offered beside it.
+- **Buttons name what happens.** "Register free", "Secure your spot", "Join waitlist", "Join the community". Never "Submit", "Learn more", "Get started". "Secure your spot" is paying for a place on a programme, and matches the button in the waitlist email. Its checkout has two steps: "Continue" after the details (which also puts them on the waitlist when the team has it on, so somebody who leaves before paying can be followed up), then "Continue to payment" after the discount and total.
 - **An action keeps its name through the flow.** A "Register" button produces a "Registered" confirmation.
 - **Specific beats aspirational.** "You build an automation that handles your customer enquiries" beats "unlock the power of AI."
 - **Be honest about the demand.** State the weekly time commitment and the price plainly and early, whatever they are for that cohort.

@@ -15,10 +15,6 @@ import { EMPTY_PERSON, personSchema, type PersonBody, type PersonInput } from "@
 import { communityLink } from "@/lib/site";
 
 const COPY: Record<WaitlistWording, { heading: string; lead: string }> = {
-  interest: {
-    heading: "Show interest",
-    lead: "Not ready to pay yet? Leave your details and we will keep you posted.",
-  },
   join: {
     heading: "Join the waitlist",
     lead: "Leave your details and you will hear first when enrolment opens.",
@@ -30,9 +26,9 @@ const COPY: Record<WaitlistWording, { heading: string; lead: string }> = {
 };
 
 /**
- * Interest in a programme, with no payment and no place held. "Show interest"
- * and "Join waitlist" are this one form: the heading is worded for where it
- * sits, and the button always joins the waitlist.
+ * Interest in a programme, with no payment and no place held, where paying
+ * is not on offer: a draft, or a run that is full or closed. The heading is
+ * worded for which; the button always joins the waitlist.
  *
  * The form never clears on a failed submit, and submitting twice is harmless:
  * the API answers a repeat with `alreadyOnWaitlist`. When the waitlist turns

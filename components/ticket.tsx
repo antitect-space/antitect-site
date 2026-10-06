@@ -174,7 +174,7 @@ function Note({ heading, link }: { heading: string; link: { href: string; label:
 
 /**
  * The same shape for a cohort, when there is no event to show. It offers what
- * the programme's page offers: a place, the waitlist, or both.
+ * the programme's page offers: a place, or the waitlist.
  */
 export function ProgrammeTicket({
   program,
@@ -218,14 +218,6 @@ export function ProgrammeTicket({
             )}
           </Button>
           {places ? <p className="mt-3 text-[0.9375rem] text-background/80">{places}</p> : null}
-          {offer.enrol && offer.waitlist ? (
-            <p className="mt-3 text-[0.9375rem] text-background/80">
-              Not ready to pay?{" "}
-              <Link href={`${href}#waitlist`} className="font-semibold text-background underline underline-offset-4 hover:no-underline">
-                Show interest
-              </Link>
-            </p>
-          ) : null}
         </>
       }
     />
