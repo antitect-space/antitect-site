@@ -405,3 +405,67 @@
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
 }
+
+/*
+ * While a card plays, the motion script sets `data-step` on its frame (0 up
+ * to its last step). Something whose `data-from` is later than the step is
+ * hidden (and lowered 6px, if it rises); something whose `data-until` is
+ * later than the step still shows. The arrow is drawn from step 1. The hiding
+ * rules come last, so a line with both a `from` and an `until` obeys both.
+ */
+.frame[data-step="0"] :is([data-until="1"], [data-until="2"], [data-until="3"], [data-until="4"], [data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="1"] :is([data-until="2"], [data-until="3"], [data-until="4"], [data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="2"] :is([data-until="3"], [data-until="4"], [data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="3"] :is([data-until="4"], [data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="4"] :is([data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="5"] :is([data-until="6"], [data-until="7"]),
+.frame[data-step="6"] [data-until="7"] {
+  opacity: 1;
+}
+
+.frame[data-step="0"] :is([data-from="1"], [data-from="2"], [data-from="3"], [data-from="4"], [data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="1"] :is([data-from="2"], [data-from="3"], [data-from="4"], [data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="2"] :is([data-from="3"], [data-from="4"], [data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="3"] :is([data-from="4"], [data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="4"] :is([data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="5"] :is([data-from="6"], [data-from="7"]),
+.frame[data-step="6"] [data-from="7"] {
+  opacity: 0;
+  --lift: 6px;
+}
+
+.frame[data-step="0"] [data-draw] path {
+  stroke-dashoffset: 1;
+}
+
+.frame [data-rise] {
+  translate: 0 var(--lift, 0px);
+}
+
+/*
+ * Each change takes 250ms on the design's easing; the arrow draws in 250ms.
+ * Status labels crossfade, colour and all, because before and after are two
+ * labels in one cell. With reduced motion there are no transitions, and the
+ * script never sets a step, so a card simply shows its end.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .frame :is([data-from], [data-until]) {
+    transition:
+      opacity 250ms var(--ease-handover),
+      translate 250ms var(--ease-handover);
+  }
+
+  .frame [data-draw] path {
+    transition: stroke-dashoffset 250ms var(--ease-handover);
+  }
+}
+
+/* Moving a card back to its start happens off screen, at once. */
+.frame[data-instant],
+.frame[data-instant] * {
+  transition: none !important;
+}
+
+.card {
+  --ease-handover: cubic-bezier(0.2, 0.8, 0.2, 1);
+}

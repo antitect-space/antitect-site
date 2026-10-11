@@ -475,6 +475,26 @@
   }
 }
 
+/*
+ * The home page hero's tool badges arrive once on load, in the order they are
+ * listed (components/home/orbit.tsx): each 50ms after the last, rising 6px
+ * over 300ms. A CSS animation, so it costs no script and starts with the
+ * first paint. With reduced motion they are simply there.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  [data-badge] {
+    animation: badge-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--badge, 0) * 50ms);
+  }
+}
+
+@keyframes badge-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
 /* The one moving thing on the site that is not a reveal: a payment being checked. */
 @keyframes progress {
   from {

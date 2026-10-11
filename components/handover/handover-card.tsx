@@ -46,6 +46,8 @@ export function HandoverCard({
         data-times={times.join(",")}
         data-trigger={trigger}
         className={s.frame}
+        // The hero's card is set to its first step before the page paints (below).
+        suppressHydrationWarning
       >
         <div className={s.half}>
           <p className={s.meta}>Today</p>
@@ -53,7 +55,7 @@ export function HandoverCard({
         </div>
         <div className={s.divider}>
           <span className={s.badge}>
-            <svg viewBox="0 0 16 16" className={s.arrow} data-from={1} data-draw="">
+            <svg viewBox="0 0 16 16" className={s.arrow} data-draw="">
               <path pathLength={1} d="M2 8h12m-5-5l5 5-5 5" />
             </svg>
           </span>
@@ -75,9 +77,23 @@ export function HandoverCard({
           {withAi}
         </div>
       </div>
+      {trigger === "load" ? <StartBeforePaint name={name} /> : null}
       <figcaption className={s.caption}>{caption}</figcaption>
     </figure>
   );
+}
+
+/**
+ * The hero's card plays as the page opens, so it must start from its first
+ * step, not flash its last and jump back. The server renders the last (right
+ * with no JavaScript, and for reduced motion); this runs while the HTML is
+ * parsed, before the first paint, and moves the card to step 0. If the motion
+ * script has not taken over within five seconds, the card returns to its last
+ * step rather than wait on a script that may never arrive.
+ */
+function StartBeforePaint({ name }: { name: string }) {
+  const code = `(function(){var c=document.querySelector('[data-sequence="${name}"]');if(!c||matchMedia("(prefers-reduced-motion: reduce)").matches)return;c.setAttribute("data-instant","");c.setAttribute("data-step","0");requestAnimationFrame(function(){requestAnimationFrame(function(){c.removeAttribute("data-instant")})});setTimeout(function(){if(!c.hasAttribute("data-playing"))c.removeAttribute("data-step")},5000)})();`;
+  return <script dangerouslySetInnerHTML={{ __html: code }} />;
 }
 
 /** Something that appears at step `from`, or gives way at step `until`. */

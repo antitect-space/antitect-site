@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { EnquiriesCard } from "@/components/handover/cards";
+import { HandoverSequences } from "@/components/handover/sequence";
 import { OrbitHero } from "@/components/home/hero";
 import { TasksSection } from "@/components/home/tasks";
 import { JsonLd } from "@/components/json-ld";
@@ -48,6 +49,7 @@ export default async function HomePage() {
       <JsonLd data={organizationJsonLd()} />
       <OrbitHero webinar={webinars[0] ?? null} card={<EnquiriesCard />} />
       <TasksSection programs={programs} />
+      <HandoverSequences />
       <PremiseSection />
       <GallerySection />
       <LoopSection />

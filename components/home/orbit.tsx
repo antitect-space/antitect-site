@@ -5,7 +5,9 @@ import Image from "next/image";
  * the design's "Ring layout · Home B". Coordinates are in the 1440px hero,
  * measured from its top: five concentric 1px rings round (720, 452), 80px
  * apart, and ten badges centred on the two outer rings, zigzagging down the
- * sides. Nothing here moves once it has arrived.
+ * sides. On load the badges fade in and rise 6px, top to bottom and
+ * alternating sides, 50ms apart (CSS only, see globals.css); after that,
+ * nothing here moves.
  *
  * The layer is drawn at the design's size and centred, so at any width the
  * rings keep their place around the centred content and are clipped by the
@@ -65,9 +67,9 @@ export function Orbit() {
         {BADGES.map((badge, index) => (
           <span
             key={badge.tool}
-            data-badge={index}
+            data-badge=""
             className="absolute flex size-12 items-center justify-center overflow-hidden rounded-full border border-rule bg-paper"
-            style={{ left: badge.x - 24, top: badge.y - 24 }}
+            style={{ left: badge.x - 24, top: badge.y - 24, "--badge": index } as React.CSSProperties}
           >
             <Image
               src={`/logos/${badge.file}`}
