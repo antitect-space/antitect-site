@@ -376,6 +376,44 @@
   }
 }
 
+/*
+ * Where each badge sits for the hero's width. The hero is the container
+ * (`@container/orbit`), so a page's scrollbar does not count. Each badge
+ * carries its place for each band in custom properties (orbit.tsx); below
+ * 1160px there is no room beside the headline, and the badges are not shown.
+ */
+[data-badge] {
+  left: var(--x-1336);
+  top: var(--y-1336);
+}
+
+@container orbit (width < 1336px) {
+  [data-badge] {
+    left: var(--x-1280);
+    top: var(--y-1280);
+  }
+}
+
+@container orbit (width < 1280px) {
+  [data-badge] {
+    left: var(--x-1200);
+    top: var(--y-1200);
+  }
+}
+
+@container orbit (width < 1200px) {
+  [data-badge] {
+    left: var(--x-1160);
+    top: var(--y-1160);
+  }
+}
+
+@container orbit (width < 1160px) {
+  [data-badges] {
+    display: none;
+  }
+}
+
 /* The one moving thing on the site that is not a reveal: a payment being checked. */
 @keyframes progress {
   from {

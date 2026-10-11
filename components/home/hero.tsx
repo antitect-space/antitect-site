@@ -15,7 +15,7 @@ import type { PublicEvent } from "@/lib/api";
  */
 export function OrbitHero({ webinar, card }: { webinar: PublicEvent | null; card?: React.ReactNode }) {
   return (
-    <section aria-labelledby="hero-title" className="relative isolate overflow-hidden border-b border-rule">
+    <section aria-labelledby="hero-title" className="@container/orbit relative isolate overflow-hidden border-b border-rule">
       <Orbit />
 
       <div className="container-site relative flex flex-col items-center pt-8 pb-16 text-center lg:pt-12 lg:pb-24">
