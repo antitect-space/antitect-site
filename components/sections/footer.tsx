@@ -5,7 +5,8 @@ import { COMPANY, CONTACT, FOOTER_NAV } from "@/lib/site";
 
 /**
  * The footer (design section 12): on paper, with a hairline above. The only
- * place the home city appears. On a phone every link is a 44px row.
+ * place the home city appears. Every link is a 44px row, on a desktop too,
+ * where the design spaced them closer: rule 12 wins.
  *
  * The desktop grid keeps the design's four columns, so the brand and the
  * groups sit where they were drawn while Legal waits for its pages.
@@ -68,14 +69,14 @@ export function Footer() {
 
 function FooterGroup({ heading, links }: { heading: string; links: ReadonlyArray<{ label: string; href: string }> }) {
   return (
-    <nav aria-label={heading} className="flex flex-col lg:gap-3">
+    <nav aria-label={heading} className="flex flex-col lg:gap-1">
       <h2 className="type-meta font-medium text-ink-muted">{heading}</h2>
-      <ul className="flex flex-col lg:gap-3">
+      <ul className="flex flex-col">
         {links.map((link) => (
           <li key={link.label}>
             <Link
               href={link.href}
-              className="flex min-h-11 items-center text-base leading-[1.2] text-ink underline-offset-4 hover:underline lg:type-small lg:min-h-0"
+              className="flex min-h-11 items-center text-base leading-[1.2] text-ink underline-offset-4 hover:underline lg:type-small"
             >
               {link.label}
             </Link>

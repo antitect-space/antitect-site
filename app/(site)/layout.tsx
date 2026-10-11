@@ -17,7 +17,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
     <div className={cn(publicSans.variable, newsreader.variable, newsreaderExtended.variable, "scope-site contents")}>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-foreground focus:px-4 focus:py-3 focus:text-background"
       >
         Skip to content
       </a>
