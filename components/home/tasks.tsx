@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { FollowupsCard, LeadsCard, PaymentsCard, VideoCard } from "@/components/handover/cards";
+import { SectionHead } from "@/components/home/section-head";
 import { ArrowRight } from "@/components/icons";
 import { followups, leads, payments, tasksSection, video, type Task } from "@/content/handover";
 import type { PublicProgram } from "@/lib/api";
@@ -20,12 +21,7 @@ export function TasksSection({ programs }: { programs: readonly PublicProgram[] 
   return (
     <section aria-labelledby="tasks-title" className="section-pad">
       <div className="container-site">
-        <div className="grid gap-3 lg:grid-cols-[662fr_466fr] lg:items-start lg:gap-6">
-          <h2 id="tasks-title" className="type-h2 text-ink lg:pt-3">
-            {tasksSection.title}
-          </h2>
-          <p className="type-lead text-ink-muted">{tasksSection.intro}</p>
-        </div>
+        <SectionHead id="tasks-title" title={tasksSection.title} intro={tasksSection.intro} />
 
         <div className="mt-10 grid gap-12 lg:mt-16 lg:grid-cols-2 lg:gap-x-6 lg:gap-y-16">
           {TASKS.map(({ task, Card }) => (

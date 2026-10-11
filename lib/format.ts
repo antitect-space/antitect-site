@@ -85,6 +85,13 @@ export function formatDayShort(instant: string): string {
   return dateShort.format(new Date(instant));
 }
 
+const dayAndMonth = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, day: "numeric", month: "long" });
+
+/** "26 October", for a start date close enough that the year goes without saying. */
+export function formatDayMonth(instant: string): string {
+  return dayAndMonth.format(new Date(instant));
+}
+
 /** "12 October 2026", for a cohort start. */
 export function formatDay(instant: string): string {
   return dateNoWeekday.format(new Date(instant));
