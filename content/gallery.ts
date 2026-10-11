@@ -72,9 +72,6 @@ export const workshopPhotos: Photo[] = [
   },
 ];
 
-/** The hero's photograph is one of these, not a stock image. */
-export const heroPhoto = workshopPhotos[0]!;
-
 export function photo(id: PhotoId): Photo {
   return workshopPhotos.find((item) => item.id === id)!;
 }

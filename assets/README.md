@@ -58,11 +58,6 @@ terms: most ask you not to imply partnership or endorsement.
 - `workshop-001/*.jpg` — Antitect's own photographs, Workshop 001, Lagos,
   1 August 2026. They show identifiable people: confirm consent to appear in
   marketing before launch.
-- `why-image.jpg` — stock, used in the "How it works" section. **The file
-  supplied carries a visible "Unsplash+" watermark across it and must be
-  replaced before launch**, either with the licensed, unwatermarked download
-  or with one of Antitect's own photographs. Record the licence here once it
-  is settled.
 
 ## Newsreader in `fonts/`
 

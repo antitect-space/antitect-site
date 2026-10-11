@@ -17,7 +17,7 @@ shows here within about a minute, with no deploy.
 
 | Route | What it is |
 |---|---|
-| `/` | Company home: hero with a "Next up" panel, premise, how it works, upcoming events, programmes, why Antitect, FAQ, community |
+| `/` | Company home (the redesign's Home B): the orbit hero with the next free webinar, the work you can hand over to AI, three ways to learn (with what is next in each), Workshop 001, questions, contact, the community |
 | `/events`, `/events/[slug]` | Events. Free ones register; paid ones go through Paystack checkout |
 | `/programmes`, `/programmes/[slug]` | Capability Development Programmes, with enrolment and checkout. `/programs/*` redirects here |
 | `/community` | The community signup form, then the WhatsApp community link |
@@ -84,9 +84,12 @@ lives only in the API.
 - **`content/`** holds copy the CRM does not manage: the method, why Antitect,
   and the FAQ. FAQ answers that need a figure are built from the next
   programme's record.
-- **JavaScript:** before load, the home page ships only the framework's own
-  script (about 150KB transferred). The FAQ and the mobile menu are native
-  `<details>` elements.
+- **JavaScript:** the FAQ and the mobile menu are native `<details>`
+  elements. The home page's one motion script plays the handover cards
+  (`components/handover/sequence.tsx`); with reduced motion, or none at all,
+  every card shows its end.
+- **The redesign** is under way, page by page, from `antitect-redesign-v2.pen`.
+  Its rules are in CLAUDE.md.
 
 ## Before launch
 
