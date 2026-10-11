@@ -16,6 +16,17 @@ curl -s -o assets/archivo-800-subset.ttf "$URL"
 
 A character missing from the subset renders as a blank box in every link preview.
 
+`fonts/archivo-800-wordmark.woff2` is the same face cut down to the letters of
+the wordmark, ANTITECT, for the logo lockup on the site (`lib/fonts/wordmark.ts`).
+It is about 1KB. To regenerate it, ask for WOFF2 with a current browser's user
+agent:
+
+```sh
+UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+URL=$(curl -s -A "$UA" "https://fonts.googleapis.com/css2?family=Archivo:wght@800&text=ANTIEC" | grep -o "https://[^)]*" | head -1)
+curl -s -o assets/fonts/archivo-800-wordmark.woff2 "$URL"
+```
+
 ## Photographs in `public/images`
 
 - `workshop-001/*.jpg` — Antitect's own photographs, Workshop 001, Lagos,
