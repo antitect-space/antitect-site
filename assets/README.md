@@ -27,6 +27,32 @@ URL=$(curl -s -A "$UA" "https://fonts.googleapis.com/css2?family=Archivo:wght@80
 curl -s -o assets/fonts/archivo-800-wordmark.woff2 "$URL"
 ```
 
+## Tool logos in `public/logos`
+
+The ten badges around the home page hero. Each file is the company's own,
+fetched 2026-10-07 and used as downloaded: not recoloured, cropped, outlined or
+redrawn. Only its display size changes.
+
+| Tool | File | Source |
+|---|---|---|
+| Make | make.png | https://www.make.com/en/android-chrome-512x512.png (from make.com/site.webmanifest) |
+| Zapier | zapier.png | https://zapier.com/favicon.ico, the 192px layer |
+| n8n | n8n.png | https://n8n.io/android-chrome-512x512.png |
+| Gmail | gmail.png | https://www.gstatic.com/images/branding/product/1x/gmail_2020q4_512dp.png |
+| Google Sheets | google-sheets.png | https://www.gstatic.com/images/branding/product/1x/sheets_2020q4_512dp.png |
+| Instagram | instagram.png | https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png |
+| YouTube | youtube.png | https://www.gstatic.com/images/branding/product/2x/youtube_48dp.png |
+| TikTok | tiktok.png | https://sf16-sg.tiktokcdn.com/obj/eden-sg/uvkuhyieh7lpqpbj/pwa/512x512.png (from tiktok.com/manifest.json) |
+| Paystack | paystack.png | https://paystack.com/favicon.ico, the 48px layer |
+| Notion | notion.png | https://www.notion.so/images/logo-ios.png |
+
+Zapier and Paystack publish only `.ico` files, which the image optimiser
+serves as they are. Their largest layer was converted to PNG pixel for pixel.
+Paystack's largest is 48px, a little under twice its display size.
+
+Before launch, swap in files from each company's brand kit and check its usage
+terms: most ask you not to imply partnership or endorsement.
+
 ## Photographs in `public/images`
 
 - `workshop-001/*.jpg` — Antitect's own photographs, Workshop 001, Lagos,

@@ -80,6 +80,11 @@ export function formatShortWhen(startsAt: string): string {
   return `${dateShort.format(start)} · ${timeOnly.format(start)} ${TIME_ZONE_SHORT}`;
 }
 
+/** "Sat 17 Oct", for a one-line mention such as the hero's live line. */
+export function formatDayShort(instant: string): string {
+  return dateShort.format(new Date(instant));
+}
+
 /** "12 October 2026", for a cohort start. */
 export function formatDay(instant: string): string {
   return dateNoWeekday.format(new Date(instant));

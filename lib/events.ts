@@ -28,6 +28,11 @@ export function upcoming(events: PublicEvent[], now: number = Date.now()): Publi
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
 
+/** One type of event, keeping the order it came in. */
+export function ofType(events: PublicEvent[], type: PublicEvent["type"]): PublicEvent[] {
+  return events.filter((event) => event.type === type);
+}
+
 export type RegistrationState = "open" | "full" | "closed";
 
 /**

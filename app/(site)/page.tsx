@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
 
+import { OrbitHero } from "@/components/home/hero";
 import { JsonLd } from "@/components/json-ld";
 import { CommunitySection } from "@/components/sections/community";
 import { EventsSection } from "@/components/sections/events";
 import { FaqSection } from "@/components/sections/faq";
 import { GallerySection } from "@/components/sections/gallery";
-import { Hero } from "@/components/sections/hero";
 import { LoopSection } from "@/components/sections/loop";
 import { PremiseSection } from "@/components/sections/premise";
 import { ProgrammesSection } from "@/components/sections/programmes";
 import { WhySection } from "@/components/sections/why";
 import { generalFaq } from "@/content/faq";
 import { getPrograms, getUpcomingEvents } from "@/lib/api";
-import { upcoming } from "@/lib/events";
+import { ofType, upcoming } from "@/lib/events";
 import { organizationJsonLd, shareMetadata } from "@/lib/metadata";
-import { enrolmentState } from "@/lib/programs";
 import { SITE_DESCRIPTION } from "@/lib/site";
 
 /**
@@ -36,16 +35,16 @@ export const metadata: Metadata = {
 const EVENTS_ON_HOME = 3;
 
 export default async function HomePage() {
-  const [events, programs] = await Promise.all([getUpcomingEvents(EVENTS_ON_HOME + 1), getPrograms()]);
+  const [events, programs] = await Promise.all([getUpcomingEvents(), getPrograms()]);
 
   // One guard for the whole page: nothing that has finished is ever upcoming.
   const live = upcoming(events);
-  const nextProgram = programs.find((program) => enrolmentState(program) === "open") ?? programs[0] ?? null;
+  const webinars = ofType(live, "webinar");
 
   return (
     <>
       <JsonLd data={organizationJsonLd()} />
-      <Hero event={live[0] ?? null} program={nextProgram} />
+      <OrbitHero webinar={webinars[0] ?? null} />
       <PremiseSection />
       <GallerySection />
       <LoopSection />
