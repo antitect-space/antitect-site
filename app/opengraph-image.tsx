@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { ImageResponse } from "next/og";
 
-import { LOGO_PATHS, LOGO_VIEWBOX } from "@/components/logo";
+import { LOGO_PATHS, LOGO_VIEWBOX } from "@/components/logo-paths";
 
 /**
  * The share image for the home page and for any event without its own.

@@ -52,12 +52,47 @@ export function communityLink(): { href: string; label: string } {
     : { href: CONTACT.whatsappChatUrl, label: "Message us on WhatsApp" };
 }
 
-export const NAV = [
-  { label: "Programmes", href: "/programmes" },
-  { label: "Events", href: "/events" },
-  { label: "How it works", href: "/#how-it-works" },
-  { label: "About", href: "/about" },
-] as const;
+export interface NavLink {
+  label: string;
+  href: string;
+}
+
+/**
+ * The three formats, deepest last, then the company. Webinars and workshops
+ * get pages of their own in the redesign; until they exist, both lead to the
+ * events list, which holds both.
+ */
+// TODO(redesign): point these at /webinars and /workshops once those pages exist.
+const WEBINARS: NavLink = { label: "Webinars", href: "/events" };
+const WORKSHOPS: NavLink = { label: "Workshops", href: "/events" };
+const PROGRAMMES: NavLink = { label: "Capability development programmes", href: "/programmes" };
+const ABOUT: NavLink = { label: "About", href: "/about" };
+
+export const SIGN_IN: NavLink = { label: "Sign in", href: "/learn/login" };
+export const CONTACT_LINK: NavLink = { label: "Contact", href: "/#contact" };
+export const JOIN_FREE: NavLink = { label: "Join free", href: "/community" };
+
+export const NAV: readonly NavLink[] = [WEBINARS, WORKSHOPS, PROGRAMMES, ABOUT];
+
+/**
+ * The footer's columns. Legal is left out until its pages exist: Privacy,
+ * Terms and Refunds.
+ */
+// TODO(content): add a Legal group (Privacy, Terms, Refunds) once those pages exist.
+export const FOOTER_NAV: ReadonlyArray<{ heading: string; links: readonly NavLink[] }> = [
+  { heading: "Learn", links: [WEBINARS, WORKSHOPS, PROGRAMMES, { label: "Community", href: "/community" }] },
+  { heading: "Company", links: [ABOUT, CONTACT_LINK, SIGN_IN] },
+];
+
+/**
+ * Registration and social accounts, shown in the footer once they are
+ * confirmed. Until then nothing is shown, rather than a placeholder.
+ */
+// TODO(content): the CAC RC number, and links to the social accounts that are active.
+export const COMPANY: { cacNumber: string | null; socials: readonly NavLink[] } = {
+  cacNumber: null,
+  socials: [],
+};
 
 export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
