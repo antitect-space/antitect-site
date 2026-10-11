@@ -10,10 +10,6 @@ import { ProofSection } from "@/components/home/proof";
 import { TasksSection } from "@/components/home/tasks";
 import { JsonLd } from "@/components/json-ld";
 import { FaqSection } from "@/components/sections/faq";
-import { GallerySection } from "@/components/sections/gallery";
-import { LoopSection } from "@/components/sections/loop";
-import { PremiseSection } from "@/components/sections/premise";
-import { WhySection } from "@/components/sections/why";
 import { generalFaq } from "@/content/faq";
 import { getPrograms, getUpcomingEvents } from "@/lib/api";
 import { ofType, upcoming } from "@/lib/events";
@@ -36,6 +32,13 @@ export const metadata: Metadata = {
   ...shareMetadata({ title, description: SITE_DESCRIPTION, path: "/" }),
 };
 
+/**
+ * The home page (Home B, the orbit hero): what Antitect teaches, the work it
+ * hands over to AI, the three ways to learn it, the proof, the questions,
+ * the people to talk to, and the community. Two API reads: upcoming events,
+ * which feed the live line, the webinars and the workshops, and the
+ * programmes.
+ */
 export default async function HomePage() {
   const [events, programs] = await Promise.all([getUpcomingEvents(), getPrograms()]);
 
@@ -55,10 +58,6 @@ export default async function HomePage() {
       <ContactSection />
       <CloseSection />
       <HandoverSequences />
-      <PremiseSection />
-      <GallerySection />
-      <LoopSection />
-      <WhySection />
     </>
   );
 }

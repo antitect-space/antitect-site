@@ -20,9 +20,12 @@ export const API_URL = withoutTrailingSlash(
 
 export const SITE_NAME = "Antitect";
 
-/** Under 160 characters. Location terms first: they are what people search for. */
+/**
+ * Under 160 characters, with no place and no price: link previews are cached
+ * long after either changes.
+ */
 export const SITE_DESCRIPTION =
-  "Hands-on AI programmes in Lagos. Build real projects with instructor guidance — free webinars, workshops, and structured capability programmes.";
+  "Antitect teaches people to use AI on their real work, with no coding needed: free live webinars, one-day workshops and capability development programmes.";
 
 export const CONTACT = {
   email: "hello@antitect.org",

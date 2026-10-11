@@ -13,7 +13,7 @@ export const revalidate = 60;
 
 const title = "Upcoming AI Events and Workshops";
 const description =
-  "Free AI webinars and hands-on workshops in Lagos and online. See what's coming up and reserve a place.";
+  "Free AI webinars online and hands-on workshops in person. See what's coming up and reserve a place.";
 
 export const metadata: Metadata = {
   title,
