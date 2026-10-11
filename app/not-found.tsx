@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Footer } from "@/components/sections/footer";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { newsreader, publicSans } from "@/lib/fonts/site";
+import { newsreader, newsreaderExtended, publicSans } from "@/lib/fonts/site";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  */
 export default function NotFound() {
   return (
-    <div className={cn(publicSans.variable, newsreader.variable, "scope-site contents")}>
+    <div className={cn(publicSans.variable, newsreader.variable, newsreaderExtended.variable, "scope-site contents")}>
       <SiteHeader />
       <main id="main" className="flex-1">
         <div className="container-page py-20 lg:py-28">

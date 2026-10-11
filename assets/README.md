@@ -63,3 +63,12 @@ terms: most ask you not to imply partnership or endorsement.
   replaced before launch**, either with the licensed, unwatermarked download
   or with one of Antitect's own photographs. Record the licence here once it
   is settled.
+
+## Newsreader in `fonts/`
+
+`newsreader-48-latin.woff2` and `newsreader-48-latin-ext.woff2` are
+Newsreader (SIL Open Font License) with its optical size fixed at 48 and its
+weight free from 500 to 600, as Google Fonts serves
+`Newsreader:opsz,wght@48,500..600`. They are loaded by `lib/fonts/site.ts`.
+To regenerate them, request that CSS with a current browser's user agent and
+download the `latin` and `latin-ext` files it names.

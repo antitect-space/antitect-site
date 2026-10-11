@@ -164,7 +164,8 @@
    */
   .scope-site {
     --font-body: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
-    --font-heading: var(--font-newsreader), ui-serif, Georgia, serif;
+    /* Extended first: it covers only what Latin does not, and has no fallback to catch the rest. */
+    --font-heading: var(--font-newsreader-ext), var(--font-newsreader), ui-serif, Georgia, serif;
     --display-weight: 600;
     --display-tracking: -0.01em;
     --display-leading: 1.04;
