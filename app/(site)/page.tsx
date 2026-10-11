@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
+import { EnquiriesCard } from "@/components/handover/cards";
 import { OrbitHero } from "@/components/home/hero";
+import { TasksSection } from "@/components/home/tasks";
 import { JsonLd } from "@/components/json-ld";
 import { CommunitySection } from "@/components/sections/community";
 import { EventsSection } from "@/components/sections/events";
@@ -44,7 +46,8 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={organizationJsonLd()} />
-      <OrbitHero webinar={webinars[0] ?? null} />
+      <OrbitHero webinar={webinars[0] ?? null} card={<EnquiriesCard />} />
+      <TasksSection programs={programs} />
       <PremiseSection />
       <GallerySection />
       <LoopSection />
