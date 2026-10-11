@@ -17,6 +17,8 @@ export interface Photo {
   height: number;
   /** Where to hold the crop when the tile is a different shape. */
   position: string;
+  /** What the home page's proof section says under it. */
+  caption: string;
 }
 
 const dir = "/images/workshop-001";
@@ -24,6 +26,7 @@ const dir = "/images/workshop-001";
 export const workshopPhotos: Photo[] = [
   {
     id: "building",
+    caption: "Heads down, building.",
     src: `${dir}/antitect-workshop-001-building.jpg`,
     alt: "A woman working on a laptop in the foreground, with a full room of attendees and a presentation on screen behind her, at Antitect's first workshop in Lagos.",
     width: 1080,
@@ -32,6 +35,7 @@ export const workshopPhotos: Photo[] = [
   },
   {
     id: "over-shoulder",
+    caption: "Over the shoulder: a build in progress.",
     src: `${dir}/antitect-workshop-001-over-shoulder.jpg`,
     alt: "Over-the-shoulder view of someone working on a laptop while an instructor helps a participant nearby, at Antitect's first workshop in Lagos.",
     width: 810,
@@ -40,6 +44,7 @@ export const workshopPhotos: Photo[] = [
   },
   {
     id: "full-room",
+    caption: "A full room, laptops open from the start.",
     src: `${dir}/antitect-workshop-001-full-room.jpg`,
     alt: "A packed room of attendees working on laptops at Antitect's first workshop in Lagos.",
     width: 1280,
@@ -48,6 +53,7 @@ export const workshopPhotos: Photo[] = [
   },
   {
     id: "facilitators",
+    caption: "Instructors moving between the rows to help.",
     src: `${dir}/antitect-workshop-001-facilitators.jpg`,
     alt: "Facilitators walking between rows of attendees working on laptops at Antitect's first workshop in Lagos.",
     width: 980,
@@ -56,6 +62,7 @@ export const workshopPhotos: Photo[] = [
   },
   {
     id: "banner",
+    caption: "Working across laptops and phones.",
     src: `${dir}/antitect-workshop-001-banner.jpg`,
     // Every crop on the site leaves the event banner out, so the description does too.
     alt: "Attendees working across laptops and phones at Antitect's first workshop in Lagos.",

@@ -21,6 +21,9 @@ export const workshop001 = {
   date: "1 August 2026",
   /** The section the hero's "See inside" scrolls to. */
   anchor: "workshop-001",
+  title: "Workshop 001: a full room, building.",
+  /** Follows the headcount, and only shows with it. */
+  leadAfterHeadcount: "people paid to spend a day building AI automations, with instructors working the room.",
   // TODO(content): how many people attended Workshop 001.
   people: null as number | null,
   // TODO(content): how many working builds people left with.
@@ -28,4 +31,6 @@ export const workshop001 = {
   days: 1,
   // TODO(content): two quotes from attendees: what they built, and whether it still runs.
   quotes: [] as ProofQuote[],
+  // TODO(redesign): "See the Workshop 001 recap", once the workshop pages exist to hold one.
+  recap: null as { label: string; href: string } | null,
 };

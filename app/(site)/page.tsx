@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 
 import { EnquiriesCard } from "@/components/handover/cards";
 import { HandoverSequences } from "@/components/handover/sequence";
+import { CloseSection } from "@/components/home/close";
+import { ContactSection } from "@/components/home/contact";
 import { FormatsSection } from "@/components/home/formats";
 import { OrbitHero } from "@/components/home/hero";
+import { ProofSection } from "@/components/home/proof";
 import { TasksSection } from "@/components/home/tasks";
 import { JsonLd } from "@/components/json-ld";
-import { CommunitySection } from "@/components/sections/community";
 import { FaqSection } from "@/components/sections/faq";
 import { GallerySection } from "@/components/sections/gallery";
 import { LoopSection } from "@/components/sections/loop";
@@ -48,14 +50,15 @@ export default async function HomePage() {
       <OrbitHero webinar={webinars[0] ?? null} card={<EnquiriesCard />} />
       <TasksSection programs={programs} />
       <FormatsSection webinars={webinars} workshops={workshops} programme={programs[0] ?? null} />
+      <ProofSection />
+      <FaqSection items={generalFaq} openFirst />
+      <ContactSection />
+      <CloseSection />
       <HandoverSequences />
       <PremiseSection />
       <GallerySection />
       <LoopSection />
       <WhySection />
-      {/* The section below is notched, and climbs into this one. */}
-      <FaqSection items={generalFaq} className="notch-clearance" />
-      <CommunitySection />
     </>
   );
 }

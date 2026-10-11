@@ -46,6 +46,11 @@ export const CONTACT = {
  */
 export const COMMUNITY_INVITE_URL = "https://chat.whatsapp.com/CgHdBJWmPtG03BI4mmJ6vs";
 
+/** A chat with the team, opened with `text` already typed for them. */
+export function whatsappChat(text: string): string {
+  return `${CONTACT.whatsappChatUrl}?text=${encodeURIComponent(text)}`;
+}
+
 export function communityLink(): { href: string; label: string } {
   return COMMUNITY_INVITE_URL
     ? { href: COMMUNITY_INVITE_URL, label: "Join the WhatsApp community" }
