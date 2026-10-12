@@ -363,13 +363,16 @@ export const getPrograms = cache(() => readList<PublicProgram>("/api/public/prog
 
 export const getProgram = cache((slug: string) => readOne<PublicProgram>("/api/public/programs", slug));
 
-/** For the sitemap, which can afford to be an hour stale. */
-export async function getSitemapSlugs(): Promise<{ events: string[]; programs: string[] }> {
+/** For the sitemap, which can afford to be an hour stale. Events carry their type, which decides their address. */
+export async function getSitemapSlugs(): Promise<{
+  events: Array<Pick<PublicEvent, "slug" | "type">>;
+  programs: string[];
+}> {
   const [events, programs] = await Promise.all([
     readList<PublicEvent>("/api/public/events?limit=100", 3600).catch(() => []),
     readList<PublicProgram>("/api/public/programs?limit=100", 3600).catch(() => []),
   ]);
-  return { events: events.map((e) => e.slug), programs: programs.map((p) => p.slug) };
+  return { events: events.map(({ slug, type }) => ({ slug, type })), programs: programs.map((p) => p.slug) };
 }
 
 function describe(error: unknown): string {

@@ -86,7 +86,7 @@ export function WaitlistForm({
       <OnWaitlist
         response={joined}
         title={title}
-        next={{ href: "/events", label: "See upcoming events" }}
+        next={{ href: "/webinars", label: "See upcoming webinars" }}
         community={communityLink()}
       />
     );

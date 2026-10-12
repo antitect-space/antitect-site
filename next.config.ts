@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
     return [
       { source: "/programs", destination: "/programmes", permanent: true },
       { source: "/programs/:slug", destination: "/programmes/:slug", permanent: true },
+      // Events split into webinars and workshops. A single old event link is
+      // sent on by type in app/(site)/events/[slug]/route.ts, which has to
+      // read the event to know which.
+      { source: "/events", destination: "/webinars", permanent: true },
     ];
   },
   images: {

@@ -21,7 +21,6 @@ export interface Format {
   link: { label: string; href: string };
 }
 
-// TODO(redesign): the webinars and workshops links go to /webinars and /workshops once those pages exist.
 export const formats = {
   webinars: {
     depth: 1,
@@ -31,7 +30,7 @@ export const formats = {
     facts: "Free · Live online · About 2 hours",
     description:
       "One practical topic per session. Watch it done live, ask questions, and leave with a first idea for your own work.",
-    link: { label: "All webinars", href: "/events" },
+    link: { label: "All webinars", href: "/webinars" },
   },
   workshops: {
     depth: 2,

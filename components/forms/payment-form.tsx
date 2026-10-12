@@ -44,8 +44,8 @@ const COPY = {
     already: "You already have a place.",
     full: "Every place has been taken.",
     closed: "Registration has closed.",
-    unavailableDetail: "The next event will be on our events page. Join the community and you will hear about it first.",
-    unavailableNext: { href: "/events", label: "See upcoming events" },
+    unavailableDetail: "The next one will be on our workshops page. Join the community and you will hear about it first.",
+    unavailableNext: { href: "/workshops", label: "See upcoming workshops" },
     confirmedNext: { href: "/programmes", label: "See our programmes" },
   },
   program: {
@@ -56,7 +56,7 @@ const COPY = {
     closed: "Enrolment for this cohort has closed.",
     unavailableDetail: "Join the community and you will hear first when the next cohort opens.",
     unavailableNext: { href: "/community", label: "Join the community" },
-    confirmedNext: { href: "/events", label: "See upcoming events" },
+    confirmedNext: { href: "/webinars", label: "See upcoming webinars" },
   },
 } as const;
 

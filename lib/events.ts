@@ -55,6 +55,24 @@ export function ofType(events: PublicEvent[], type: PublicEvent["type"]): Public
   return events.filter((event) => event.type === type);
 }
 
+export function webinarsOf(events: PublicEvent[]): PublicEvent[] {
+  return ofType(events, "webinar");
+}
+
+export function workshopsOf(events: PublicEvent[]): PublicEvent[] {
+  return ofType(events, "workshop");
+}
+
+/** The page each type of event lives on. */
+export function eventsPath(type: PublicEvent["type"]): "/webinars" | "/workshops" {
+  return type === "workshop" ? "/workshops" : "/webinars";
+}
+
+/** An event's own page, under its type: /webinars/… or /workshops/…. */
+export function eventHref(event: Pick<PublicEvent, "type" | "slug">): string {
+  return `${eventsPath(event.type)}/${event.slug}`;
+}
+
 export type RegistrationState = "open" | "full" | "closed";
 
 /**

@@ -4,7 +4,7 @@ import { ArrowRight } from "@/components/icons";
 import { Fresh } from "@/components/live";
 import { liveLineFallback } from "@/content/home";
 import type { PublicEvent } from "@/lib/api";
-import { isPaid } from "@/lib/events";
+import { eventHref, isPaid } from "@/lib/events";
 import { formatDayShort } from "@/lib/format";
 
 /**
@@ -28,7 +28,7 @@ export function LiveLine({ webinar }: { webinar: PublicEvent | null }) {
 
   return (
     <Fresh startsAt={webinar.startsAt} endsAt={webinar.endsAt} fallback={fallback}>
-      <Chip href={`/events/${webinar.slug}`}>
+      <Chip href={eventHref(webinar)}>
         <span>
           {kind} ·{" "}
           <time dateTime={webinar.startsAt} className="tabular-nums">

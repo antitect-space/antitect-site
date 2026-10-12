@@ -18,7 +18,7 @@ shows here within about a minute, with no deploy.
 | Route | What it is |
 |---|---|
 | `/` | Company home (the redesign's Home B): the orbit hero with the next free webinar, the work you can hand over to AI, three ways to learn (with what is next in each), Workshop 001, questions, contact, the community |
-| `/events`, `/events/[slug]` | Events. Free ones register; paid ones go through Paystack checkout |
+| `/events`, `/events/[slug]` | Permanent redirects, so links already sent keep working: `/events` to `/webinars`, and an event to its own page under its type |
 | `/programmes`, `/programmes/[slug]` | Capability Development Programmes, with enrolment and checkout. `/programs/*` redirects here |
 | `/community` | The community signup form, then the WhatsApp community link |
 | `/payment/complete` | Paystack's return page. Always starts by checking and polls the API; never shows success on arrival |

@@ -86,8 +86,8 @@ export function RegistrationForm({ slug, title, startsAt }: { slug: string; titl
     return (
       <Unavailable
         heading={outcome.kind === "full" ? "Every place has been taken." : "Registration has closed."}
-        detail="The next event will be on our events page. Join the community and you will hear about it first."
-        next={{ href: "/events", label: "See upcoming events" }}
+        detail="The next one will be on our webinars page. Join the community and you will hear about it first."
+        next={{ href: "/webinars", label: "See upcoming webinars" }}
       />
     );
   }

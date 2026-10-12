@@ -117,7 +117,7 @@ export function PaymentStatus({ reference }: { reference: string | null }) {
           details.{when}
         </>
       );
-      next = isProgram ? { href: "/events", label: "See upcoming events" } : { href: "/programmes", label: "See our programmes" };
+      next = isProgram ? { href: "/webinars", label: "See upcoming webinars" } : { href: "/programmes", label: "See our programmes" };
     } else if (status.status === "received") {
       heading = "Your payment arrived.";
       body = (
@@ -134,7 +134,7 @@ export function PaymentStatus({ reference }: { reference: string | null }) {
           write to {contact}.{refLine}
         </>
       );
-      next = isProgram ? { href: "/programmes", label: "Back to programmes" } : { href: "/events", label: "Back to events" };
+      next = isProgram ? { href: "/programmes", label: "Back to programmes" } : { href: "/workshops", label: "Back to workshops" };
     }
   }
 

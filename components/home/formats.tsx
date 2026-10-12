@@ -7,7 +7,7 @@ import { Fresh } from "@/components/live";
 import { Button } from "@/components/ui/button";
 import { formats, formatsSection, nothingNext, type Format } from "@/content/formats";
 import type { PublicEvent, PublicProgram } from "@/lib/api";
-import { isPaid, placesNote } from "@/lib/events";
+import { eventHref, isPaid, placesNote } from "@/lib/events";
 import { formatDayMonth, formatDayShort, formatKobo } from "@/lib/format";
 import { durationLabel, isPriced, programmeOffer, runName } from "@/lib/programs";
 
@@ -94,7 +94,7 @@ function WebinarsNext({ webinars }: { webinars: readonly PublicEvent[] }) {
               <span>{webinar.title}</span>
             </div>
             <Button asChild variant="text">
-              <Link href={`/events/${webinar.slug}`}>
+              <Link href={eventHref(webinar)}>
                 {isPaid(webinar) ? "Get a seat" : "Register"}
                 <ArrowRight />
               </Link>
@@ -127,7 +127,7 @@ function WorkshopNext({ workshop }: { workshop: PublicEvent | null }) {
             <Action href={nothingNext.action.href}>Notify me about the next one</Action>
           </>
         ) : (
-          <Action href={`/events/${workshop.slug}`}>
+          <Action href={eventHref(workshop)}>
             {isPaid(workshop) ? `Get a seat · ${price}` : "Register"}
           </Action>
         )}

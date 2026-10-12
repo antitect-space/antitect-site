@@ -65,14 +65,9 @@ export interface NavLink {
   href: string;
 }
 
-/**
- * The three formats, deepest last, then the company. Webinars and workshops
- * get pages of their own in the redesign; until they exist, both lead to the
- * events list, which holds both.
- */
-// TODO(redesign): point these at /webinars and /workshops once those pages exist.
-const WEBINARS: NavLink = { label: "Webinars", href: "/events" };
-const WORKSHOPS: NavLink = { label: "Workshops", href: "/events" };
+/** The three formats, deepest last, then the company. */
+const WEBINARS: NavLink = { label: "Webinars", href: "/webinars" };
+const WORKSHOPS: NavLink = { label: "Workshops", href: "/workshops" };
 const PROGRAMMES: NavLink = { label: "Capability development programmes", href: "/programmes" };
 const ABOUT: NavLink = { label: "About", href: "/about" };
 

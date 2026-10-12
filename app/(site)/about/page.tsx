@@ -114,7 +114,7 @@ export default function AboutPage() {
                 <Link href="/community">Join the community</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/events">See upcoming events</Link>
+                <Link href="/webinars">See upcoming webinars</Link>
               </Button>
             </div>
           </div>
