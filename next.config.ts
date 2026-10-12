@@ -42,6 +42,8 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
+      // Recording thumbnails. The videos themselves load only on a tap, from youtube-nocookie.com.
+      { protocol: "https", hostname: "i.ytimg.com", pathname: "/vi/**" },
       ...(uploads ? [uploads] : []),
     ],
     // Only so local development can show images from an API on localhost.

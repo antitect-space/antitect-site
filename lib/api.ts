@@ -49,6 +49,12 @@ export interface PublicEvent {
   capacity: number | null;
   spotsRemaining: number | null;
   isFull: boolean;
+  /**
+   * The session's recording, once the team adds one. Additive and absent
+   * until the CRM ships it, so it is optional. Only a YouTube link counts:
+   * lib/recordings.ts treats anything else as no recording.
+   */
+  recordingUrl?: string | null;
 }
 
 export interface ProgramProject {
@@ -332,6 +338,21 @@ export const getUpcomingEvents = cache((limit: number = 25) =>
 
 /** Includes past events: an old link still reads. Registration is what closes. */
 export const getEvent = cache((slug: string) => readOne<PublicEvent>("/api/public/events", slug));
+
+/**
+ * Events that have happened, for their recordings. The CRM does not serve
+ * past events yet, and may ignore `when` and answer with upcoming ones, so
+ * callers keep only what has started and carries a recording
+ * (`pastRecordings` in lib/recordings.ts). Any failure is an empty list: a
+ * recordings section simply stays hidden rather than taking a page down.
+ */
+export const getPastEvents = cache(async (): Promise<PublicEvent[]> => {
+  try {
+    return await readList<PublicEvent>("/api/public/events?when=past&limit=25");
+  } catch {
+    return [];
+  }
+});
 
 /**
  * Runs open for enrolment, soonest first; then runs taking waitlist sign-ups
