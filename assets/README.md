@@ -67,3 +67,22 @@ weight free from 500 to 600, as Google Fonts serves
 `Newsreader:opsz,wght@48,500..600`. They are loaded by `lib/fonts/site.ts`.
 To regenerate them, request that CSS with a current browser's user agent and
 download the `latin` and `latin-ext` files it names.
+
+## Share-image fonts in `fonts/`
+
+The link-preview images (`lib/share-image.tsx`) are drawn by a renderer that
+reads TrueType, not the WOFF2 the pages use, so they have copies of their own,
+read on the server only and never sent to a browser:
+
+- `public-sans-500.ttf`: Public Sans Medium (SIL Open Font License), the full
+  character set, so any title or date the CRM holds draws.
+- `newsreader-48-600.ttf`: Newsreader SemiBold at optical size 48 (SIL Open
+  Font License), full character set.
+- `archivo-800-wordmark.ttf`: Archivo ExtraBold cut to the letters of ANTITECT.
+
+To regenerate one, ask Google Fonts for TrueType with an old user agent:
+
+```sh
+URL=$(curl -s -A "Mozilla/4.0" "https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@48,600" | grep -o "https://[^)]*" | head -1)
+curl -s -o assets/fonts/newsreader-48-600.ttf "$URL"
+```
