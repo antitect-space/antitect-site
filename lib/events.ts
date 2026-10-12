@@ -2,23 +2,45 @@ import type { PublicEvent, PublicProgram } from "./api";
 import { formatKobo, hasStarted } from "./format";
 
 /**
- * How long an event stays on the site after it starts.
- *
- * The API sends a start time and, for now, nothing that says when an event
- * actually ends, so the site cannot know it is over. Two hours covers a
+ * How long an event without an end time is taken to last. Two hours covers a
  * session in progress — long enough for somebody arriving late to see
  * "Happening now" rather than nothing, short enough that yesterday's webinar
  * never invites anybody to register.
  */
 export const HAPPENING_NOW_MS = 2 * 60 * 60 * 1000;
 
+type Timed = Pick<PublicEvent, "startsAt" | "endsAt">;
+
+/**
+ * When an event is over: at its end time when it has one, and otherwise two
+ * hours after it starts. An end at or before the start is no end at all.
+ */
+export function endOf(event: Timed): number {
+  const start = new Date(event.startsAt).getTime();
+  const end = event.endsAt ? new Date(event.endsAt).getTime() : Number.NaN;
+  return Number.isFinite(end) && end > start ? end : start + HAPPENING_NOW_MS;
+}
+
 /**
  * Past, as far as the site is concerned. Everything that lists events filters
  * through this, so a stale page or an API that ever starts returning finished
  * events cannot advertise one.
  */
-export function isOver(event: Pick<PublicEvent, "startsAt">, now: number = Date.now()): boolean {
-  return new Date(event.startsAt).getTime() + HAPPENING_NOW_MS <= now;
+export function isOver(event: Timed, now: number = Date.now()): boolean {
+  return endOf(event) <= now;
+}
+
+/** "Live now": from the start until it is over. */
+export function isLive(event: Timed, now: number = Date.now()): boolean {
+  return hasStarted(event.startsAt, now) && !isOver(event, now);
+}
+
+export type EventPhase = "before" | "live" | "over";
+
+/** Where an event stands at `now`. Decided in the browser wherever the page may be cached. */
+export function eventPhase(event: Timed, now: number = Date.now()): EventPhase {
+  if (!hasStarted(event.startsAt, now)) return "before";
+  return isOver(event, now) ? "over" : "live";
 }
 
 /** Events worth showing: not finished, soonest first. */

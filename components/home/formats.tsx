@@ -85,7 +85,7 @@ function WebinarsNext({ webinars }: { webinars: readonly PublicEvent[] }) {
     <ul className="flex flex-col">
       {webinars.map((webinar) => (
         // A row disappears once its webinar has started, even from a cached page.
-        <Fresh key={webinar.slug} startsAt={webinar.startsAt}>
+        <Fresh key={webinar.slug} startsAt={webinar.startsAt} endsAt={webinar.endsAt}>
           <li className="flex items-center justify-between gap-3 border-b border-rule py-2">
             <div className="type-small flex min-w-0 flex-col gap-0.5 text-ink">
               <time dateTime={webinar.startsAt} className="font-semibold tabular-nums">
@@ -115,7 +115,7 @@ function WorkshopNext({ workshop }: { workshop: PublicEvent | null }) {
   const places = placesNote(workshop);
 
   return (
-    <Fresh startsAt={workshop.startsAt} fallback={<Nothing message={nothingNext.events} />}>
+    <Fresh startsAt={workshop.startsAt} endsAt={workshop.endsAt} fallback={<Nothing message={nothingNext.events} />}>
       <div className="flex flex-col gap-3">
         <div className="type-small flex flex-col gap-1.5 font-medium text-ink tabular-nums">
           <Facts items={[formatDayShort(workshop.startsAt), where].filter((fact): fact is string => Boolean(fact))} />

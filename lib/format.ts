@@ -177,17 +177,17 @@ export function ticketDate(startsAt: string): TicketDate {
 
 /**
  * "In 3 days", "Tomorrow", "Today · starts 10:00 am", "Happening now", or null
- * once it is over.
+ * once it is over, at `overAt` (an instant, in ms).
  *
  * Only ever called in the browser: a label rendered on the server goes stale
  * inside the cache, and a page cached at noon would still say "Tomorrow" the
  * next morning. Today and tomorrow are decided in Lagos, not in the visitor's
  * timezone, because that is where the event is.
  */
-export function relativeLabel(startsAt: string, now: number, graceMs: number): string | null {
+export function relativeLabel(startsAt: string, now: number, overAt: number): string | null {
   const start = new Date(startsAt).getTime();
 
-  if (start <= now) return now - start <= graceMs ? "Happening now" : null;
+  if (start <= now) return now < overAt ? "Happening now" : null;
 
   const days = lagosDaysBetween(now, start);
   if (days === 0) return `Today · starts ${timeOnly.format(new Date(start))}`;

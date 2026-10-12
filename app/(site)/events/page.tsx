@@ -33,7 +33,7 @@ export default async function EventsPage() {
       {events.length > 0 ? (
         <div className="mt-12 grid gap-4">
           {events.map((event) => (
-            <Fresh key={event.slug} startsAt={event.startsAt}>
+            <Fresh key={event.slug} startsAt={event.startsAt} endsAt={event.endsAt}>
               <EventTicketRow event={event} headingLevel="h2" />
             </Fresh>
           ))}

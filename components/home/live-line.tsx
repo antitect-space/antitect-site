@@ -27,7 +27,7 @@ export function LiveLine({ webinar }: { webinar: PublicEvent | null }) {
   const kind = isPaid(webinar) ? "Next webinar" : "Next free webinar";
 
   return (
-    <Fresh startsAt={webinar.startsAt} fallback={fallback}>
+    <Fresh startsAt={webinar.startsAt} endsAt={webinar.endsAt} fallback={fallback}>
       <Chip href={`/events/${webinar.slug}`}>
         <span>
           {kind} ·{" "}
