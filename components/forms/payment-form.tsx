@@ -5,10 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { PlaceConfirmed, Unavailable } from "@/components/forms/outcomes";
-import { Field, FormAlert, PersonFields, SlowNote } from "@/components/forms/person-fields";
+import { Field, FormAlert, SlowNote, TextInput } from "@/components/forms/fields";
+import { PersonFields } from "@/components/forms/person-fields";
 import { useSubmission } from "@/components/forms/use-submission";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ApiError, getQuote, joinWaitlist, startPayment, type Channel, type Payable, type Quote } from "@/lib/api";
 import { describeFailure, type FormField } from "@/lib/form-errors";
 import { formatKobo, hasStarted } from "@/lib/format";
@@ -284,7 +284,7 @@ export function PaymentForm({ payable, title, priceKobo, closesAt, captureLead =
       <div className="mt-4">
         <Field id={`${payable.kind}-discountCode`} label="Discount code" error={codeError ?? undefined}>
           <div className="flex gap-2">
-            <Input
+            <TextInput
               id={`${payable.kind}-discountCode`}
               value={code}
               autoCapitalize="characters"

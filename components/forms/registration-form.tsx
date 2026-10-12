@@ -4,7 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { FormAlert, PersonFields, SlowNote } from "@/components/forms/person-fields";
+import { FormAlert, SlowNote } from "@/components/forms/fields";
+import { PersonFields } from "@/components/forms/person-fields";
 import { PlaceConfirmed, Unavailable } from "@/components/forms/outcomes";
 import { useSubmission } from "@/components/forms/use-submission";
 import { Button } from "@/components/ui/button";

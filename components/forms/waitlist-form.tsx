@@ -5,7 +5,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { OnWaitlist } from "@/components/forms/outcomes";
-import { FormAlert, PersonFields, SlowNote } from "@/components/forms/person-fields";
+import { FormAlert, SlowNote } from "@/components/forms/fields";
+import { PersonFields } from "@/components/forms/person-fields";
 import { useSubmission } from "@/components/forms/use-submission";
 import { Button } from "@/components/ui/button";
 import { joinWaitlist, type WaitlistResponse } from "@/lib/api";
