@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
  * The same person, asked the same way, on every form: event, checkout,
  * enrolment and community. The phone is labelled as the WhatsApp number
  * because reminders can go there; the checkbox is consent, not a preference.
- * Location is a state, or "Outside Nigeria" and a country.
+ * Location is optional: a state, or "Outside Nigeria" and then a country.
  */
 export function PersonFields({
   register,
@@ -87,7 +87,7 @@ export function PersonFields({
         />
       </Field>
 
-      <Field id={id("state")} label="State" error={errors.state?.message}>
+      <Field id={id("state")} label="State" optional error={errors.state?.message}>
         <Select
           id={id("state")}
           autoComplete="address-level1"
@@ -95,9 +95,7 @@ export function PersonFields({
           aria-describedby={describedBy("state")}
           {...register("state")}
         >
-          <option value="" disabled>
-            Choose your state
-          </option>
+          <option value="">Choose your state</option>
           {NIGERIAN_STATES.map((state) => (
             <option key={state} value={state}>
               {stateLabel(state)}
