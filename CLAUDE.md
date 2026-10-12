@@ -56,3 +56,32 @@ Rules:
 14. Git: one commit per task, prefixed `feat:`, `fix:`, `chore:` or `docs:`.
     Run `npm run lint` and `npm run typecheck` before each commit. Commit
     locally and ask before pushing.
+
+### Webinar, workshop and programme pages
+
+These add to the rules above.
+
+15. Times are always West Africa Time: in full on detail pages ("10:00 am –
+    12:00 pm West Africa Time"), and as "WAT" on cards. Use `lib/format.ts`.
+16. Show a length only when there is an end time.
+17. Never promise WhatsApp delivery. The confirmation goes by email, and the
+    joining link comes with the reminders. The joining link never appears on
+    any page.
+18. One red button per screen, counting the mobile register bar. On detail
+    pages the community band's button is ink.
+19. Wording: "Secure your place" and "Reserve your place", never "spot";
+    "capability development programme" in full; the webinars or workshops
+    page, never "the events page".
+20. The weekly review and the learning loop appear only on programme pages.
+21. Flyers are never cropped, in any shape, and every fact on a flyer also
+    appears as text on the page.
+22. Recordings load only when someone taps play, from YouTube's
+    privacy-enhanced domain (`youtube-nocookie.com`).
+23. No invented proof: no instructor, host or testimonial sections.
+    Unconfirmed answers are hidden, with a `TODO(content)` marker.
+24. Form logic stays as it is (`components/forms/`, `lib/form-errors.ts`):
+    forms never clear on failure, repeats are harmless, and slow connections
+    get a note. Only how they look, and the wording the design gives, change.
+25. Caching stays as `lib/api.ts` has it: server reads cached for 60 seconds,
+    and anything that depends on the current time decided in the browser, as
+    `components/live.tsx` does.
