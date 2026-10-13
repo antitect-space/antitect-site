@@ -1,29 +1,42 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import { Cut } from "@/components/cut";
+import { BackLink } from "@/components/detail/back-link";
+import { Description } from "@/components/detail/description";
+import { DetailLayout } from "@/components/detail/detail-layout";
+import { FactsStrip } from "@/components/detail/facts-strip";
+import { RegisterBar } from "@/components/detail/register-bar";
+import { Flyer } from "@/components/flyer/flyer";
+import { CloseSection } from "@/components/home/close";
 import { JsonLd } from "@/components/json-ld";
-import { ProjectsTable, WeeklySchedule } from "@/components/programme-details";
 import { ProgrammePanel } from "@/components/programme-panel";
-import { FaqSection } from "@/components/sections/faq";
+import { LoopCompact } from "@/components/programmes/loop";
+import { OutcomeList, Timetable } from "@/components/programmes/outcomes";
+import { ProjectList } from "@/components/programmes/project-list";
+import { RecordingPlayer } from "@/components/recording/recording-player";
+import { FaqList } from "@/components/sections/faq";
 import { programmeFaq } from "@/content/faq";
-import { getProgram } from "@/lib/api";
-import { placesNote } from "@/lib/events";
-import { formatDay, formatKobo } from "@/lib/format";
+import { programmePage } from "@/content/programmes";
+import { getPastEvents, getProgram, type PublicProgram } from "@/lib/api";
+import { webinarsOf } from "@/lib/events";
+import { flyerOf } from "@/lib/flyers";
+import { formatDay, formatDayMonth, formatKobo } from "@/lib/format";
 import { courseJsonLd, shareMetadata } from "@/lib/metadata";
 import {
   commitmentSentence,
   durationLabel,
-  enrolmentClosesNote,
+  isDraft,
   isPriced,
   isUnderWay,
   programmeOffer,
   projectRows,
   runName,
   weeklySchedule,
+  type ProgrammeOffer,
 } from "@/lib/programs";
+import { pastRecordings } from "@/lib/recordings";
 
+/** Read again at most once a minute; what the panel offers is checked again on submit. */
 export const revalidate = 60;
 
 export async function generateStaticParams() {
@@ -33,7 +46,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/programmes/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const program = await getProgram(slug);
-  if (!program) return { title: "Programme not found", robots: { index: false } };
+  if (!program) return { title: "Programme not available", robots: { index: false } };
 
   return {
     title: program.title,
@@ -48,148 +61,149 @@ export async function generateMetadata({ params }: PageProps<"/programmes/[slug]
 }
 
 /**
- * Everything cohort-specific lives here, and all of it comes from the record:
- * what it costs, how long it runs, what it asks of a week, when it starts.
- * The home page deliberately answers none of that, because it lists several.
+ * A programme's page (design "Programme · Enrolling", "Waitlist only",
+ * "Enrolment closed" and "With flyer", with the enrolment panel's states in
+ * C6). Everything cohort-specific comes from the record: what it costs, how
+ * long it runs, what it asks of a week, when it starts. A fact without a
+ * figure is left out, and so is a sentence that needs one.
  */
 export default async function ProgrammePage({ params }: PageProps<"/programmes/[slug]">) {
   const { slug } = await params;
   const program = await getProgram(slug);
   if (!program) notFound();
 
+  const [past, flyer] = await Promise.all([getPastEvents(), flyerOf(program.imageUrl)]);
   const offer = programmeOffer(program);
-  const run = runName(program);
   const commitment = commitmentSentence(program);
-  // A closing date and places left only mean something while a place can be bought.
-  const closes = offer.enrol ? enrolmentClosesNote(program) : null;
-  const places = offer.enrol ? placesNote(program) : null;
   const schedule = weeklySchedule(program);
   const projects = projectRows(program);
-  // What the run leaves you with: its outcomes, and the certificate when it
-  // issues one. The certificate is said here because that is what it is.
-  const leaveWith = [
-    ...(program.certificateEnabled ? ["A digital certificate when you complete the programme."] : []),
-    ...program.outcomes,
-  ];
+  const leaveWith = [...(program.certificateEnabled ? [programmePage.certificate] : []), ...program.outcomes];
+  const sample = pastRecordings(webinarsOf(past))[0] ?? null;
+  const faq = programmeFaq(program);
 
-  const facts = [
-    { label: "Length", value: durationLabel(program) },
-    { label: "Format", value: "Live, online" },
-    // A run up before it is ready to sell may have neither yet. Never "Free":
-    // a programme is never free.
-    { label: "Price", value: isPriced(program) ? formatKobo(program.priceKobo) : "To be confirmed" },
-    {
-      label: isUnderWay(program) ? "Started" : "Next cohort",
-      value: program.startsAt ? formatDay(program.startsAt) : "To be confirmed",
-    },
-  ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value));
-  // Three facts when the length is not set yet, which a draft often is not.
-  const factColumns = facts.length === 4 ? "sm:grid-cols-4" : "sm:grid-cols-3";
+  // One community ask per page: with nothing else to offer, the panel holds the form.
+  const panelHoldsCommunity = !offer.enrol && !offer.waitlist && !offer.nextRun;
 
   return (
     <>
-      <div className="container-page grid gap-10 py-10 sm:py-14 lg:grid-cols-[1.15fr_1fr] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:py-16">
-        <JsonLd data={courseJsonLd(program)} />
-
-        <header className="lg:col-start-1">
-          <p className="text-[0.9375rem] font-semibold text-muted-foreground">
-            Capability Development Programme{run ? ` · ${run}` : ""}
-          </p>
-          <h1 className="text-display mt-3 text-[2.5rem] sm:text-6xl">{program.title}</h1>
-          {program.summary ? (
-            <p className="mt-6 max-w-[52ch] text-xl leading-[1.5]">{program.summary}</p>
-          ) : null}
-
-          {/* On a phone an odd last fact takes the whole row, rather than leaving a black gap beside it. */}
-          <dl
-            className={`mt-8 grid grid-cols-2 gap-px border-2 border-foreground bg-foreground [&>:last-child:nth-child(odd)]:col-span-2 sm:[&>:last-child:nth-child(odd)]:col-span-1 ${factColumns}`}
-          >
-            {facts.map((fact) => (
-              <div key={fact.label} className="bg-background p-4">
-                <dt className="text-[0.8125rem] font-semibold text-muted-foreground">{fact.label}</dt>
-                <dd className="mt-1 font-semibold">{fact.value}</dd>
+      <JsonLd data={courseJsonLd(program)} />
+      <DetailLayout
+        head={
+          <div className="flex flex-col gap-8 lg:gap-10">
+            <div className="flex flex-col gap-4 lg:gap-6">
+              <BackLink href={programmePage.back.href} label={programmePage.back.label} />
+              <div className="flex flex-col gap-3 lg:gap-4">
+                <p className="type-meta font-medium text-ink-muted">{metaLine(program, offer)}</p>
+                <h1 className="type-h1 text-ink">{program.title}</h1>
+                {program.summary ? <p className="type-lead text-ink-muted">{program.summary}</p> : null}
               </div>
-            ))}
-          </dl>
-          {closes ? <p className="mt-4 font-semibold">{closes}</p> : null}
-          {places ? <p className="mt-1 font-semibold">{places}</p> : null}
-        </header>
+            </div>
+            <FactsStrip facts={facts(program, offer)} />
+          </div>
+        }
+        panel={<ProgrammePanel program={program} offer={offer} />}
+      >
+        {flyer ? <Flyer image={flyer} title={program.title} placement="detail" /> : null}
 
-        {/* On a phone this lands directly under the heading block: a place, or the waitlist, is the point of the page. */}
-        <div
-          id="enrol"
-          className="scroll-mt-4 self-start lg:sticky lg:top-8 lg:col-start-2 lg:row-span-2 lg:row-start-1"
-        >
-          <ProgrammePanel program={program} offer={offer} />
-        </div>
+        <section aria-labelledby="asks-title" className="flex flex-col gap-5 lg:gap-6">
+          <h2 id="asks-title" className="type-h2 text-ink">
+            {programmePage.asks}
+          </h2>
+          {commitment ? <p className="type-body max-w-[564px] text-ink">{commitment}</p> : null}
+          {schedule.length > 0 ? <Timetable rows={schedule} /> : null}
+          <LoopCompact />
+        </section>
 
-        <div className="space-y-10 lg:col-start-1">
-          {program.imageUrl ? (
-            <Cut corner="tr" className="relative aspect-video w-full overflow-hidden bg-muted">
-              <Image
-                src={program.imageUrl}
-                alt=""
-                fill
-                sizes="(min-width: 1024px) 36rem, 100vw"
-                className="object-cover"
-              />
-            </Cut>
-          ) : null}
+        {projects.length > 0 || program.description ? (
+          <section aria-labelledby="build-title" className="flex flex-col gap-6">
+            <h2 id="build-title" className="type-h2 text-ink">
+              {programmePage.build}
+            </h2>
+            {projects.length > 0 ? <ProjectList projects={projects} /> : null}
+            {program.description ? <Description text={program.description} /> : null}
+          </section>
+        ) : null}
 
-          {program.description ? (
-            <p className="max-w-[62ch] text-lg leading-[1.6] whitespace-pre-line">{program.description}</p>
-          ) : null}
+        {leaveWith.length > 0 ? (
+          <section aria-labelledby="leave-title" className="flex flex-col gap-6">
+            <h2 id="leave-title" className="type-h2 text-ink">
+              {programmePage.leaveWith}
+            </h2>
+            <OutcomeList items={leaveWith} />
+          </section>
+        ) : null}
 
-          {commitment ? (
-            <section aria-labelledby="commitment-title" className="border-t-2 border-foreground pt-6">
-              <h2 id="commitment-title" className="text-title text-2xl">
-                What it asks of you
-              </h2>
-              <p className="mt-3 max-w-[56ch] text-lg leading-[1.5]">{commitment}</p>
-            </section>
-          ) : null}
+        {sample ? (
+          <section aria-labelledby="teach-title" className="flex flex-col gap-5 lg:gap-6">
+            <h2 id="teach-title" className="type-h2 text-ink">
+              {programmePage.teach}
+            </h2>
+            <figure className="flex flex-col gap-3">
+              <RecordingPlayer recording={sample.recording} title={sample.event.title} sizes="(min-width: 1024px) 662px, 100vw" />
+              <figcaption className="type-meta font-medium text-ink-muted tabular-nums">
+                From {sample.event.title}, {formatDay(sample.event.startsAt)}
+              </figcaption>
+            </figure>
+          </section>
+        ) : null}
 
-          {schedule.length > 0 ? (
-            <section aria-labelledby="schedule-title" className="border-t-2 border-foreground pt-6">
-              <h2 id="schedule-title" className="text-title text-2xl">
-                Every week
-              </h2>
-              <div className="mt-5">
-                <WeeklySchedule rows={schedule} />
-              </div>
-            </section>
-          ) : null}
+        {faq.length > 0 ? (
+          <section aria-labelledby="questions-title" className="flex flex-col gap-6 lg:gap-8">
+            <h2 id="questions-title" className="type-h2 text-ink">
+              Questions about {program.title}
+            </h2>
+            <FaqList items={faq} openFirst narrow />
+          </section>
+        ) : null}
+      </DetailLayout>
 
-          {projects.length > 0 ? (
-            <section aria-labelledby="projects-title" className="border-t-2 border-foreground pt-6">
-              <h2 id="projects-title" className="text-title text-2xl">
-                What you will build
-              </h2>
-              <div className="mt-6">
-                <ProjectsTable rows={projects} />
-              </div>
-            </section>
-          ) : null}
+      {panelHoldsCommunity ? null : <CloseSection quiet />}
 
-          {leaveWith.length > 0 ? (
-            <section aria-labelledby="outcomes-title" className="border-t-2 border-foreground pt-6">
-              <h2 id="outcomes-title" className="text-title text-2xl">
-                What you leave with
-              </h2>
-              <ul className="mt-4 space-y-3">
-                {leaveWith.map((outcome) => (
-                  <li key={outcome} className="flex gap-3 text-lg leading-[1.5]">
-                    <span aria-hidden="true" className="mt-[0.55em] size-2 shrink-0 bg-brand" />
-                    <span>{outcome}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-        </div>
-      </div>
-
-      <FaqSection items={programmeFaq(program)} title={`${program.title}: the details`} id="programme-faq" />
+      {/* Only while a place can be bought. */}
+      {offer.enrol ? <RegisterBar label="Secure your place" lines={barLines(program)} /> : null}
     </>
   );
+}
+
+/** "Capability development programme · Cohort 1 · Live online", or the run's state in place of the format. */
+function metaLine(program: PublicProgram, offer: ProgrammeOffer): string {
+  const draft = isDraft(program);
+  const which = draft ? "Waitlist open" : runName(program);
+  const state =
+    offer.enrol || draft
+      ? "Live online"
+      : program.isFull
+        ? "Full"
+        : isUnderWay(program)
+          ? "Under way"
+          : "Enrolment closed";
+  return [programmePage.kind, which, state].filter(Boolean).join(" · ");
+}
+
+/** The facts strip: each fact only with its figure. A draft has none of the run's yet. */
+function facts(program: PublicProgram, offer: ProgrammeOffer) {
+  const draft = isDraft(program);
+  const closes = program.enrollmentClosesAt ?? program.startsAt;
+  const closed = closes ? new Date(closes).getTime() <= Date.now() : false;
+  return [
+    { label: "Length", value: durationLabel(program) },
+    { label: "Format", value: "Live online" },
+    { label: "Price", value: !draft && isPriced(program) ? formatKobo(program.priceKobo) : null },
+    {
+      label: isUnderWay(program) ? "Started" : "Starts",
+      value: !draft && program.startsAt ? formatDay(program.startsAt) : null,
+    },
+    // A closing date matters while enrolling, and as a record once it has passed.
+    offer.enrol
+      ? { label: "Enrolment closes", value: closes ? formatDay(closes) : null }
+      : { label: "Enrolment closed", value: !draft && closed && closes ? formatDay(closes) : null },
+  ];
+}
+
+/** The start and the price, on two lines, so the bar holds at 360px. */
+function barLines(program: PublicProgram): string[] {
+  return [
+    program.startsAt ? `Starts ${formatDayMonth(program.startsAt)}` : null,
+    isPriced(program) ? formatKobo(program.priceKobo) : null,
+  ].filter((line): line is string => Boolean(line));
 }
