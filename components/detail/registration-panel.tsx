@@ -1,7 +1,6 @@
 "use client";
 
 import { Panel } from "@/components/detail/panel";
-import { CommunityForm } from "@/components/forms/community-form";
 import { RegistrationForm } from "@/components/forms/registration-form";
 import {
   RegistrationFull,
@@ -43,12 +42,7 @@ export function RegistrationPanel({
       {phase === "live" ? (
         <SessionStarted idPrefix={ID} event={event} />
       ) : phase === "over" ? (
-        <SessionEnded
-          idPrefix={ID}
-          type={event.type}
-          next={next}
-          community={<CommunityForm idPrefix={`${ID}-community`} />}
-        />
+        <SessionEnded idPrefix={ID} type={event.type} next={next} />
       ) : event.isFull ? (
         <RegistrationFull idPrefix={ID} type={event.type} />
       ) : (

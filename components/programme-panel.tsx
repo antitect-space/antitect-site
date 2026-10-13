@@ -170,7 +170,7 @@ export function ProgrammePanel({ program, offer }: { program: PublicProgram; off
       body = (
         <div className="flex flex-col gap-5">
           <FormHead id={`${ID}-title`} title={current.closed ?? "Sign-ups have closed."} />
-          <CommunityForm idPrefix={`${ID}-community`} />
+          <CommunityForm idPrefix={`${ID}-community`} variant="inline" />
         </div>
       );
     }

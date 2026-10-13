@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { CommunityForm } from "@/components/forms/community-form";
 import { FormHead } from "@/components/forms/fields";
 import { ArrowRight } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -191,20 +192,19 @@ export function SessionStarted({
 
 /**
  * Over, with no recording to show. With another session scheduled, it is
- * offered here; with none, `community` (the inline community form) is.
+ * offered here; with none, the inline community form is.
  */
 export function SessionEnded({
   idPrefix,
   type,
   next,
-  community,
 }: {
   idPrefix: string;
   type: PublicEvent["type"];
   next: NextEvent | null;
-  community: React.ReactNode;
 }) {
   const kind = kindOf(type);
+  const [joined, setJoined] = useState(false);
 
   if (!next) {
     return (
@@ -212,9 +212,9 @@ export function SessionEnded({
         <FormHead
           id={`${idPrefix}-title`}
           title={`This ${kind} has ended.`}
-          line="Join the community and you’ll hear about the next one first."
+          line={joined ? undefined : "Join the community and you’ll hear about the next one first."}
         />
-        {community}
+        <CommunityForm idPrefix={`${idPrefix}-community`} variant="inline" onJoined={() => setJoined(true)} />
       </div>
     );
   }

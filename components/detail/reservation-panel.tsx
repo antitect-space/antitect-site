@@ -91,15 +91,21 @@ function useFocus<T extends HTMLElement>(enabled: boolean) {
 /** Every place has gone. Whoever typed their details for one keeps them for the community. */
 function Full({ person }: { person: PersonBody | null }) {
   const headingRef = useFocus<HTMLHeadingElement>(person !== null);
+  const [joined, setJoined] = useState(false);
   return (
     <div role={person ? "status" : undefined} className="flex flex-col gap-5">
       <FormHead
         id={`${ID}-title`}
         headingRef={headingRef}
         title="Every place has been taken."
-        line="Join the community to hear first when the next one opens."
+        line={joined ? undefined : "Join the community to hear first when the next one opens."}
       />
-      <CommunityForm idPrefix={`${ID}-community`} defaults={person ? personInput(person) : undefined} />
+      <CommunityForm
+        idPrefix={`${ID}-community`}
+        variant="inline"
+        defaults={person ? personInput(person) : undefined}
+        onJoined={() => setJoined(true)}
+      />
     </div>
   );
 }
@@ -135,15 +141,17 @@ function UpcomingButton({ kind, type }: { kind: string; type: PublicEvent["type"
 
 /** Over, with no recap: the next one when there is one, otherwise the community. */
 function Ended({ kind, next }: { kind: string; next: NextEvent | null }) {
+  const [joined, setJoined] = useState(false);
+
   if (!next) {
     return (
       <div className="flex flex-col gap-5">
         <FormHead
           id={`${ID}-title`}
           title={`This ${kind} has ended.`}
-          line="Join the community to hear first when the next one opens."
+          line={joined ? undefined : "Join the community to hear first when the next one opens."}
         />
-        <CommunityForm idPrefix={`${ID}-community`} />
+        <CommunityForm idPrefix={`${ID}-community`} variant="inline" onJoined={() => setJoined(true)} />
       </div>
     );
   }
