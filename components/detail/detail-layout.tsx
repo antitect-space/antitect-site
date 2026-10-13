@@ -40,7 +40,12 @@ export function DetailLayout({
       <aside className="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:pt-[4.25rem]">
         <div className="lg:top-8 lg:[@media(min-height:56rem)]:sticky">{panel}</div>
       </aside>
-      <div className="mt-8 flex min-w-0 flex-col gap-16 lg:col-start-1 lg:row-start-2 lg:mt-20 lg:gap-20">
+      <div
+        className={cn(
+          "mt-8 flex min-w-0 flex-col gap-16 lg:col-start-1 lg:row-start-2",
+          split === "recording" ? "lg:mt-16 lg:gap-16" : "lg:mt-20 lg:gap-20",
+        )}
+      >
         {children}
       </div>
     </div>
