@@ -83,7 +83,14 @@ export function RegistrationForm({ event, idPrefix = "register" }: { event: Regi
   const places = placesNote(event);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate aria-labelledby={`${idPrefix}-title`} className="flex flex-col gap-6">
+    // data-register-form: the mobile register bar is offered only while this form is.
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      aria-labelledby={`${idPrefix}-title`}
+      data-register-form
+      className="flex flex-col gap-6"
+    >
       <FormHead
         id={`${idPrefix}-title`}
         title="Register free"

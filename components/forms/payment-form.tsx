@@ -391,6 +391,7 @@ export function PaymentForm({
       <form
         onSubmit={handleSubmit(pay)}
         noValidate
+        data-register-form
         aria-labelledby={`${idPrefix}-title`}
         className="flex flex-col gap-6"
       >
@@ -411,6 +412,7 @@ export function PaymentForm({
       <form
         onSubmit={handleSubmit(onContinue)}
         noValidate
+        data-register-form
         aria-labelledby={`${idPrefix}-title`}
         hidden={step !== "details"}
         className="flex flex-col gap-6"
@@ -424,6 +426,7 @@ export function PaymentForm({
         <form
           onSubmit={handleSubmit(pay)}
           noValidate
+          data-register-form
           aria-labelledby={`${idPrefix}-total-title`}
           className="flex flex-col gap-6"
         >
