@@ -75,3 +75,17 @@ export const workshopPhotos: Photo[] = [
 export function photo(id: PhotoId): Photo {
   return workshopPhotos.find((item) => item.id === id)!;
 }
+
+/**
+ * Home B's crops (design section 08): the point each photograph holds, as an
+ * object-position, and how far it zooms in on it. The zooms take the event
+ * banner at the top of the room out of frame, wherever the photograph is
+ * shown: the home page, the workshops page and the Workshop 001 recap.
+ */
+export const crops: Record<PhotoId, { focus: string; zoom: number }> = {
+  "full-room": { focus: "50% 100%", zoom: 1.39 },
+  facilitators: { focus: "0% 50%", zoom: 1.47 },
+  "over-shoulder": { focus: "50% 73%", zoom: 1.17 },
+  building: { focus: "87% 100%", zoom: 1.75 },
+  banner: { focus: "50% 100%", zoom: 1.49 },
+};

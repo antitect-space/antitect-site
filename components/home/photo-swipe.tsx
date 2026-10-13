@@ -7,8 +7,19 @@ import { useState, type ReactNode } from "react";
  * scrolling, snapping to each photograph, and a "1 / 5" counter so it is
  * plain the rest are there. The counter only reads the scroll position;
  * without JavaScript the strip scrolls just the same.
+ *
+ * On ink on the home page; on paper on the Workshop 001 recap, where the
+ * counter takes the muted ink that holds its contrast there.
  */
-export function PhotoSwipe({ count, children }: { count: number; children: ReactNode }) {
+export function PhotoSwipe({
+  count,
+  tone = "ink",
+  children,
+}: {
+  count: number;
+  tone?: "ink" | "paper";
+  children: ReactNode;
+}) {
   const [current, setCurrent] = useState(1);
 
   return (
@@ -26,7 +37,7 @@ export function PhotoSwipe({ count, children }: { count: number; children: React
       >
         {children}
       </div>
-      <p aria-hidden="true" className="type-meta flex gap-2 px-5 text-ink-faint">
+      <p aria-hidden="true" className={`type-meta flex gap-2 px-5 ${tone === "paper" ? "text-ink-muted" : "text-ink-faint"}`}>
         <span className="font-medium tabular-nums">
           {current} / {count}
         </span>

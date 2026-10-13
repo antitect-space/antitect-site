@@ -4,7 +4,7 @@ import Link from "next/link";
 import { PhotoSwipe } from "@/components/home/photo-swipe";
 import { ArrowRight } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { photo, type Photo, type PhotoId } from "@/content/gallery";
+import { crops, photo, type Photo, type PhotoId } from "@/content/gallery";
 import { workshop001 } from "@/content/proof";
 import { filled, filledCount } from "@/lib/content";
 import { cn } from "@/lib/utils";
@@ -22,22 +22,11 @@ import { cn } from "@/lib/utils";
 
 interface Placed {
   id: PhotoId;
-  /** The point the crop holds, as an object-position, and how far it zooms in on it. */
-  focus: string;
-  zoom: number;
 }
 
-// The design's crops. The zooms take the banner at the top of the room out of frame.
-const ROW_A: readonly Placed[] = [
-  { id: "full-room", focus: "50% 100%", zoom: 1.39 },
-  { id: "facilitators", focus: "0% 50%", zoom: 1.47 },
-];
-
-const ROW_B: readonly Placed[] = [
-  { id: "over-shoulder", focus: "50% 73%", zoom: 1.17 },
-  { id: "building", focus: "87% 100%", zoom: 1.75 },
-  { id: "banner", focus: "50% 100%", zoom: 1.49 },
-];
+// The design's order; the crops are content/gallery.ts's.
+const ROW_A: readonly Placed[] = [{ id: "full-room" }, { id: "facilitators" }];
+const ROW_B: readonly Placed[] = [{ id: "over-shoulder" }, { id: "building" }, { id: "banner" }];
 
 export function ProofSection() {
   const { anchor, title, place, date, people, builds, days, quotes, recap, leadAfterHeadcount } = workshop001;
@@ -139,6 +128,7 @@ export function ProofSection() {
 
 function Figure({ placed, aspect, sizes, className }: { placed: Placed; aspect: string; sizes: string; className?: string }) {
   const picture: Photo = photo(placed.id);
+  const { focus, zoom } = crops[placed.id];
 
   return (
     <figure className={cn("flex flex-col gap-2", className)}>
@@ -149,7 +139,7 @@ function Figure({ placed, aspect, sizes, className }: { placed: Placed; aspect: 
           fill
           sizes={sizes}
           className="object-cover"
-          style={{ objectPosition: placed.focus, transform: `scale(${placed.zoom})`, transformOrigin: placed.focus }}
+          style={{ objectPosition: focus, transform: `scale(${zoom})`, transformOrigin: focus }}
         />
       </div>
       <figcaption className="type-meta font-medium text-ink-faint">{picture.caption}</figcaption>

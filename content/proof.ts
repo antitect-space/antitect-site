@@ -31,6 +31,5 @@ export const workshop001 = {
   days: 1,
   // TODO(content): two quotes from attendees: what they built, and whether it still runs.
   quotes: [] as ProofQuote[],
-  // TODO(redesign): "See the Workshop 001 recap", once the workshop pages exist to hold one.
-  recap: null as { label: string; href: string } | null,
+  recap: { label: "See the Workshop 001 recap", href: "/workshops/workshop-001" } as { label: string; href: string } | null,
 };

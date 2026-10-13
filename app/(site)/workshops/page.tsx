@@ -8,6 +8,8 @@ import { Flyer } from "@/components/flyer/flyer";
 import { CloseSection } from "@/components/home/close";
 import { Fresh } from "@/components/live";
 import { FaqSection } from "@/components/sections/faq";
+import { RecapCard } from "@/components/workshop/recap";
+import { recapsNewestFirst } from "@/content/recaps";
 import { workshopFaqItems, workshopsGoFurther, workshopsPage } from "@/content/workshops";
 import { getUpcomingEvents } from "@/lib/api";
 import { upcoming, workshopsOf } from "@/lib/events";
@@ -24,8 +26,8 @@ export const metadata: Metadata = {
 
 /**
  * The workshops page (design "Workshops · Default", "Nothing scheduled" and
- * "With flyer"): the next workshop, the rest coming up, the deeper formats,
- * questions, and the community.
+ * "With flyer"): the next workshop, the rest coming up, past workshops, the
+ * deeper formats, questions, and the community.
  *
  * With nothing scheduled, the community form takes the next workshop's place
  * and the community band goes: one ask for the community per page.
@@ -35,6 +37,7 @@ export default async function WorkshopsPage() {
   const [next, ...also] = upcoming(workshopsOf(events));
   const flyer = next ? await flyerOf(next.imageUrl) : null;
   const faq = workshopFaqItems();
+  const recaps = recapsNewestFirst();
 
   return (
     <>
@@ -71,6 +74,26 @@ export default async function WorkshopsPage() {
       ) : (
         <NothingScheduled title={workshopsPage.nothing.title} line={workshopsPage.nothing.line} />
       )}
+
+      {recaps.length > 0 ? (
+        <>
+          <hr className="border-rule" />
+          <section aria-labelledby="past-title" className="section-pad">
+            <div className="container-site flex flex-col gap-8 lg:gap-10">
+              <h2 id="past-title" className="type-h2 text-ink">
+                {workshopsPage.past}
+              </h2>
+              <ul className="flex flex-col gap-12">
+                {recaps.map((recap) => (
+                  <li key={recap.slug}>
+                    <RecapCard recap={recap} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        </>
+      ) : null}
 
       <hr className="border-rule" />
       <GoFurther title={workshopsPage.goFurther} items={workshopsGoFurther} />
