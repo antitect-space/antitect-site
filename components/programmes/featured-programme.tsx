@@ -16,17 +16,23 @@ import { cn } from "@/lib/utils";
  * left under it when few remain). Taking waitlist sign-ups, it leads to the
  * waitlist. Facts the CRM has not set read "to be announced", and the rest
  * are left out.
+ *
+ * Blocks stack when several programmes are open. Only the first one's button
+ * is red; the rest are ink, so a screen never shows two red buttons.
  */
 export function FeaturedProgramme({
   program,
   flyer,
   as: Heading = "h2",
+  primary = true,
   className,
 }: {
   program: PublicProgram;
   /** The programme's flyer, when it has one: a `<Flyer placement="card">`. */
   flyer?: React.ReactNode;
   as?: "h2" | "h3";
+  /** False for every block after the first: its button is ink. */
+  primary?: boolean;
   className?: string;
 }) {
   const offer = programmeOffer(program);
@@ -88,7 +94,7 @@ export function FeaturedProgramme({
 
   const button = (
     <div className="flex flex-col gap-3">
-      <Button asChild size="lg" className="w-full px-5">
+      <Button asChild size="lg" variant={primary ? "default" : "secondary"} className="w-full px-5">
         <Link href={action.href} aria-label={`${action.label}: ${program.title}`}>
           {action.label}
         </Link>
