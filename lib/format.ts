@@ -197,7 +197,7 @@ export function firstParagraph(text: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// The ticket
+// A card's large date
 // ---------------------------------------------------------------------------
 
 const dayNumber = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, day: "numeric" });
@@ -213,7 +213,7 @@ export interface TicketDate {
   when: string;
 }
 
-/** The stub's date, always rendered on the server so the ticket is right without JavaScript. */
+/** The large date on a next-up card, rendered on the server so it is right without JavaScript. */
 export function ticketDate(startsAt: string): TicketDate {
   const at = new Date(startsAt);
   return {
@@ -258,7 +258,7 @@ function lagosDaysBetween(from: number, to: number): number {
 }
 
 /**
- * The first sentence of an admin-authored description, for the ticket's one
+ * The first sentence of an admin-authored description, for a card's promise
  * line. Never invented: when there is no description there is no line.
  */
 export function firstSentence(text: string, max = 90): string | null {

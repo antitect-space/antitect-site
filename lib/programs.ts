@@ -237,7 +237,7 @@ export interface ProgrammeOffer {
 
 /**
  * What a run offers, decided from `enrollmentOpen` and `waitlistOpen` together
- * and never from the phase alone. The page, its card and the hero ticket all
+ * and never from the phase alone. The page, its cards and the home page all
  * read this, so they cannot disagree.
  *
  * A draft is never paid for, whatever else the record says. An API that
