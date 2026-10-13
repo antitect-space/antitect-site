@@ -1,24 +1,46 @@
-import type { PublicEvent, PublicProgram } from "./api";
+import type { PublicEvent, PublicProgram, Venue } from "./api";
 import { formatKobo, hasStarted } from "./format";
 
 /**
- * How long an event stays on the site after it starts.
- *
- * The API sends a start time and, for now, nothing that says when an event
- * actually ends, so the site cannot know it is over. Two hours covers a
+ * How long an event without an end time is taken to last. Two hours covers a
  * session in progress — long enough for somebody arriving late to see
  * "Happening now" rather than nothing, short enough that yesterday's webinar
  * never invites anybody to register.
  */
 export const HAPPENING_NOW_MS = 2 * 60 * 60 * 1000;
 
+type Timed = Pick<PublicEvent, "startsAt" | "endsAt">;
+
+/**
+ * When an event is over: at its end time when it has one, and otherwise two
+ * hours after it starts. An end at or before the start is no end at all.
+ */
+export function endOf(event: Timed): number {
+  const start = new Date(event.startsAt).getTime();
+  const end = event.endsAt ? new Date(event.endsAt).getTime() : Number.NaN;
+  return Number.isFinite(end) && end > start ? end : start + HAPPENING_NOW_MS;
+}
+
 /**
  * Past, as far as the site is concerned. Everything that lists events filters
  * through this, so a stale page or an API that ever starts returning finished
  * events cannot advertise one.
  */
-export function isOver(event: Pick<PublicEvent, "startsAt">, now: number = Date.now()): boolean {
-  return new Date(event.startsAt).getTime() + HAPPENING_NOW_MS <= now;
+export function isOver(event: Timed, now: number = Date.now()): boolean {
+  return endOf(event) <= now;
+}
+
+/** "Live now": from the start until it is over. */
+export function isLive(event: Timed, now: number = Date.now()): boolean {
+  return hasStarted(event.startsAt, now) && !isOver(event, now);
+}
+
+export type EventPhase = "before" | "live" | "over";
+
+/** Where an event stands at `now`. Decided in the browser wherever the page may be cached. */
+export function eventPhase(event: Timed, now: number = Date.now()): EventPhase {
+  if (!hasStarted(event.startsAt, now)) return "before";
+  return isOver(event, now) ? "over" : "live";
 }
 
 /** Events worth showing: not finished, soonest first. */
@@ -26,6 +48,35 @@ export function upcoming(events: PublicEvent[], now: number = Date.now()): Publi
   return events
     .filter((event) => !isOver(event, now))
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+}
+
+/** One type of event, keeping the order it came in. */
+export function ofType(events: PublicEvent[], type: PublicEvent["type"]): PublicEvent[] {
+  return events.filter((event) => event.type === type);
+}
+
+export function webinarsOf(events: PublicEvent[]): PublicEvent[] {
+  return ofType(events, "webinar");
+}
+
+export function workshopsOf(events: PublicEvent[]): PublicEvent[] {
+  return ofType(events, "workshop");
+}
+
+/** The page each type of event lives on. */
+export function eventsPath(type: PublicEvent["type"]): "/webinars" | "/workshops" {
+  return type === "workshop" ? "/workshops" : "/webinars";
+}
+
+/** An event's own page, under its type: /webinars/… or /workshops/…. */
+export function eventHref(event: Pick<PublicEvent, "type" | "slug">): string {
+  return `${eventsPath(event.type)}/${event.slug}`;
+}
+
+/** Google Maps searching for the venue's own name and address: "Get directions". */
+export function directionsUrl(venue: Pick<Venue, "name" | "address">): string {
+  const query = [venue.name, venue.address].filter(Boolean).join(", ");
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 export type RegistrationState = "open" | "full" | "closed";
@@ -41,7 +92,7 @@ export function registrationState(event: PublicEvent, now: number = Date.now()):
   return "open";
 }
 
-export function isPaid(event: PublicEvent): boolean {
+export function isPaid(event: Pick<PublicEvent, "priceKobo">): boolean {
   return event.priceKobo > 0;
 }
 

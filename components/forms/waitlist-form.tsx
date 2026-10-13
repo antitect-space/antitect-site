@@ -1,34 +1,23 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { OnWaitlist } from "@/components/forms/outcomes";
-import { FormAlert, PersonFields, SlowNote } from "@/components/forms/person-fields";
+import { FormAlert, FormHead, SlowNote, SubmitButton } from "@/components/forms/fields";
+import { PersonFields } from "@/components/forms/person-fields";
 import { useSubmission } from "@/components/forms/use-submission";
 import { Button } from "@/components/ui/button";
 import { joinWaitlist, type WaitlistResponse } from "@/lib/api";
 import { describeFailure } from "@/lib/form-errors";
-import type { WaitlistWording } from "@/lib/programs";
 import { EMPTY_PERSON, personSchema, type PersonBody, type PersonInput } from "@/lib/schemas";
 import { communityLink } from "@/lib/site";
 
-const COPY: Record<WaitlistWording, { heading: string; lead: string }> = {
-  join: {
-    heading: "Join the waitlist",
-    lead: "Leave your details and you will hear first when enrolment opens.",
-  },
-  next: {
-    heading: "Join the waitlist for the next cohort",
-    lead: "Leave your details and you will hear when the next one opens.",
-  },
-};
-
 /**
  * Interest in a programme, with no payment and no place held, where paying
- * is not on offer: a draft, or a run that is full or closed. The heading is
- * worded for which; the button always joins the waitlist.
+ * is not on offer: a draft, or a run that is full or closed (design C6,
+ * "waitlist", "full-waitlist" and "closed-waitlist"). The panel words the
+ * heading for which; the button always joins the waitlist.
  *
  * The form never clears on a failed submit, and submitting twice is harmless:
  * the API answers a repeat with `alreadyOnWaitlist`. When the waitlist turns
@@ -38,15 +27,18 @@ const COPY: Record<WaitlistWording, { heading: string; lead: string }> = {
 export function WaitlistForm({
   slug,
   title,
-  wording,
+  heading,
+  line,
+  idPrefix = "waitlist",
   onClosed,
 }: {
   slug: string;
   title: string;
-  wording: WaitlistWording;
+  heading: string;
+  line?: string;
+  idPrefix?: string;
   onClosed: () => void;
 }) {
-  const copy = COPY[wording];
   const [joined, setJoined] = useState<WaitlistResponse | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const { slow, run } = useSubmission();
@@ -81,42 +73,64 @@ export function WaitlistForm({
     }
   }
 
-  if (joined) {
-    return (
-      <OnWaitlist
-        response={joined}
-        title={title}
-        next={{ href: "/events", label: "See upcoming events" }}
-        community={communityLink()}
-      />
-    );
-  }
+  if (joined) return <OnWaitlist idPrefix={idPrefix} response={joined} title={title} />;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate aria-labelledby="waitlist-title">
-      <h2 id="waitlist-title" className="text-title text-3xl">
-        {copy.heading}
-      </h2>
-      <p className="mt-2 leading-[1.6] text-muted-foreground">
-        {copy.lead} No payment, and no place held.
-      </p>
-
-      <div className="mt-6">
-        <PersonFields
-          register={register}
-          control={control}
-          errors={errors}
-          idPrefix="waitlist"
-          consentLabel={`You can message me on WhatsApp about ${title}`}
-        />
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      aria-labelledby={`${idPrefix}-title`}
+      className="flex flex-col gap-6"
+    >
+      <FormHead id={`${idPrefix}-title`} title={heading} line={line} />
+      <PersonFields register={register} control={control} errors={errors} idPrefix={idPrefix} />
+      <div className="flex flex-col gap-3">
+        <FormAlert message={formError} />
+        <div>
+          <SubmitButton busy={isSubmitting} busyLabel="Joining…">
+            Join the waitlist
+          </SubmitButton>
+          <SlowNote show={isSubmitting && slow} />
+        </div>
       </div>
-
-      <FormAlert message={formError} className="mt-6" />
-      {/* "Join waitlist" whichever heading led here: what the button does is the same. */}
-      <Button type="submit" size="lg" className="mt-6 w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Joining…" : "Join waitlist"}
-      </Button>
-      <SlowNote show={isSubmitting && slow} />
     </form>
+  );
+}
+
+/**
+ * On the waitlist, which is for the programme rather than this run. All three
+ * answers are a success. Only a new place on the list sends anything, so the
+ * other two say nothing about an inbox. The form's red button has gone, so
+ * the community invite takes its place.
+ */
+function OnWaitlist({ idPrefix, response, title }: { idPrefix: string; response: WaitlistResponse; title: string }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
+  const { alreadyEnrolled, alreadyOnWaitlist, sentTo } = response;
+  const sent = !alreadyEnrolled && !alreadyOnWaitlist && sentTo !== null;
+  const community = communityLink();
+
+  const heading = alreadyEnrolled
+    ? `You already have a place on ${title}.`
+    : alreadyOnWaitlist
+      ? `You’re already on the waitlist for ${title}.`
+      : `You’re on the waitlist for ${title}.`;
+  const line = sent ? `We’ve sent a confirmation to ${sentTo}.` : alreadyEnrolled ? null : "We’ll be in touch.";
+
+  return (
+    <div role="status" className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
+        <FormHead id={`${idPrefix}-title`} headingRef={headingRef} title={heading} />
+        {line ? <p className="type-body text-ink">{line}</p> : null}
+      </div>
+      <Button asChild size="lg" className="w-full px-5">
+        <a href={community.href} target="_blank" rel="noopener noreferrer">
+          {community.label}
+        </a>
+      </Button>
+    </div>
   );
 }

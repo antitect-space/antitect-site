@@ -49,6 +49,12 @@ export interface PublicEvent {
   capacity: number | null;
   spotsRemaining: number | null;
   isFull: boolean;
+  /**
+   * The session's recording, once the team adds one. Additive and absent
+   * until the CRM ships it, so it is optional. Only a YouTube link counts:
+   * lib/recordings.ts treats anything else as no recording.
+   */
+  recordingUrl?: string | null;
 }
 
 export interface ProgramProject {
@@ -334,6 +340,21 @@ export const getUpcomingEvents = cache((limit: number = 25) =>
 export const getEvent = cache((slug: string) => readOne<PublicEvent>("/api/public/events", slug));
 
 /**
+ * Events that have happened, for their recordings. The CRM does not serve
+ * past events yet, and may ignore `when` and answer with upcoming ones, so
+ * callers keep only what has started and carries a recording
+ * (`pastRecordings` in lib/recordings.ts). Any failure is an empty list: a
+ * recordings section simply stays hidden rather than taking a page down.
+ */
+export const getPastEvents = cache(async (): Promise<PublicEvent[]> => {
+  try {
+    return await readList<PublicEvent>("/api/public/events?when=past&limit=25");
+  } catch {
+    return [];
+  }
+});
+
+/**
  * Runs open for enrolment, soonest first; then runs taking waitlist sign-ups
  * and nothing else, drafts included. The first item is always something a
  * visitor can buy, when there is one.
@@ -342,18 +363,169 @@ export const getPrograms = cache(() => readList<PublicProgram>("/api/public/prog
 
 export const getProgram = cache((slug: string) => readOne<PublicProgram>("/api/public/programs", slug));
 
-/** For the sitemap, which can afford to be an hour stale. */
-export async function getSitemapSlugs(): Promise<{ events: string[]; programs: string[] }> {
+/** For the sitemap, which can afford to be an hour stale. Events carry their type, which decides their address. */
+export async function getSitemapSlugs(): Promise<{
+  events: Array<Pick<PublicEvent, "slug" | "type">>;
+  programs: string[];
+}> {
   const [events, programs] = await Promise.all([
     readList<PublicEvent>("/api/public/events?limit=100", 3600).catch(() => []),
     readList<PublicProgram>("/api/public/programs?limit=100", 3600).catch(() => []),
   ]);
-  return { events: events.map((e) => e.slug), programs: programs.map((p) => p.slug) };
+  return { events: events.map(({ slug, type }) => ({ slug, type })), programs: programs.map((p) => p.slug) };
 }
 
 function describe(error: unknown): string {
   if (error instanceof ApiError) return `${error.status} ${error.code}: ${error.message}`;
   return error instanceof Error ? error.message : String(error);
+}
+
+// ---------------------------------------------------------------------------
+// Image size. A flyer is shown whole, at its own shape, and its box is
+// reserved before it loads so nothing shifts. The CRM keeps only the image's
+// address, so the shape is read here from the file's own first bytes: every
+// common format states its size in its header. Cached for a day, because a
+// file at one address never changes shape.
+// ---------------------------------------------------------------------------
+
+export interface ImageSize {
+  width: number;
+  height: number;
+  format: "jpeg" | "png" | "gif" | "webp";
+}
+
+const WINDOW_BYTES = 65_536;
+/** A JPEG's metadata can run long (a colour profile can be half a megabyte), so it is walked a window at a time. */
+const MAX_WINDOWS = 24;
+
+async function readWindow(url: string, from: number): Promise<Uint8Array | null> {
+  const response = await fetch(url, {
+    headers: { Range: `bytes=${from}-${from + WINDOW_BYTES - 1}` },
+    next: { revalidate: 86_400 },
+    signal: AbortSignal.timeout(READ_TIMEOUT_MS),
+  });
+  if (!response.ok) return null;
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  // A server that ignores Range sends the whole file from the start.
+  if (response.status === 200 && from > 0) return bytes.subarray(from, from + WINDOW_BYTES);
+  return bytes.subarray(0, WINDOW_BYTES);
+}
+
+/** The image's size as it displays, or null when it cannot be read. Never throws. */
+export const getImageSize = cache(async (url: string): Promise<ImageSize | null> => {
+  try {
+    const head = await readWindow(url, 0);
+    if (!head) return null;
+    const size = readImageSize(head);
+    if (size) return size;
+    if (head.length < 4 || head[0] !== 0xff || head[1] !== 0xd8) return null;
+
+    // A JPEG whose frame header lies beyond the first window: follow the
+    // segment lengths, fetching only the window where the next one starts.
+    let scan = scanJpeg(head, 0, 2, false);
+    for (let i = 1; i < MAX_WINDOWS && "next" in scan; i++) {
+      const window = await readWindow(url, scan.next);
+      if (!window || window.length < 4) return null;
+      scan = scanJpeg(window, scan.next, scan.next, scan.turned);
+    }
+    return "size" in scan ? scan.size : null;
+  } catch {
+    return null;
+  }
+});
+
+/** The size from a file's header: JPEG, PNG, GIF or WebP. Exported for testing. */
+export function readImageSize(bytes: Uint8Array): ImageSize | null {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const ascii = (at: number, length: number) => String.fromCharCode(...bytes.subarray(at, at + length));
+  const size = (width: number, height: number, format: ImageSize["format"]) =>
+    width > 0 && height > 0 ? { width, height, format } : null;
+
+  if (bytes.length >= 24 && view.getUint32(0) === 0x89504e47) {
+    return size(view.getUint32(16), view.getUint32(20), "png");
+  }
+  if (bytes.length >= 10 && (ascii(0, 6) === "GIF87a" || ascii(0, 6) === "GIF89a")) {
+    return size(view.getUint16(6, true), view.getUint16(8, true), "gif");
+  }
+  if (bytes.length >= 30 && ascii(0, 4) === "RIFF" && ascii(8, 4) === "WEBP") {
+    const chunk = ascii(12, 4);
+    if (chunk === "VP8 ") return size(view.getUint16(26, true) & 0x3fff, view.getUint16(28, true) & 0x3fff, "webp");
+    if (chunk === "VP8L") {
+      const bits = view.getUint32(21, true);
+      return size((bits & 0x3fff) + 1, ((bits >> 14) & 0x3fff) + 1, "webp");
+    }
+    if (chunk === "VP8X") {
+      const width = 1 + (bytes[24]! | (bytes[25]! << 8) | (bytes[26]! << 16));
+      const height = 1 + (bytes[27]! | (bytes[28]! << 8) | (bytes[29]! << 16));
+      return size(width, height, "webp");
+    }
+    return null;
+  }
+  if (bytes.length >= 4 && view.getUint16(0) === 0xffd8) {
+    const scan = scanJpeg(bytes, 0, 2, false);
+    return "size" in scan ? scan.size : null;
+  }
+  return null;
+}
+
+type JpegScan = { size: ImageSize } | { next: number; turned: boolean } | { fail: true };
+
+/**
+ * Walks a JPEG's segments within one window of the file, `bytes`, which
+ * starts at file offset `base`, from file offset `from`. The size is in the
+ * frame header, after any metadata: found, it is returned; otherwise the scan
+ * says where in the file the next segment starts, so the caller can fetch the
+ * window there. A camera photo may say it is to be shown turned on its side
+ * (EXIF orientation 5 to 8), which browsers honour, so then the width and
+ * height swap.
+ */
+function scanJpeg(bytes: Uint8Array, base: number, from: number, turnedSoFar: boolean): JpegScan {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let at = from - base;
+  let turned = turnedSoFar;
+
+  while (true) {
+    // The segment's marker and length must be in this window to read them.
+    if (at + 4 > bytes.length) return { next: base + at, turned };
+    if (bytes[at] !== 0xff) return { fail: true };
+    const marker = bytes[at + 1]!;
+    if (marker === 0xff) {
+      at += 1;
+      continue;
+    }
+    const length = view.getUint16(at + 2);
+
+    // Start-of-frame markers, less the ones that share the range (DHT, JPG, DAC).
+    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+      if (at + 9 > bytes.length) return { next: base + at, turned };
+      const height = view.getUint16(at + 5);
+      const width = view.getUint16(at + 7);
+      if (width <= 0 || height <= 0) return { fail: true };
+      return { size: turned ? { width: height, height: width, format: "jpeg" } : { width, height, format: "jpeg" } };
+    }
+    if (marker === 0xe1 && at + 10 <= bytes.length && String.fromCharCode(...bytes.subarray(at + 4, at + 8)) === "Exif") {
+      const orientation = exifOrientation(bytes, at + 10);
+      turned = orientation !== null && orientation >= 5 && orientation <= 8;
+    }
+    if (length < 2) return { fail: true };
+    at += 2 + length;
+  }
+}
+
+/** The EXIF orientation tag (0x0112) from the TIFF block at `tiff`, or null. */
+function exifOrientation(bytes: Uint8Array, tiff: number): number | null {
+  if (tiff + 8 > bytes.length) return null;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const little = bytes[tiff] === 0x49;
+  const ifd = tiff + view.getUint32(tiff + 4, little);
+  if (ifd + 2 > bytes.length) return null;
+  const entries = view.getUint16(ifd, little);
+  for (let i = 0; i < entries; i++) {
+    const entry = ifd + 2 + i * 12;
+    if (entry + 12 > bytes.length) return null;
+    if (view.getUint16(entry, little) === 0x0112) return view.getUint16(entry + 8, little);
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------

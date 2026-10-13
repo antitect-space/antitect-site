@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
 
+import { EnquiriesCard } from "@/components/handover/cards";
+import { HandoverSequences } from "@/components/handover/sequence";
+import { CloseSection } from "@/components/home/close";
+import { ContactSection } from "@/components/home/contact";
+import { FormatsSection } from "@/components/home/formats";
+import { OrbitHero } from "@/components/home/hero";
+import { ProofSection } from "@/components/home/proof";
+import { TasksSection } from "@/components/home/tasks";
 import { JsonLd } from "@/components/json-ld";
-import { CommunitySection } from "@/components/sections/community";
-import { EventsSection } from "@/components/sections/events";
 import { FaqSection } from "@/components/sections/faq";
-import { GallerySection } from "@/components/sections/gallery";
-import { Hero } from "@/components/sections/hero";
-import { LoopSection } from "@/components/sections/loop";
-import { PremiseSection } from "@/components/sections/premise";
-import { ProgrammesSection } from "@/components/sections/programmes";
-import { WhySection } from "@/components/sections/why";
 import { generalFaq } from "@/content/faq";
 import { getPrograms, getUpcomingEvents } from "@/lib/api";
-import { upcoming } from "@/lib/events";
+import { ofType, upcoming } from "@/lib/events";
 import { organizationJsonLd, shareMetadata } from "@/lib/metadata";
-import { enrolmentState } from "@/lib/programs";
 import { SITE_DESCRIPTION } from "@/lib/site";
 
 /**
@@ -33,30 +32,32 @@ export const metadata: Metadata = {
   ...shareMetadata({ title, description: SITE_DESCRIPTION, path: "/" }),
 };
 
-const EVENTS_ON_HOME = 3;
-
+/**
+ * The home page (Home B, the orbit hero): what Antitect teaches, the work it
+ * hands over to AI, the three ways to learn it, the proof, the questions,
+ * the people to talk to, and the community. Two API reads: upcoming events,
+ * which feed the live line, the webinars and the workshops, and the
+ * programmes.
+ */
 export default async function HomePage() {
-  const [events, programs] = await Promise.all([getUpcomingEvents(EVENTS_ON_HOME + 1), getPrograms()]);
+  const [events, programs] = await Promise.all([getUpcomingEvents(), getPrograms()]);
 
   // One guard for the whole page: nothing that has finished is ever upcoming.
   const live = upcoming(events);
-  const nextProgram = programs.find((program) => enrolmentState(program) === "open") ?? programs[0] ?? null;
+  const webinars = ofType(live, "webinar");
+  const workshops = ofType(live, "workshop");
 
   return (
     <>
       <JsonLd data={organizationJsonLd()} />
-      <Hero event={live[0] ?? null} program={nextProgram} />
-      <PremiseSection />
-      <GallerySection />
-      <LoopSection />
-      {live.length > 0 ? (
-        <EventsSection events={live.slice(0, EVENTS_ON_HOME)} hasMore={live.length > EVENTS_ON_HOME} />
-      ) : null}
-      {programs.length > 0 ? <ProgrammesSection programs={programs} /> : null}
-      <WhySection />
-      {/* The section below is notched, and climbs into this one. */}
-      <FaqSection items={generalFaq} className="notch-clearance" />
-      <CommunitySection />
+      <OrbitHero webinar={webinars[0] ?? null} card={<EnquiriesCard />} />
+      <TasksSection programs={programs} />
+      <FormatsSection webinars={webinars} workshops={workshops} programme={programs[0] ?? null} />
+      <ProofSection />
+      <FaqSection items={generalFaq} openFirst />
+      <ContactSection />
+      <CloseSection />
+      <HandoverSequences />
     </>
   );
 }

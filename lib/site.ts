@@ -20,9 +20,12 @@ export const API_URL = withoutTrailingSlash(
 
 export const SITE_NAME = "Antitect";
 
-/** Under 160 characters. Location terms first: they are what people search for. */
+/**
+ * Under 160 characters, with no place and no price: link previews are cached
+ * long after either changes.
+ */
 export const SITE_DESCRIPTION =
-  "Hands-on AI programmes in Lagos. Build real projects with instructor guidance — free webinars, workshops, and structured capability programmes.";
+  "Antitect teaches people to use AI on their real work, with no coding needed: free live webinars, one-day workshops and capability development programmes.";
 
 export const CONTACT = {
   email: "hello@antitect.org",
@@ -46,18 +49,53 @@ export const CONTACT = {
  */
 export const COMMUNITY_INVITE_URL = "https://chat.whatsapp.com/CgHdBJWmPtG03BI4mmJ6vs";
 
+/** A chat with the team, opened with `text` already typed for them. */
+export function whatsappChat(text: string): string {
+  return `${CONTACT.whatsappChatUrl}?text=${encodeURIComponent(text)}`;
+}
+
 export function communityLink(): { href: string; label: string } {
   return COMMUNITY_INVITE_URL
     ? { href: COMMUNITY_INVITE_URL, label: "Join the WhatsApp community" }
     : { href: CONTACT.whatsappChatUrl, label: "Message us on WhatsApp" };
 }
 
-export const NAV = [
-  { label: "Programmes", href: "/programmes" },
-  { label: "Events", href: "/events" },
-  { label: "How it works", href: "/#how-it-works" },
-  { label: "About", href: "/about" },
-] as const;
+export interface NavLink {
+  label: string;
+  href: string;
+}
+
+/** The three formats, deepest last, then the company. */
+const WEBINARS: NavLink = { label: "Webinars", href: "/webinars" };
+const WORKSHOPS: NavLink = { label: "Workshops", href: "/workshops" };
+const PROGRAMMES: NavLink = { label: "Capability development programmes", href: "/programmes" };
+const ABOUT: NavLink = { label: "About", href: "/about" };
+
+export const SIGN_IN: NavLink = { label: "Sign in", href: "/learn/login" };
+export const CONTACT_LINK: NavLink = { label: "Contact", href: "/#contact" };
+export const JOIN_FREE: NavLink = { label: "Join free", href: "/community" };
+
+export const NAV: readonly NavLink[] = [WEBINARS, WORKSHOPS, PROGRAMMES, ABOUT];
+
+/**
+ * The footer's columns. Legal is left out until its pages exist: Privacy,
+ * Terms and Refunds.
+ */
+// TODO(content): add a Legal group (Privacy, Terms, Refunds) once those pages exist.
+export const FOOTER_NAV: ReadonlyArray<{ heading: string; links: readonly NavLink[] }> = [
+  { heading: "Learn", links: [WEBINARS, WORKSHOPS, PROGRAMMES, { label: "Community", href: "/community" }] },
+  { heading: "Company", links: [ABOUT, CONTACT_LINK, SIGN_IN] },
+];
+
+/**
+ * Registration and social accounts, shown in the footer once they are
+ * confirmed. Until then nothing is shown, rather than a placeholder.
+ */
+// TODO(content): the CAC RC number, and links to the social accounts that are active.
+export const COMPANY: { cacNumber: string | null; socials: readonly NavLink[] } = {
+  cacNumber: null,
+  socials: [],
+};
 
 export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;

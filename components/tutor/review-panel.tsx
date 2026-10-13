@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { FormAlert, SlowNote } from "@/components/forms/person-fields";
+import { FormAlert, SlowNote } from "@/components/area/form-parts";
 import { useSubmission } from "@/components/forms/use-submission";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api";

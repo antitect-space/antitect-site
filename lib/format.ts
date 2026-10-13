@@ -80,6 +80,66 @@ export function formatShortWhen(startsAt: string): string {
   return `${dateShort.format(start)} · ${timeOnly.format(start)} ${TIME_ZONE_SHORT}`;
 }
 
+const NBSP = " ";
+const keepTogether = (text: string) => text.replace(/ /g, NBSP);
+
+/** "Saturday, 17 October 2026", for a card's date in full. */
+export function formatDateLong(instant: string): string {
+  return dateLong.format(new Date(instant));
+}
+
+/** "Saturday", for the weekday under a card's large date. */
+export function formatWeekday(instant: string): string {
+  return weekdayLong.format(new Date(instant));
+}
+
+const weekdayLong = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, weekday: "long" });
+
+/**
+ * "10:00 am – 12:00 pm WAT", or "10:00 am WAT" without an end, or with an end
+ * on another day. Spaces are non-breaking, so the range never splits across
+ * lines.
+ */
+export function formatTimeRange(startsAt: string, endsAt: string | null = null): string {
+  const start = new Date(startsAt);
+  const end = endsAt ? new Date(endsAt) : null;
+  const sameDay = end && end > start && dayKey.format(start) === dayKey.format(end);
+  const range = sameDay
+    ? `${timeOnly.format(start)} – ${timeOnly.format(end)}`
+    : timeOnly.format(start);
+  return keepTogether(`${range} ${TIME_ZONE_SHORT}`);
+}
+
+/**
+ * "2 hours", "45 minutes", "1 hour 30 minutes". Only from a real end time on
+ * the same day: without one, the site never guesses a length.
+ */
+export function formatLength(startsAt: string, endsAt: string | null): string | null {
+  if (!endsAt) return null;
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+  if (!(end > start) || dayKey.format(start) !== dayKey.format(end)) return null;
+
+  const minutes = Math.round((end.getTime() - start.getTime()) / 60_000);
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const hourText = hours > 0 ? `${hours} ${plural(hours, "hour", "hours")}` : null;
+  const minuteText = rest > 0 ? `${rest} ${plural(rest, "minute", "minutes")}` : null;
+  return keepTogether([hourText, minuteText].filter(Boolean).join(" "));
+}
+
+/** "Sat 17 Oct", for a one-line mention such as the hero's live line. */
+export function formatDayShort(instant: string): string {
+  return dateShort.format(new Date(instant));
+}
+
+const dayAndMonth = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, day: "numeric", month: "long" });
+
+/** "26 October", for a start date close enough that the year goes without saying. */
+export function formatDayMonth(instant: string): string {
+  return dayAndMonth.format(new Date(instant));
+}
+
 /** "12 October 2026", for a cohort start. */
 export function formatDay(instant: string): string {
   return dateNoWeekday.format(new Date(instant));
@@ -137,7 +197,7 @@ export function firstParagraph(text: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// The ticket
+// A card's large date
 // ---------------------------------------------------------------------------
 
 const dayNumber = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, day: "numeric" });
@@ -153,7 +213,7 @@ export interface TicketDate {
   when: string;
 }
 
-/** The stub's date, always rendered on the server so the ticket is right without JavaScript. */
+/** The large date on a next-up card, rendered on the server so it is right without JavaScript. */
 export function ticketDate(startsAt: string): TicketDate {
   const at = new Date(startsAt);
   return {
@@ -165,17 +225,17 @@ export function ticketDate(startsAt: string): TicketDate {
 
 /**
  * "In 3 days", "Tomorrow", "Today · starts 10:00 am", "Happening now", or null
- * once it is over.
+ * once it is over, at `overAt` (an instant, in ms).
  *
  * Only ever called in the browser: a label rendered on the server goes stale
  * inside the cache, and a page cached at noon would still say "Tomorrow" the
  * next morning. Today and tomorrow are decided in Lagos, not in the visitor's
  * timezone, because that is where the event is.
  */
-export function relativeLabel(startsAt: string, now: number, graceMs: number): string | null {
+export function relativeLabel(startsAt: string, now: number, overAt: number): string | null {
   const start = new Date(startsAt).getTime();
 
-  if (start <= now) return now - start <= graceMs ? "Happening now" : null;
+  if (start <= now) return now < overAt ? "Happening now" : null;
 
   const days = lagosDaysBetween(now, start);
   if (days === 0) return `Today · starts ${timeOnly.format(new Date(start))}`;
@@ -198,7 +258,7 @@ function lagosDaysBetween(from: number, to: number): number {
 }
 
 /**
- * The first sentence of an admin-authored description, for the ticket's one
+ * The first sentence of an admin-authored description, for a card's promise
  * line. Never invented: when there is no description there is no line.
  */
 export function firstSentence(text: string, max = 90): string | null {
@@ -208,6 +268,28 @@ export function firstSentence(text: string, max = 90): string | null {
   const end = flat.search(/[.!?](\s|$)/);
   const sentence = end > 0 ? flat.slice(0, end + 1) : flat;
   return sentence.length > max ? summarise(sentence, max) : sentence;
+}
+
+/**
+ * A description's first sentence, to stand under a detail page's heading,
+ * and everything after it, for the section below, so no sentence is printed
+ * twice. A first sentence too long to stand as a promise stays in the body,
+ * and the page goes without one.
+ */
+export function leadAndRest(text: string, max = 200): { lead: string | null; rest: string } {
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+  const [first, ...others] = paragraphs;
+  if (!first) return { lead: null, rest: "" };
+
+  const flat = first.replace(/\s+/g, " ");
+  const end = flat.search(/[.!?](\s|$)/);
+  const lead = end > 0 ? flat.slice(0, end + 1) : flat;
+  if (lead.length > max) return { lead: null, rest: paragraphs.join("\n\n") };
+
+  return { lead, rest: [flat.slice(lead.length).trim(), ...others].filter(Boolean).join("\n\n") };
 }
 
 // ---------------------------------------------------------------------------

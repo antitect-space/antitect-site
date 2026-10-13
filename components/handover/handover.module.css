@@ -1,0 +1,471 @@
+/*
+ * The handover card (design section 05). Two halves, "Today" and "With AI",
+ * either side of a 1px ink divider with the arrow in an outlined square at
+ * its middle. Below 540px of card width the halves stack and the arrow
+ * points down.
+ *
+ * Every before and after state shares one grid cell (`.swap`), so a card is
+ * always the size of its largest state and never changes size while it
+ * plays.
+ */
+
+/* The frame takes any spare height, so two cards side by side end level. */
+.card {
+  container: handover / inline-size;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 12px;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  border: 1px solid var(--field-border);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.half {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  min-width: 0;
+}
+
+.large .half {
+  gap: 16px;
+  padding: 24px;
+}
+
+.divider {
+  position: relative;
+  background: var(--ink);
+}
+
+.badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+}
+
+.large .badge {
+  width: 28px;
+  height: 28px;
+}
+
+.arrow {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@container handover (max-width: 540px) {
+  .frame {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1px auto;
+  }
+
+  .arrow {
+    transform: rotate(90deg);
+  }
+}
+
+.caption {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink-muted);
+}
+
+/* ---- Type ---------------------------------------------------------------- */
+
+.meta {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink-muted);
+}
+
+.plain {
+  font-weight: 400;
+}
+
+.sum {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.large .sum {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.body15 {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.t13 {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.foot {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink-muted);
+}
+
+.strong {
+  font-weight: 600;
+}
+
+/* ---- Pieces ---------------------------------------------------------------- */
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 18px;
+}
+
+.stack {
+  display: grid;
+  gap: 6px;
+}
+
+.large .stack {
+  gap: 8px;
+}
+
+.block {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--wash);
+}
+
+.large .block {
+  gap: 4px;
+  padding: 10px 12px;
+}
+
+.blockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.blockHead b {
+  font-weight: 600;
+}
+
+.blockRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-muted);
+}
+
+/* A tick or flag on the Today side, and the finishing tick: ink (rule 7). */
+.mark {
+  width: 14px;
+  height: 14px;
+  color: var(--ink);
+}
+
+.items > li {
+  display: grid;
+  gap: 6px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.items > li:first-child {
+  padding-top: 0;
+}
+
+.items > li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.rowTop {
+  align-items: flex-start;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.orders > li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 56px 78px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.orders > li:first-child {
+  border-top: 0;
+}
+
+.orders b {
+  font-weight: 600;
+}
+
+.group {
+  display: grid;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.group:first-child {
+  padding-top: 0;
+}
+
+.group:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.count {
+  min-width: 3ch;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.chip {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.sections {
+  display: grid;
+  gap: 12px;
+}
+
+.section {
+  display: grid;
+  gap: 3px;
+}
+
+.section h4 {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.checklist {
+  gap: 6px;
+}
+
+/* A checkbox. Ticked is ink, not green: status colours stay on the labels (rule 7). */
+.box {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border: 1.5px solid var(--ink-muted);
+  border-radius: 4px;
+  background: var(--paper);
+}
+
+.boxTicked {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.ruled {
+  display: grid;
+  gap: 16px;
+  padding-top: 6px;
+}
+
+.ruled span {
+  display: block;
+  height: 1px;
+  background: var(--rule);
+}
+
+.noteBlock {
+  padding-bottom: 18px;
+}
+
+.noteHead {
+  align-items: flex-start;
+}
+
+/* The grey bar that stands in for text still to come. */
+.bar {
+  display: block;
+  width: min(160px, 70%);
+  height: 9px;
+  margin-top: 6px;
+  border-radius: 4px;
+  background: var(--rule);
+}
+
+.thin {
+  height: 8px;
+  margin-top: 5px;
+}
+
+/* Three ink dots while it works; a tick when it is done. */
+.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+/* Before and after, in one cell. */
+.swap {
+  display: grid;
+  align-items: start;
+  justify-items: start;
+}
+
+.swap > * {
+  grid-area: 1 / 1;
+}
+
+/* ---- States -----------------------------------------------------------------
+ * `data-from` is the step something appears at, `data-until` the step it
+ * gives way at. With no step set, which is how the server renders a card, it
+ * is at its end: everything with a `data-from` shows and everything with a
+ * `data-until` is hidden. That is also the state with no JavaScript, and with
+ * reduced motion.
+ * --------------------------------------------------------------------------- */
+
+.frame [data-until] {
+  opacity: 0;
+}
+
+.arrow path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+/*
+ * While a card plays, the motion script sets `data-step` on its frame (0 up
+ * to its last step). Something whose `data-from` is later than the step is
+ * hidden (and lowered 6px, if it rises); something whose `data-until` is
+ * later than the step still shows. The arrow is drawn from step 1. The hiding
+ * rules come last, so a line with both a `from` and an `until` obeys both.
+ */
+.frame[data-step="0"] :is([data-until="1"], [data-until="2"], [data-until="3"], [data-until="4"], [data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="1"] :is([data-until="2"], [data-until="3"], [data-until="4"], [data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="2"] :is([data-until="3"], [data-until="4"], [data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="3"] :is([data-until="4"], [data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="4"] :is([data-until="5"], [data-until="6"], [data-until="7"]),
+.frame[data-step="5"] :is([data-until="6"], [data-until="7"]),
+.frame[data-step="6"] [data-until="7"] {
+  opacity: 1;
+}
+
+.frame[data-step="0"] :is([data-from="1"], [data-from="2"], [data-from="3"], [data-from="4"], [data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="1"] :is([data-from="2"], [data-from="3"], [data-from="4"], [data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="2"] :is([data-from="3"], [data-from="4"], [data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="3"] :is([data-from="4"], [data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="4"] :is([data-from="5"], [data-from="6"], [data-from="7"]),
+.frame[data-step="5"] :is([data-from="6"], [data-from="7"]),
+.frame[data-step="6"] [data-from="7"] {
+  opacity: 0;
+  --lift: 6px;
+}
+
+.frame[data-step="0"] [data-draw] path {
+  stroke-dashoffset: 1;
+}
+
+.frame [data-rise] {
+  translate: 0 var(--lift, 0px);
+}
+
+/*
+ * Each change takes 250ms on the design's easing; the arrow draws in 250ms.
+ * Status labels crossfade, colour and all, because before and after are two
+ * labels in one cell. With reduced motion there are no transitions, and the
+ * script never sets a step, so a card simply shows its end.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .frame :is([data-from], [data-until]) {
+    transition:
+      opacity 250ms var(--ease-handover),
+      translate 250ms var(--ease-handover);
+  }
+
+  .frame [data-draw] path {
+    transition: stroke-dashoffset 250ms var(--ease-handover);
+  }
+}
+
+/* Moving a card back to its start happens off screen, at once. */
+.frame[data-instant],
+.frame[data-instant] * {
+  transition: none !important;
+}
+
+.card {
+  --ease-handover: cubic-bezier(0.2, 0.8, 0.2, 1);
+}

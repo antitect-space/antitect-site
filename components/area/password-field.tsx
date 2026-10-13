@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Field } from "@/components/forms/person-fields";
+import { Field } from "@/components/area/form-parts";
 import { Input } from "@/components/ui/input";
 
 /**

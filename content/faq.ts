@@ -10,41 +10,37 @@ export interface FaqItem {
 }
 
 /**
- * The home page answers for Antitect, never for one programme. It lists
- * several, so a price or a length here would be wrong for most of them — and
- * wrong the moment a cohort changes. Anything cohort-specific lives on the
- * programme's own page, built from its record.
- *
- * Two sentences each, hard limit.
+ * The home page answers for Antitect, never for one programme or event: a
+ * price, a date or a venue here would be wrong for most of them, and wrong
+ * the moment one changes. Each page answers those from its own record.
  */
 export const generalFaq: ReadonlyArray<FaqItem> = [
   {
     question: "What is Antitect?",
     answer:
-      "Antitect develops practical AI capability through guided, project-based learning. You build real things, and an instructor reviews what you build.",
-  },
-  {
-    question: "How is this different from an online course?",
-    answer:
-      "You start with a project rather than a syllabus, and learn what that project needs. You finish when the thing works.",
+      "An AI education company. We teach people to use AI on their real work through free webinars, one-day workshops and multi-week capability development programmes.",
   },
   {
     question: "Do I need to be technical?",
-    answer: "No. The work is applying tools to real problems, not writing code.",
+    answer: "No. The work is applying AI tools to real tasks, not writing code.",
   },
   {
-    question: "What will I actually build?",
+    question: "Where should I start?",
     answer:
-      "Projects you can use in your own work. Each programme page lists what that cohort builds.",
+      "If you’re curious, a free webinar. If you want to build something in a day, a workshop. If you want to be able to do it on your own, a programme. Not sure? Message us on WhatsApp.",
   },
   {
-    question: "When are sessions held?",
-    answer:
-      "Live sessions are scheduled around working people: weekday evenings and a weekend session. Exact times come with each cohort.",
+    question: "Is it online or in person?",
+    answer: "Webinars and programmes are live online. Workshops are in person, and the venue is on each workshop’s page.",
   },
   {
-    question: "What if I miss a live session?",
-    answer: "Sessions are recorded. Nothing in your progress depends on attendance.",
+    question: "What does it cost?",
+    answer: "Webinars are free. Workshops and programmes are priced individually, and the price is on each page.",
+  },
+  {
+    question: "What do I need?",
+    // TODO(content): which tools are used, and whether any need a paid plan.
+    answer: "A laptop and a reliable internet connection.",
   },
 ];
 

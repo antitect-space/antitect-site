@@ -1,16 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo } from "next/font/google";
 
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 import "./globals.css";
-
-// One variable file, Latin only, self-hosted and preloaded. Font weight is page weight.
-const archivo = Archivo({
-  subsets: ["latin"],
-  variable: "--font-archivo",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -26,15 +18,15 @@ export const viewport: Viewport = {
 };
 
 /**
- * The document, and nothing else. The chrome belongs to the two areas of the
+ * The document, and nothing else. The chrome belongs to the areas of the
  * site, which do not share one: `(site)` is the public company site, header
- * and footer and all; `(learn)` is where a learner works, and carries only
- * what they need. Both render inside this, so there is one `<html>`, one font
- * and one stylesheet.
+ * and footer and all; `/learn` and `/teach` are where learners and tutors
+ * work, and carry only what they need. Each area loads its own fonts, so this
+ * loads none: there is one `<html>` and one stylesheet.
  */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-NG" className={archivo.variable}>
+    <html lang="en-NG">
       <body className="flex min-h-dvh flex-col">{children}</body>
     </html>
   );

@@ -1,14 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Unavailable } from "@/components/forms/outcomes";
+import { Panel } from "@/components/detail/panel";
+import { CommunityForm } from "@/components/forms/community-form";
+import { FormHead } from "@/components/forms/fields";
 import { PaymentForm } from "@/components/forms/payment-form";
 import { WaitlistForm } from "@/components/forms/waitlist-form";
 import { Button } from "@/components/ui/button";
 import { ApiError, getProgramFresh, type PublicProgram } from "@/lib/api";
-import { programmeOffer, type ProgrammeOffer, type WaitlistWording } from "@/lib/programs";
+import { placesNote } from "@/lib/events";
+import { formatDay } from "@/lib/format";
+import { programmeOffer, runName, type ProgrammeOffer } from "@/lib/programs";
+
+const ID = "register";
 
 type View =
   | { kind: "ready"; program: PublicProgram; offer: ProgrammeOffer; notice: string | null }
@@ -20,31 +26,52 @@ function withoutWaitlist(offer: ProgrammeOffer): ProgrammeOffer {
   return { ...offer, captureLead: false, waitlist: null, community: !offer.enrol && !offer.nextRun };
 }
 
+/** The API refused a place, so the form is not offered again until the page is reloaded. */
+function withoutEnrolment(offer: ProgrammeOffer, kind: "full" | "closed", program: PublicProgram): ProgrammeOffer {
+  const run = runName(program);
+  return {
+    ...offer,
+    enrol: false,
+    captureLead: false,
+    closed: kind === "full" ? "This cohort is full." : run ? `Enrolment for ${run} has closed.` : "Enrolment has closed.",
+    community: !offer.waitlist && !offer.nextRun,
+  };
+}
+
 /**
- * What somebody can do about this run: pay for a place, join the waitlist,
- * or go somewhere else. The offer is decided on the server, from the same
- * record as the rest of the page, and taken as it is: deciding it again here
- * against a different clock would draw a different panel over the HTML.
+ * The enrolment panel (design C6): what somebody can do about this run. Pay
+ * for a place in two steps, join the waitlist, go to the next run, or join
+ * the community. The offer is decided on the server, from the same record as
+ * the rest of the page, and taken as it is: deciding it again here against a
+ * different clock would draw a different panel over the HTML.
  *
  * With both on there is one form, the checkout, and its first step puts them
  * on the waitlist. Links ending #waitlist, from a card or the hero, land here.
  *
- * If a sign-up is refused because the page was cached before the waitlist was
- * switched off, the panel reads the programme again from the browser and
- * redraws. Reloading would only serve the same cached page.
+ * If a sign-up or a place is refused because the page was cached before the
+ * programme changed, the panel reads the programme again from the browser
+ * and redraws. Reloading would only serve the same cached page.
  */
 export function ProgrammePanel({ program, offer }: { program: PublicProgram; offer: ProgrammeOffer }) {
   const [view, setView] = useState<View>({ kind: "ready", program, offer, notice: null });
+  // After a refusal the form somebody was using has gone; focus goes to what replaced it.
+  const [announce, setAnnounce] = useState(false);
+  useEffect(() => {
+    if (announce && view.kind !== "checking") document.getElementById(`${ID}-title`)?.focus();
+  }, [announce, view]);
 
-  async function recheck(current: Extract<View, { kind: "ready" }>) {
+  async function recheck(current: Extract<View, { kind: "ready" }>, refused: "waitlist" | "full" | "closed") {
+    setAnnounce(true);
     setView({ kind: "checking" });
+    const notice = refused === "waitlist" ? "Waitlist sign-ups for this run have closed." : null;
     try {
       const fresh = await getProgramFresh(current.program.slug);
+      const freshOffer = programmeOffer(fresh);
       setView({
         kind: "ready",
         program: fresh,
-        offer: withoutWaitlist(programmeOffer(fresh)),
-        notice: "Waitlist sign-ups for this run have closed.",
+        offer: refused === "waitlist" ? withoutWaitlist(freshOffer) : freshOffer.enrol ? withoutEnrolment(freshOffer, refused, fresh) : freshOffer,
+        notice,
       });
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) {
@@ -52,88 +79,115 @@ export function ProgrammePanel({ program, offer }: { program: PublicProgram; off
       } else {
         setView({
           ...current,
-          offer: withoutWaitlist(current.offer),
-          notice: "Waitlist sign-ups for this run have closed. Reload the page to see where it stands.",
+          offer: refused === "waitlist" ? withoutWaitlist(current.offer) : withoutEnrolment(current.offer, refused, current.program),
+          notice: notice ? `${notice} Reload the page to see where it stands.` : null,
         });
       }
     }
   }
 
+  let body: React.ReactNode;
+
   if (view.kind === "checking") {
-    return (
-      <p role="status" className="leading-[1.6] text-muted-foreground">
+    body = (
+      <p role="status" className="type-body text-ink-muted">
         Checking where this programme stands…
       </p>
     );
-  }
-
-  if (view.kind === "gone") {
-    return (
-      <Unavailable
-        heading="This programme is no longer taking sign-ups."
-        detail="Our other programmes are on the programmes page."
-        next={{ href: "/programmes", label: "See our programmes" }}
-      />
+  } else if (view.kind === "gone") {
+    body = (
+      <div role="status" className="flex flex-col gap-6">
+        <FormHead
+          id={`${ID}-title`}
+          title="This programme is no longer taking sign-ups."
+          line="Our other programmes are on the programmes page."
+        />
+        <Button asChild variant="outline" size="lg" className="w-full px-5">
+          <Link href="/programmes">See our programmes</Link>
+        </Button>
+      </div>
     );
-  }
+  } else {
+    const { program: shown, offer: current } = view;
+    const next = shown.nextRun && current.nextRun ? shown.nextRun : null;
 
-  const { program: shown, offer: current, notice } = view;
-  const onClosed = () => recheck(view);
-  const waitlistForm = (wording: WaitlistWording) => (
-    <WaitlistForm slug={shown.slug} title={shown.title} wording={wording} onClosed={onClosed} />
-  );
-
-  return (
-    <div id="waitlist" className="scroll-mt-4">
-      {notice ? (
-        <p role="status" className="mb-6 border-l-4 border-brand bg-muted px-4 py-3 leading-[1.5]">
-          {notice}
-        </p>
-      ) : null}
-
-      {current.enrol ? (
+    if (current.enrol) {
+      body = (
         <PaymentForm
           payable={{ kind: "program", slug: shown.slug }}
           title={shown.title}
           priceKobo={shown.priceKobo}
           closesAt={shown.enrollmentClosesAt ?? shown.startsAt}
           captureLead={current.captureLead}
+          places={placesNote(shown)}
+          idPrefix={ID}
+          onRefused={(kind) => recheck(view, kind)}
         />
-      ) : current.waitlist ? (
-        <>
-          {current.closed ? <p className="mb-6 text-lg font-semibold">{current.closed}</p> : null}
-          {waitlistForm(current.waitlist)}
-          {current.nextRun ? <NextRunLink link={current.nextRun} /> : null}
-        </>
-      ) : (
-        <div>
-          <h2 className="text-title text-2xl">{current.closed ?? "Sign-ups have closed."}</h2>
+      );
+    } else if (current.waitlist) {
+      // A draft has never enrolled; a full or closed run says why before offering the list.
+      const draft = current.waitlist === "join";
+      body = (
+        <div className="flex flex-col gap-6">
+          <WaitlistForm
+            slug={shown.slug}
+            title={shown.title}
+            heading={draft ? "Join the waitlist" : (current.closed ?? "Join the waitlist for the next cohort")}
+            line={draft ? "Dates and price to be announced. Join the waitlist and you’ll hear first." : undefined}
+            idPrefix={ID}
+            onClosed={() => recheck(view, "waitlist")}
+          />
           {current.nextRun ? (
-            <Button asChild className="mt-6">
-              <Link href={current.nextRun.href}>{current.nextRun.label}</Link>
-            </Button>
-          ) : (
-            <>
-              <p className="mt-3 leading-[1.6] text-muted-foreground">
-                Join the community and you will hear first when the next cohort opens.
-              </p>
-              <Button asChild className="mt-6">
-                <Link href="/community">Join the community</Link>
-              </Button>
-            </>
-          )}
+            <p className="border-t border-rule pt-5">
+              <Link href={current.nextRun.href} className="type-body font-semibold text-ink underline underline-offset-4 hover:no-underline">
+                {current.nextRun.label}
+              </Link>
+            </p>
+          ) : null}
         </div>
-      )}
-    </div>
-  );
-}
+      );
+    } else if (current.nextRun) {
+      const run = next ? runName(next) : null;
+      body = (
+        <div className="flex flex-col gap-4">
+          <FormHead id={`${ID}-title`} title={current.closed ?? "Sign-ups have closed."} />
+          {next?.startsAt ? (
+            <p className="type-body text-ink">
+              <span className="font-semibold">{run ?? "The next cohort"} starts</span>{" "}
+              <time dateTime={next.startsAt} className="tabular-nums">
+                {formatDay(next.startsAt)}
+              </time>
+            </p>
+          ) : null}
+          <div className="pt-2">
+            <Button asChild size="lg" className="w-full px-5">
+              <Link href={current.nextRun.href}>{run ? `See ${run}` : current.nextRun.label}</Link>
+            </Button>
+          </div>
+        </div>
+      );
+    } else {
+      body = (
+        <div className="flex flex-col gap-5">
+          <FormHead id={`${ID}-title`} title={current.closed ?? "Sign-ups have closed."} />
+          <CommunityForm idPrefix={`${ID}-community`} variant="inline" />
+        </div>
+      );
+    }
+  }
 
-function NextRunLink({ link }: { link: { href: string; label: string } }) {
+  const notice = view.kind === "ready" ? view.notice : null;
+
   return (
-    <p className="mt-6 border-t border-border pt-5">
-      <Link href={link.href} className="font-semibold underline underline-offset-4 hover:no-underline">
-        {link.label}
-      </Link>
-    </p>
+    <div id="waitlist" className="scroll-mt-8">
+      <Panel id={ID} aria-labelledby={`${ID}-title`} aria-busy={view.kind === "checking" || undefined} className="scroll-mt-8">
+        {notice ? (
+          <p role="status" className="type-small border-l-4 border-brand bg-wash py-3 pr-4 pl-5 text-ink">
+            {notice}
+          </p>
+        ) : null}
+        {body}
+      </Panel>
+    </div>
   );
 }
