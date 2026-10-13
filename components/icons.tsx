@@ -37,6 +37,14 @@ export function ArrowRight({ className, ...props }: IconProps) {
   );
 }
 
+export function ArrowLeft({ className, ...props }: IconProps) {
+  return (
+    <Svg size={16} className={cn("size-4", className)} {...props}>
+      <path d="M14 8H2m5-5L2 8l5 5" />
+    </Svg>
+  );
+}
+
 export function ArrowDown({ className, ...props }: IconProps) {
   return (
     <Svg size={16} className={cn("size-4", className)} {...props}>

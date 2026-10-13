@@ -46,6 +46,37 @@ export function RelativeLabel({
 }
 
 /**
+ * The live half of a detail page's meta line: "In 9 days" before, "Happening
+ * now" during, "Ended" after (design W12). Until the browser knows the time it
+ * shows what the page decided when it rendered: "Ended", or nothing.
+ */
+export function EventStatus({
+  startsAt,
+  endsAt,
+  initialPhase,
+  prefix = "",
+  className,
+}: {
+  startsAt: string;
+  endsAt: string | null;
+  initialPhase: EventPhase;
+  prefix?: string;
+  className?: string;
+}) {
+  const now = useNow();
+  const over = now ? endOf({ startsAt, endsAt }) <= now : initialPhase === "over";
+  const label = over ? "Ended" : now ? relativeLabel(startsAt, now, endOf({ startsAt, endsAt })) : null;
+  if (!label) return null;
+
+  return (
+    <span className={className}>
+      {prefix}
+      {label}
+    </span>
+  );
+}
+
+/**
  * Swaps an action out once the event has started.
  *
  * Registration closes the moment an event begins — the API refuses it — so a

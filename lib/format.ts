@@ -270,6 +270,28 @@ export function firstSentence(text: string, max = 90): string | null {
   return sentence.length > max ? summarise(sentence, max) : sentence;
 }
 
+/**
+ * A description's first sentence, to stand under a detail page's heading,
+ * and everything after it, for the section below, so no sentence is printed
+ * twice. A first sentence too long to stand as a promise stays in the body,
+ * and the page goes without one.
+ */
+export function leadAndRest(text: string, max = 200): { lead: string | null; rest: string } {
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+  const [first, ...others] = paragraphs;
+  if (!first) return { lead: null, rest: "" };
+
+  const flat = first.replace(/\s+/g, " ");
+  const end = flat.search(/[.!?](\s|$)/);
+  const lead = end > 0 ? flat.slice(0, end + 1) : flat;
+  if (lead.length > max) return { lead: null, rest: paragraphs.join("\n\n") };
+
+  return { lead, rest: [flat.slice(lead.length).trim(), ...others].filter(Boolean).join("\n\n") };
+}
+
 // ---------------------------------------------------------------------------
 // Project Review Sessions: slots are grouped by Lagos day, weeks arrive as
 // Lagos calendar dates, and a tutor types a day and a time in Lagos.
