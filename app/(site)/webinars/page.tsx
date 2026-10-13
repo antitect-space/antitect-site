@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 
 import { GoFurther } from "@/components/detail/go-further";
-import { RingEcho } from "@/components/detail/ring-echo";
+import { ListingHeader, NothingScheduled } from "@/components/detail/listing";
 import { EventList, EventRow } from "@/components/events/event-row";
 import { NextUpCard } from "@/components/events/next-up-card";
 import { Flyer } from "@/components/flyer/flyer";
-import { CommunityForm } from "@/components/forms/community-form";
 import { CloseSection } from "@/components/home/close";
 import { Fresh } from "@/components/live";
 import { RecordingGrid } from "@/components/recording/recording-grid";
@@ -43,16 +42,7 @@ export default async function WebinarsPage() {
 
   return (
     <>
-      <header className="relative overflow-hidden">
-        <RingEcho />
-        <div className="container-site relative flex flex-col gap-5 pt-12 pb-10 lg:gap-6 lg:pt-24 lg:pb-18">
-          <h1 className="type-h1 text-ink">{webinarsPage.title}</h1>
-          <div className="flex max-w-[564px] flex-col gap-3 lg:gap-4">
-            <p className="type-lead text-ink-muted">{webinarsPage.lead}</p>
-            <p className="type-meta font-medium text-ink-muted">{webinarsPage.facts}</p>
-          </div>
-        </div>
-      </header>
+      <ListingHeader title={webinarsPage.title} lead={webinarsPage.lead} facts={webinarsPage.facts} rings />
 
       {next ? (
         <>
@@ -83,17 +73,7 @@ export default async function WebinarsPage() {
           ) : null}
         </>
       ) : (
-        <section aria-labelledby="nothing-title" className="container-site pb-16 lg:pb-28">
-          <div className="grid gap-6 rounded-md border border-field-border bg-paper p-6 lg:grid-cols-[minmax(0,426px)_minmax(0,524px)] lg:justify-between lg:p-10">
-            <div className="flex flex-col gap-4">
-              <h2 id="nothing-title" className="type-h2 text-ink">
-                {webinarsPage.nothing.title}
-              </h2>
-              <p className="type-lead text-ink-muted">{webinarsPage.nothing.line}</p>
-            </div>
-            <CommunityForm idPrefix="nothing-community" variant="inline" />
-          </div>
-        </section>
+        <NothingScheduled title={webinarsPage.nothing.title} line={webinarsPage.nothing.line} />
       )}
 
       {recordings.length > 0 ? (
