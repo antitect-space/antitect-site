@@ -36,7 +36,11 @@ export async function generateMetadata({ params }: PageProps<"/webinars/[slug]">
 
   // Never a price: link previews are cached long after one changes.
   const description = summarise(firstParagraph(event.description), 155) || "A free live webinar from Antitect.";
-  return { title: event.title, ...shareMetadata({ title: event.title, description, path: eventHref(event) }) };
+  return {
+    title: event.title,
+    // The share image is drawn by opengraph-image.tsx beside this page.
+    ...shareMetadata({ title: event.title, description, path: eventHref(event), generatedImage: true }),
+  };
 }
 
 /**

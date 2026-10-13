@@ -19,6 +19,12 @@ interface ShareInput {
   /** Absolute. Falls back to the default share image; og:image is never empty. */
   imageUrl?: string | null;
   imageAlt?: string;
+  /**
+   * The route draws its own share image (an opengraph-image.tsx beside the
+   * page). The images are left out here, so that file supplies them: an
+   * image set here would win over it.
+   */
+  generatedImage?: boolean;
 }
 
 /**
@@ -28,9 +34,10 @@ interface ShareInput {
  *
  * Never pass a price in `description`: previews are cached long after it changes.
  */
-export function shareMetadata({ title, description, path, imageUrl, imageAlt }: ShareInput): Metadata {
+export function shareMetadata({ title, description, path, imageUrl, imageAlt, generatedImage = false }: ShareInput): Metadata {
   const url = absoluteUrl(path);
   const image = imageUrl ? { url: imageUrl, alt: imageAlt ?? title } : DEFAULT_SHARE_IMAGE;
+  const images = generatedImage ? {} : { images: [image] };
 
   return {
     description,
@@ -42,13 +49,13 @@ export function shareMetadata({ title, description, path, imageUrl, imageAlt }: 
       url,
       title,
       description,
-      images: [image],
+      ...images,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [image.url],
+      ...(generatedImage ? {} : { images: [image.url] }),
     },
   };
 }
