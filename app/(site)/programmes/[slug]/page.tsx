@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import { Cut, CutFrame } from "@/components/cut";
+import { Cut } from "@/components/cut";
 import { JsonLd } from "@/components/json-ld";
 import { ProjectsTable, WeeklySchedule } from "@/components/programme-details";
 import { ProgrammePanel } from "@/components/programme-panel";
@@ -120,9 +120,7 @@ export default async function ProgrammePage({ params }: PageProps<"/programmes/[
           id="enrol"
           className="scroll-mt-4 self-start lg:sticky lg:top-8 lg:col-start-2 lg:row-span-2 lg:row-start-1"
         >
-          <CutFrame corner="bl" innerClassName="p-6 sm:p-8">
-            <ProgrammePanel program={program} offer={offer} />
-          </CutFrame>
+          <ProgrammePanel program={program} offer={offer} />
         </div>
 
         <div className="space-y-10 lg:col-start-1">

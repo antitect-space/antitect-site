@@ -210,7 +210,7 @@ export function ProgrammeTicket({
           )}
           <Button asChild size="lg" className="mt-6 w-full">
             {offer.enrol ? (
-              <Link href={href}>Secure your spot</Link>
+              <Link href={href}>Secure your place</Link>
             ) : offer.waitlist ? (
               <Link href={`${href}#waitlist`}>Join waitlist</Link>
             ) : (

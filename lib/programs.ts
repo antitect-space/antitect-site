@@ -218,7 +218,7 @@ export function enrolmentState(program: PublicProgram, now: number = Date.now())
 export type WaitlistWording = "join" | "next";
 
 export interface ProgrammeOffer {
-  /** Paid enrolment: "Secure your spot". */
+  /** Paid enrolment: "Secure your place". */
   enrol: boolean;
   /**
    * Paying with the waitlist on: the checkout's first step puts them on the

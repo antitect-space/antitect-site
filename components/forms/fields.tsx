@@ -182,7 +182,8 @@ export function FormHead({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <Heading id={id} ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="type-h3 text-ink outline-none">
+      {/* Focusable from script, never by Tab: a panel moves focus here when it changes under somebody. */}
+      <Heading id={id} ref={headingRef} tabIndex={-1} className="type-h3 text-ink outline-none">
         {title}
       </Heading>
       {line ? <p className="type-body text-ink-muted">{line}</p> : null}
