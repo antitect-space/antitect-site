@@ -22,10 +22,13 @@ import { useNow } from "@/lib/use-now";
 export function RelativeLabel({
   startsAt,
   endsAt = null,
+  prefix = "",
   className,
 }: {
   startsAt: string;
   endsAt?: string | null;
+  /** Shown before the label, and only with it, such as " · " after "Next up". */
+  prefix?: string;
   className?: string;
 }) {
   const now = useNow();
@@ -34,7 +37,12 @@ export function RelativeLabel({
   const label = relativeLabel(startsAt, now, endOf({ startsAt, endsAt }));
   if (!label) return null;
 
-  return <span className={className}>{label}</span>;
+  return (
+    <span className={className}>
+      {prefix}
+      {label}
+    </span>
+  );
 }
 
 /**

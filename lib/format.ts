@@ -80,6 +80,54 @@ export function formatShortWhen(startsAt: string): string {
   return `${dateShort.format(start)} · ${timeOnly.format(start)} ${TIME_ZONE_SHORT}`;
 }
 
+const NBSP = " ";
+const keepTogether = (text: string) => text.replace(/ /g, NBSP);
+
+/** "Saturday, 17 October 2026", for a card's date in full. */
+export function formatDateLong(instant: string): string {
+  return dateLong.format(new Date(instant));
+}
+
+/** "Saturday", for the weekday under a card's large date. */
+export function formatWeekday(instant: string): string {
+  return weekdayLong.format(new Date(instant));
+}
+
+const weekdayLong = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, weekday: "long" });
+
+/**
+ * "10:00 am – 12:00 pm WAT", or "10:00 am WAT" without an end, or with an end
+ * on another day. Spaces are non-breaking, so the range never splits across
+ * lines.
+ */
+export function formatTimeRange(startsAt: string, endsAt: string | null = null): string {
+  const start = new Date(startsAt);
+  const end = endsAt ? new Date(endsAt) : null;
+  const sameDay = end && end > start && dayKey.format(start) === dayKey.format(end);
+  const range = sameDay
+    ? `${timeOnly.format(start)} – ${timeOnly.format(end)}`
+    : timeOnly.format(start);
+  return keepTogether(`${range} ${TIME_ZONE_SHORT}`);
+}
+
+/**
+ * "2 hours", "45 minutes", "1 hour 30 minutes". Only from a real end time on
+ * the same day: without one, the site never guesses a length.
+ */
+export function formatLength(startsAt: string, endsAt: string | null): string | null {
+  if (!endsAt) return null;
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+  if (!(end > start) || dayKey.format(start) !== dayKey.format(end)) return null;
+
+  const minutes = Math.round((end.getTime() - start.getTime()) / 60_000);
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const hourText = hours > 0 ? `${hours} ${plural(hours, "hour", "hours")}` : null;
+  const minuteText = rest > 0 ? `${rest} ${plural(rest, "minute", "minutes")}` : null;
+  return keepTogether([hourText, minuteText].filter(Boolean).join(" "));
+}
+
 /** "Sat 17 Oct", for a one-line mention such as the hero's live line. */
 export function formatDayShort(instant: string): string {
   return dateShort.format(new Date(instant));
