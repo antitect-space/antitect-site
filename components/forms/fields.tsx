@@ -126,6 +126,10 @@ export function SlowNote({ show, className }: { show: boolean; className?: strin
  * The form's one action. Busy, it keeps its width and its colour (the red
  * darkens, it does not fade), shows a spinner beside the words for what is
  * happening, and says it is busy.
+ *
+ * Busy, it refuses a second submit rather than being disabled: a disabled
+ * button drops keyboard focus to the top of the page, and someone on a slow
+ * connection would have to find their way back to it.
  */
 export function SubmitButton({
   busy,
@@ -145,9 +149,10 @@ export function SubmitButton({
       type="submit"
       size="lg"
       variant={variant}
-      className={cn("w-full px-5 disabled:opacity-100", busy && variant === "default" && "bg-brand-pressed", className)}
-      disabled={busy}
+      className={cn("w-full px-5", busy && "cursor-progress", busy && variant === "default" && "bg-brand-pressed", className)}
+      aria-disabled={busy || undefined}
       aria-busy={busy || undefined}
+      onClick={busy ? (event) => event.preventDefault() : undefined}
     >
       {busy ? (
         <>

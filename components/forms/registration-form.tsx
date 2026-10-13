@@ -4,15 +4,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { FormAlert, SlowNote } from "@/components/forms/fields";
+import { FormAlert, FormHead, SlowNote, SubmitButton } from "@/components/forms/fields";
 import { PersonFields } from "@/components/forms/person-fields";
-import { PlaceConfirmed, Unavailable } from "@/components/forms/outcomes";
+import {
+  Registered,
+  RegistrationFull,
+  SessionStarted,
+  type RegistrationEvent,
+} from "@/components/forms/registration-states";
 import { useSubmission } from "@/components/forms/use-submission";
-import { Button } from "@/components/ui/button";
 import { registerForEvent, type RegistrationResponse } from "@/lib/api";
+import { placesNote } from "@/lib/events";
 import { describeFailure } from "@/lib/form-errors";
 import { hasStarted } from "@/lib/format";
-import { communityLink } from "@/lib/site";
 import { EMPTY_PERSON, personSchema, type PersonBody, type PersonInput } from "@/lib/schemas";
 
 type Outcome =
@@ -22,11 +26,12 @@ type Outcome =
   | { kind: "closed" };
 
 /**
- * Registration for a free event. The form never clears on a failed submit: on
- * a slow connection, retyping is where people give up. Submitting twice is
- * harmless, because the API answers a repeat with `alreadyRegistered`.
+ * Registration for a free event, inside the registration panel (design W5).
+ * The form never clears on a failed submit: on a slow connection, retyping is
+ * where people give up. Submitting twice is harmless, because the API answers
+ * a repeat with `alreadyRegistered`.
  */
-export function RegistrationForm({ slug, title, startsAt }: { slug: string; title: string; startsAt: string }) {
+export function RegistrationForm({ event, idPrefix = "register" }: { event: RegistrationEvent; idPrefix?: string }) {
   const [outcome, setOutcome] = useState<Outcome>({ kind: "form" });
   const [formError, setFormError] = useState<string | null>(null);
   const { slow, run } = useSubmission();
@@ -50,13 +55,13 @@ export function RegistrationForm({ slug, title, startsAt }: { slug: string; titl
     setFormError(null);
 
     // The page may have been cached before the event started.
-    if (hasStarted(startsAt)) {
+    if (hasStarted(event.startsAt)) {
       setOutcome({ kind: "closed" });
       return;
     }
 
     try {
-      const response = await run(() => registerForEvent(slug, person));
+      const response = await run(() => registerForEvent(event.slug, person));
       setOutcome({ kind: "registered", response });
     } catch (error) {
       const failure = describeFailure(error);
@@ -70,45 +75,34 @@ export function RegistrationForm({ slug, title, startsAt }: { slug: string; titl
   }
 
   if (outcome.kind === "registered") {
-    return (
-      <PlaceConfirmed
-        heading={outcome.response.alreadyRegistered ? "You are already registered." : "You are registered."}
-        repeat={outcome.response.alreadyRegistered}
-        channel={outcome.response.channel}
-        sentTo={outcome.response.sentTo}
-        title={title}
-        next={{ href: "/programmes", label: "See our programmes" }}
-        community={communityLink()}
-      />
-    );
+    return <Registered idPrefix={idPrefix} event={event} response={outcome.response} />;
   }
+  if (outcome.kind === "full") return <RegistrationFull idPrefix={idPrefix} type={event.type} focus />;
+  if (outcome.kind === "closed") return <SessionStarted idPrefix={idPrefix} event={event} focus />;
 
-  if (outcome.kind !== "form") {
-    return (
-      <Unavailable
-        heading={outcome.kind === "full" ? "Every place has been taken." : "Registration has closed."}
-        detail="The next one will be on our webinars page. Join the community and you will hear about it first."
-        next={{ href: "/webinars", label: "See upcoming webinars" }}
-      />
-    );
-  }
+  const places = placesNote(event);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate aria-labelledby="register-title">
-      <h2 id="register-title" className="text-title text-3xl">
-        Register free
-      </h2>
-      <p className="mt-2 leading-[1.6] text-muted-foreground">We email you the details and the link to join.</p>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate aria-labelledby={`${idPrefix}-title`} className="flex flex-col gap-6">
+      <FormHead
+        id={`${idPrefix}-title`}
+        title="Register free"
+        line="We’ll email your confirmation now and send your joining link with your reminders."
+      />
 
-      <div className="mt-6">
-        <PersonFields register={register} control={control} errors={errors} idPrefix="register" />
+      <PersonFields register={register} control={control} errors={errors} idPrefix={idPrefix} />
+
+      <div className="flex flex-col gap-3">
+        <FormAlert message={formError} />
+        {places ? <p className="type-meta font-medium text-ink-muted tabular-nums">{places}</p> : null}
+        <div>
+          <SubmitButton busy={isSubmitting} busyLabel="Registering…">
+            Register free
+          </SubmitButton>
+          <SlowNote show={isSubmitting && slow} />
+        </div>
+        <p className="type-meta font-medium text-ink-muted">Free. Nothing to pay.</p>
       </div>
-
-      <FormAlert message={formError} className="mt-6" />
-      <Button type="submit" size="lg" className="mt-6 w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Registering…" : "Register free"}
-      </Button>
-      <SlowNote show={isSubmitting && slow} />
     </form>
   );
 }

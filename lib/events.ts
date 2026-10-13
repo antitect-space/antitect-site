@@ -86,7 +86,7 @@ export function registrationState(event: PublicEvent, now: number = Date.now()):
   return "open";
 }
 
-export function isPaid(event: PublicEvent): boolean {
+export function isPaid(event: Pick<PublicEvent, "priceKobo">): boolean {
   return event.priceKobo > 0;
 }
 
