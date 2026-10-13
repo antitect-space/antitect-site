@@ -6,7 +6,7 @@ import { shareMetadata } from "@/lib/metadata";
 
 const title = "Join the community";
 const description =
-  "Hear about AI webinars and workshops in Lagos and online before they are announced publicly, and build alongside people doing the same. Free to join.";
+  "Hear about AI webinars and workshops before they are announced publicly, and build alongside people doing the same. Free to join.";
 
 export const metadata: Metadata = {
   title: { absolute: `${title} — Antitect` },

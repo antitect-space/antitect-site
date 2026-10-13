@@ -11,9 +11,10 @@ import { OUTSIDE_NIGERIA, isNigerianState } from "./locations";
  * phone for all of them; the phone is the WhatsApp number, since reminders can
  * go there.
  *
- * Location is required here though optional in the API: a Nigerian state, or
- * "Outside Nigeria" with the country typed in. It is posted as `state` plus
- * `country`, with the country "Nigeria" whenever a state was picked.
+ * Location is optional, as it is in the API: a Nigerian state, "Outside
+ * Nigeria" with the country typed in, or nothing. A state is posted with the
+ * country "Nigeria"; "Outside Nigeria" posts the country alone, and then the
+ * country is required; nothing chosen posts neither.
  */
 
 const optionalText = z
@@ -44,12 +45,12 @@ export const personSchema = z
         (value) => /^\+?[\d\s()-]+$/.test(value) && value.replace(/\D/g, "").length >= 7,
         "Enter a valid WhatsApp number.",
       ),
-    /** A state from the list, or OUTSIDE_NIGERIA. */
+    /** A state from the list, OUTSIDE_NIGERIA, or "" for none. */
     state: z
       .string()
       .refine(
-        (value) => value === OUTSIDE_NIGERIA || isNigerianState(value),
-        "Choose your state, or Outside Nigeria.",
+        (value) => value === "" || value === OUTSIDE_NIGERIA || isNigerianState(value),
+        "Choose a state from the list, or Outside Nigeria.",
       ),
     /** Only read when the state is OUTSIDE_NIGERIA. */
     country: z.string().trim().max(80),
@@ -62,9 +63,10 @@ export const personSchema = z
     }
   })
   .transform(({ state, country, ...person }) => {
-    const outside = state === OUTSIDE_NIGERIA;
-    // An undefined state is left out of the JSON body entirely.
-    return { ...person, state: outside ? undefined : state, country: outside ? country : "Nigeria" };
+    // Undefined is left out of the JSON body entirely.
+    if (state === "") return { ...person, state: undefined, country: undefined };
+    if (state === OUTSIDE_NIGERIA) return { ...person, state: undefined, country };
+    return { ...person, state, country: "Nigeria" };
   });
 
 /** What a form holds while it is being filled in. */
@@ -94,3 +96,20 @@ export const EMPTY_PERSON: PersonInput = {
   country: "",
   whatsappOptIn: false,
 };
+
+/**
+ * A posted person back into a form's values, so details typed into one form
+ * can start another (a refused reservation offering the community form).
+ */
+export function personInput(person: PersonBody): PersonInput {
+  const abroad = person.country !== undefined && person.state === undefined;
+  return {
+    firstName: person.firstName,
+    lastName: person.lastName ?? "",
+    email: person.email,
+    phone: person.phone,
+    state: abroad ? OUTSIDE_NIGERIA : (person.state ?? ""),
+    country: abroad ? (person.country ?? "") : "",
+    whatsappOptIn: person.whatsappOptIn,
+  };
+}

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { CutFrame } from "@/components/cut";
 import { PaymentStatus } from "@/components/payment-status";
 
 export const metadata: Metadata = {
@@ -18,12 +17,10 @@ export default async function PaymentCompletePage({ searchParams }: PageProps<"/
   const raw = query.reference ?? query.trxref;
   const reference = typeof raw === "string" && raw.trim() ? raw.trim() : null;
 
+  // A column of at most 560px, left-aligned, with the header and footer and nothing else (design C10).
   return (
-    <div className="container-page py-12 sm:py-16 lg:py-24">
-      {/* Restyled only. What it reports, and when, is decided by PaymentStatus. */}
-      <CutFrame corner="tr" className="max-w-3xl" innerClassName="p-6 sm:p-10">
-        <PaymentStatus reference={reference} />
-      </CutFrame>
+    <div className="container-site pt-12 pb-24 lg:pt-28 lg:pb-44">
+      <PaymentStatus reference={reference} />
     </div>
   );
 }

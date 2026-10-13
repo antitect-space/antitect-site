@@ -2,10 +2,29 @@
 @import "shadcn/tailwind.css";
 
 @theme inline {
+  /* The redesign's palette, under the design file's own names. */
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-field-border: var(--field-border);
+  --color-wash: var(--wash);
+  --color-brand: var(--brand);
+  --color-brand-pressed: var(--brand-pressed);
+  --color-brand-foreground: var(--brand-foreground);
+
+  /* Only ever on a task card's status label. */
+  --color-status-neutral-fg: var(--status-neutral-fg);
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-attention-fg: var(--status-attention-fg);
+  --color-status-attention-bg: var(--status-attention-bg);
+  --color-status-done-fg: var(--status-done-fg);
+  --color-status-done-bg: var(--status-done-bg);
+
+  /* The names everything built before the redesign reads, and shadcn too. */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand: var(--brand);
-  --color-brand-foreground: var(--brand-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
@@ -15,10 +34,13 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
 
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  /* Which faces these are depends on the area: see .scope-site and .scope-area. */
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
 
   /* One radius everywhere the edge is not cut. The mark has no rounding. */
   --radius-sm: var(--radius);
@@ -31,34 +53,72 @@
 }
 
 /*
- * Brand tokens from the spec, §9. Red is the call to action on this site and
- * nothing else: roughly 70% white, 25% black, 5% red. There is no dark theme.
+ * The palette from the design file (antitect-redesign-v2.pen), in OKLCH. The
+ * values are the brand's own, unchanged from before the redesign. Red is the
+ * call to action and nothing else. There is no dark theme.
  */
 :root {
-  --background: #fefefe;
-  --foreground: #0a0a0a;
-  --brand: #ce1115;
-  --brand-foreground: #fefefe;
-  --muted: #f5f5f5;
-  --muted-foreground: #5a5a5a;
-  --border: #e5e5e5;
-  --radius: 4px;
+  --paper: oklch(99.7% 0 0); /* #FEFEFE */
+  --ink: oklch(14.48% 0 0); /* #0A0A0A */
+  --ink-muted: oklch(46.76% 0 0); /* #5A5A5A: 6.8:1 on paper; never text on ink */
+  --ink-faint: oklch(71.55% 0 0); /* #A3A3A3: secondary text on ink only */
+  --rule: oklch(92.19% 0 0); /* #E5E5E5 */
+  --field-border: oklch(63.34% 0 0); /* #8A8A8A: 3.4:1, enough for an edge */
+  --wash: oklch(97.02% 0 0); /* #F5F5F5 */
+  --brand: oklch(53.99% 0.214 27.99); /* #CE1115 */
+  --brand-pressed: oklch(46.69% 0.1838 27.85); /* #A90E11 */
+  --brand-foreground: var(--paper);
 
-  /* What the shadcn components read. */
+  --status-neutral-fg: oklch(46.76% 0 0); /* #5A5A5A */
+  --status-neutral-bg: oklch(97.02% 0 0); /* #F5F5F5 */
+  --status-attention-fg: oklch(50.78% 0.108 73.3); /* #8A5A00 */
+  --status-attention-bg: oklch(96.92% 0.0348 87.07); /* #FFF4DB */
+  --status-done-fg: oklch(46.7% 0.1247 148.2); /* #146C2E */
+  --status-done-bg: oklch(95.4% 0.0199 154.9); /* #E6F4EA */
+
+  /* The older names, kept as aliases so nothing built before the redesign moves. */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --muted: var(--wash);
+  --muted-foreground: var(--ink-muted);
+  --border: var(--rule);
+  --input: var(--field-border);
+  --ring: var(--ink);
   --primary: var(--brand);
   --primary-foreground: var(--brand-foreground);
-  --secondary: var(--foreground);
-  --secondary-foreground: var(--background);
-  --input: #8a8a8a; /* 3.4:1 on white, enough for a field edge */
-  --ring: var(--foreground);
+  --secondary: var(--ink);
+  --secondary-foreground: var(--paper);
+  /* What shadcn hovers with: a neutral surface, never red. */
+  --accent: var(--wash);
+  --accent-foreground: var(--ink);
   --destructive: var(--brand);
+  --radius: 4px;
+
+  /* Ink on paper; a surface of ink sets it to paper (see `surface-ink`). */
+  --focus-ring: var(--ink);
+
+  /*
+   * Type, before an area says otherwise. These are the learner and tutor
+   * areas' values, so anything outside both scopes looks as it always did.
+   */
+  --font-body: ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-body);
+  --display-weight: 800;
+  --display-tracking: -0.02em;
+  --display-leading: 0.95;
+  --title-weight: 700;
+  --title-tracking: -0.02em;
+  --title-leading: 1.05;
+
+  /* Page margin: 20px on a phone; at 1440 the content is 1152 wide, 144 from each edge. */
+  --page-margin: 1.25rem;
 
   /*
    * THE ANGLE. Measured off the A's left diagonal in the logo path
    * (components/logo.tsx): it runs 232.8 across for 340.6 up, which is
    * 34.35deg from vertical, 55.65deg from horizontal, a rise of 1.463 per
-   * unit of run. Every cut corner, notch, blade and wipe on this site uses
-   * it. Change it here and the whole system moves together.
+   * unit of run. Every cut corner on this site uses it. Change it here and
+   * the whole system moves together.
    */
   --angle: 34.35deg;
   --angle-rise: 1.463;
@@ -67,15 +127,12 @@
   --cut: 1.15rem;
   --cut-rise: calc(var(--cut) * 1.463);
 
-  /* A section notch is the same cut at architectural scale. */
-  --notch: 2.5rem;
-  --notch-rise: calc(var(--notch) * 1.463);
 }
 
 @media (width >= 48rem) {
   :root {
     --cut: 1.5rem;
-    --notch: 5rem;
+    --page-margin: 2rem;
   }
 }
 
@@ -94,6 +151,38 @@
     background: var(--foreground);
     color: var(--background);
   }
+
+  /*
+   * The two areas of the site, each with its own type. A layout wraps its
+   * pages in one of these (lib/fonts/*), so neither area's fonts load in the
+   * other, and the redesign reaches the learner and tutor areas only when it
+   * is their turn.
+   */
+  .scope-site {
+    --font-body: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+    /* Extended first: it covers only what Latin does not, and has no fallback to catch the rest. */
+    --font-heading: var(--font-newsreader-ext), var(--font-newsreader), ui-serif, Georgia, serif;
+    --display-weight: 600;
+    --display-tracking: -0.01em;
+    --display-leading: 1.04;
+    --title-weight: 600;
+    --title-tracking: -0.01em;
+    --title-leading: 1.15;
+    font-family: var(--font-body);
+  }
+
+  /* Headings repeat the body face here: a variable resolves where it is declared. */
+  .scope-area {
+    --font-body: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+    --font-heading: var(--font-body);
+    font-family: var(--font-body);
+  }
+
+  /* A 2px ring at a 2px offset: ink on paper, paper on ink. */
+  .scope-site :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -108,24 +197,108 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * Type.
+ *
+ * The redesign's scale, from the design file's variables. Sizes run fluidly
+ * from the phone frame (390) to the desktop frame (1440), so both match the
+ * design exactly and a tablet gets something sensible in between. Headings
+ * are Newsreader, tracked in by 1%.
+ * ------------------------------------------------------------------------ */
+
+@utility type-h1 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(2.75rem, 2.0071rem + 3.0476vw, 4.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+@utility type-h2 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(2rem, 1.6286rem + 1.5238vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+@utility type-h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.375rem, 1.2821rem + 0.381vw, 1.625rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+@utility type-lead {
+  font-size: clamp(1.125rem, 1.0554rem + 0.2857vw, 1.3125rem);
+  line-height: 1.5;
+}
+
+@utility type-body {
+  font-size: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
+  line-height: 1.55;
+}
+
+@utility type-small {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+@utility type-meta {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
 /*
- * Headlines are set, not typed: heavy, tight tracking, tight leading. Sentence
- * case, no single emphasised word, no tracked capitals above them.
+ * The headings of pages built before the redesign. Within the public site
+ * they take Newsreader, so they sit under the new header without a clash; in
+ * the learner and tutor areas they are exactly what they were.
  */
 @utility text-display {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 0.95;
+  font-family: var(--font-heading);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  line-height: var(--display-leading);
   text-wrap: balance;
 }
 
 @utility text-title {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
+  font-family: var(--font-heading);
+  font-weight: var(--title-weight);
+  letter-spacing: var(--title-tracking);
+  line-height: var(--title-leading);
   text-wrap: balance;
 }
 
+/* ---------------------------------------------------------------------------
+ * Layout.
+ * ------------------------------------------------------------------------ */
+
+/* The redesign's column: 1152px of content, with the page margin either side. */
+@utility container-site {
+  width: 100%;
+  max-width: calc(72rem + 2 * var(--page-margin));
+  margin-inline: auto;
+  padding-inline: var(--page-margin);
+}
+
+/* A section's padding above and below: 64px on a phone, 112 at 1440. */
+@utility section-pad {
+  padding-block: clamp(4rem, 2.8857rem + 4.5714vw, 7rem);
+}
+
+/* Ink, with paper text and a paper focus ring. */
+@utility surface-ink {
+  background-color: var(--ink);
+  color: var(--paper);
+  --focus-ring: var(--paper);
+}
+
+/* The column of pages built before the redesign, and of the learner and tutor areas. */
 @utility container-page {
   width: 100%;
   max-width: 72rem;
@@ -183,119 +356,61 @@
   );
 }
 
-/* A section that begins on a diagonal, eating into the one above it. */
-@utility notch-top {
-  clip-path: polygon(
-    0 var(--notch-rise),
-    var(--notch) 0,
-    100% 0,
-    100% 100%,
-    0 100%
-  );
-}
-
 /*
- * Room for a notch. A notched section climbs `--notch-rise` into the one
- * above it, which on a large screen is more than that section's own bottom
- * padding: without this the diagonal arrives under the last line of text.
- * Give the section above this, and its padding is its own again.
+ * The home page hero's tool badges arrive once on load, in the order they are
+ * listed (components/home/orbit.tsx): each 50ms after the last, rising 6px
+ * over 300ms. A CSS animation, so it costs no script and starts with the
+ * first paint. With reduced motion they are simply there.
  */
-@utility notch-clearance {
-  padding-bottom: var(--notch-rise);
-}
-
-/* A section that ends on a diagonal. */
-@utility notch-bottom {
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    100% calc(100% - var(--notch-rise)),
-    calc(100% - var(--notch)) 100%,
-    0 100%
-  );
-}
-
-/*
- * The blade: red, cut at the angle, laid behind type. Skewing by the angle
- * from vertical puts its long edges exactly on the A's diagonal.
- */
-@utility blade {
-  transform: skewX(calc(-1 * var(--angle)));
-  background: var(--brand);
-}
-
-/* A hairline that matches the border colour without a full border shorthand. */
-@utility hairline {
-  border-color: var(--border);
-}
-
-/* ---------------------------------------------------------------------------
- * Motion. Everything enters along the angle, or not at all.
- *
- * Content is visible by default and the animation only plays once a script
- * marks it ready, so nothing is ever hidden waiting for JavaScript that may
- * never arrive.
- * ------------------------------------------------------------------------ */
-
 @media (prefers-reduced-motion: no-preference) {
-  [data-wipe="pending"] {
-    opacity: 0;
-    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-  }
-
-  [data-wipe="in"] {
-    animation: wipe-in 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: var(--wipe-delay, 0ms);
-  }
-
-  [data-blade="pending"] {
-    transform: skewX(calc(-1 * var(--angle))) scaleY(0);
-    transform-origin: top;
-  }
-
-  [data-blade="in"] {
-    animation: blade-drop 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  [data-rise="pending"] {
-    opacity: 0;
-    transform: translateY(0.75rem);
-  }
-
-  [data-rise="in"] {
-    animation: rise-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: var(--rise-delay, 0ms);
+  [data-badge] {
+    animation: badge-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--badge, 0) * 50ms);
   }
 }
 
-@keyframes wipe-in {
+@keyframes badge-in {
   from {
     opacity: 0;
-    clip-path: polygon(0 0, 0 0, -30% 100%, -30% 100%);
-  }
-  to {
-    opacity: 1;
-    clip-path: polygon(0 0, 130% 0, 100% 100%, 0 100%);
+    translate: 0 6px;
   }
 }
 
-@keyframes blade-drop {
-  from {
-    transform: skewX(calc(-1 * var(--angle))) scaleY(0);
-  }
-  to {
-    transform: skewX(calc(-1 * var(--angle))) scaleY(1);
+/*
+ * Where each badge sits for the hero's width. The hero is the container
+ * (`@container/orbit`), so a page's scrollbar does not count. Each badge
+ * carries its place for each band in custom properties (orbit.tsx); below
+ * 1160px there is no room beside the headline, and the badges are not shown.
+ */
+[data-badge] {
+  left: var(--x-1336);
+  top: var(--y-1336);
+}
+
+@container orbit (width < 1336px) {
+  [data-badge] {
+    left: var(--x-1280);
+    top: var(--y-1280);
   }
 }
 
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem);
+@container orbit (width < 1280px) {
+  [data-badge] {
+    left: var(--x-1200);
+    top: var(--y-1200);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+}
+
+@container orbit (width < 1200px) {
+  [data-badge] {
+    left: var(--x-1160);
+    top: var(--y-1160);
+  }
+}
+
+@container orbit (width < 1160px) {
+  [data-badges] {
+    display: none;
   }
 }
 

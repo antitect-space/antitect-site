@@ -2,26 +2,78 @@
 
 import type { ReactNode } from "react";
 
-import { HAPPENING_NOW_MS } from "@/lib/events";
+import { endOf, eventPhase, type EventPhase } from "@/lib/events";
 import { relativeLabel } from "@/lib/format";
 import { useNow } from "@/lib/use-now";
 
 /**
- * "In 3 days", "Tomorrow", "Happening now" — worked out in the browser.
+ * Everything here is worked out in the browser. A page is cached for a minute
+ * at a time, so the server cannot be trusted to know what "now" is: one cached
+ * at noon would still say "Tomorrow" the next morning. The absolute date and
+ * time are always in the HTML beside these, so a page reads correctly with or
+ * without JavaScript.
  *
- * Nothing renders on the server, because a relative label inside a cached
- * page goes stale: one cached at noon would still say "Tomorrow" the next
- * morning. The absolute date and time are always in the HTML beside this, so
- * the ticket reads correctly with or without JavaScript.
+ * An event is over at its end time, or two hours after it starts when it has
+ * none (`endOf` in lib/events.ts). `endsAt` is optional throughout: the
+ * learner and tutor areas pass only a start, and read as they always have.
  */
-export function RelativeLabel({ startsAt, className }: { startsAt: string; className?: string }) {
+
+/** "In 3 days", "Tomorrow", "Today · starts 10:00 am", "Happening now". */
+export function RelativeLabel({
+  startsAt,
+  endsAt = null,
+  prefix = "",
+  className,
+}: {
+  startsAt: string;
+  endsAt?: string | null;
+  /** Shown before the label, and only with it, such as " · " after "Next up". */
+  prefix?: string;
+  className?: string;
+}) {
   const now = useNow();
   if (!now) return null;
 
-  const label = relativeLabel(startsAt, now, HAPPENING_NOW_MS);
+  const label = relativeLabel(startsAt, now, endOf({ startsAt, endsAt }));
   if (!label) return null;
 
-  return <span className={className}>{label}</span>;
+  return (
+    <span className={className}>
+      {prefix}
+      {label}
+    </span>
+  );
+}
+
+/**
+ * The live half of a detail page's meta line: "In 9 days" before, "Happening
+ * now" during, "Ended" after (design W12). Until the browser knows the time it
+ * shows what the page decided when it rendered: "Ended", or nothing.
+ */
+export function EventStatus({
+  startsAt,
+  endsAt,
+  initialPhase,
+  prefix = "",
+  className,
+}: {
+  startsAt: string;
+  endsAt: string | null;
+  initialPhase: EventPhase;
+  prefix?: string;
+  className?: string;
+}) {
+  const now = useNow();
+  const over = now ? endOf({ startsAt, endsAt }) <= now : initialPhase === "over";
+  const label = over ? "Ended" : now ? relativeLabel(startsAt, now, endOf({ startsAt, endsAt })) : null;
+  if (!label) return null;
+
+  return (
+    <span className={className}>
+      {prefix}
+      {label}
+    </span>
+  );
 }
 
 /**
@@ -55,14 +107,26 @@ export function Started({
  */
 export function Fresh({
   startsAt,
+  endsAt = null,
   children,
   fallback = null,
 }: {
   startsAt: string;
+  endsAt?: string | null;
   children: ReactNode;
   fallback?: ReactNode;
 }) {
   const now = useNow();
-  const over = now > 0 && new Date(startsAt).getTime() + HAPPENING_NOW_MS <= now;
+  const over = now > 0 && endOf({ startsAt, endsAt }) <= now;
   return <>{over ? fallback : children}</>;
+}
+
+/**
+ * Where an event stands, before it starts, while it is on, or once it is
+ * over. `null` until the browser knows the time, so the first render matches
+ * the server's HTML; callers then show what the server decided.
+ */
+export function useEventPhase(startsAt: string, endsAt: string | null): EventPhase | null {
+  const now = useNow();
+  return now ? eventPhase({ startsAt, endsAt }, now) : null;
 }

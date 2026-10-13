@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 
+import { recaps } from "@/content/recaps";
 import { getSitemapSlugs } from "@/lib/api";
+import { eventHref } from "@/lib/events";
 import { absoluteUrl } from "@/lib/site";
 
 /** Refreshed hourly. Search engines do not need a new event within the minute. */
@@ -12,7 +14,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: absoluteUrl("/"), changeFrequency: "daily", priority: 1 },
     { url: absoluteUrl("/programmes"), changeFrequency: "weekly", priority: 0.9 },
-    { url: absoluteUrl("/events"), changeFrequency: "daily", priority: 0.9 },
+    { url: absoluteUrl("/webinars"), changeFrequency: "daily", priority: 0.9 },
+    { url: absoluteUrl("/workshops"), changeFrequency: "daily", priority: 0.9 },
     { url: absoluteUrl("/about"), changeFrequency: "monthly", priority: 0.7 },
     { url: absoluteUrl("/community"), changeFrequency: "monthly", priority: 0.6 },
     ...programs.map((slug) => ({
@@ -20,10 +23,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
-    ...events.map((slug) => ({
-      url: absoluteUrl(`/events/${slug}`),
+    ...events.map((event) => ({
+      url: absoluteUrl(eventHref(event)),
       changeFrequency: "weekly" as const,
       priority: 0.7,
+    })),
+    // Recaps live in content, not the CRM, so the event lists never return them.
+    ...recaps.map((recap) => ({
+      url: absoluteUrl(`/workshops/${recap.slug}`),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
     })),
   ];
 }

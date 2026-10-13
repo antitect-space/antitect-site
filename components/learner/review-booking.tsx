@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { FormAlert, SlowNote } from "@/components/forms/person-fields";
+import { FormAlert, SlowNote } from "@/components/area/form-parts";
 import { useSubmission } from "@/components/forms/use-submission";
 import { JoinButton } from "@/components/learner/join";
 import { Button } from "@/components/ui/button";

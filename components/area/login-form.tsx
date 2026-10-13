@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { Field, FormAlert, SlowNote } from "@/components/forms/person-fields";
+import { Field, FormAlert, SlowNote } from "@/components/area/form-parts";
 import { useSubmission } from "@/components/forms/use-submission";
 import { PasswordField } from "@/components/area/password-field";
 import { Button } from "@/components/ui/button";
