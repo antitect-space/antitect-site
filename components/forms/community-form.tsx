@@ -18,7 +18,14 @@ import { communityLink } from "@/lib/site";
  * everyone not ready for a webinar or a programme yet: without this they leave
  * and do not come back.
  */
-export function CommunityForm({ idPrefix = "community" }: { idPrefix?: string }) {
+export function CommunityForm({
+  idPrefix = "community",
+  defaults,
+}: {
+  idPrefix?: string;
+  /** Details already typed elsewhere on the page, such as a refused reservation, so nobody types them twice. */
+  defaults?: Partial<PersonInput>;
+}) {
   const [joined, setJoined] = useState<null | { alreadyMember: boolean }>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const { slow, run } = useSubmission();
@@ -35,7 +42,7 @@ export function CommunityForm({ idPrefix = "community" }: { idPrefix?: string })
     mode: "onTouched",
     reValidateMode: "onChange",
     resolver: zodResolver(personSchema),
-    defaultValues: EMPTY_PERSON,
+    defaultValues: { ...EMPTY_PERSON, ...defaults },
   });
 
   async function onSubmit(person: PersonBody) {

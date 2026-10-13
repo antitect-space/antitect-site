@@ -4,12 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { PlaceConfirmed, Unavailable } from "@/components/forms/outcomes";
-import { Field, FormAlert, SlowNote, TextInput } from "@/components/forms/fields";
+import Link from "next/link";
+
+import { Field, FormAlert, FormHead, SlowNote, SubmitButton, TextInput } from "@/components/forms/fields";
 import { PersonFields } from "@/components/forms/person-fields";
 import { useSubmission } from "@/components/forms/use-submission";
+import { ChevronDown, Tick } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { ApiError, getQuote, joinWaitlist, startPayment, type Channel, type Payable, type Quote } from "@/lib/api";
+import { ApiError, getQuote, joinWaitlist, startPayment, type Payable, type Quote } from "@/lib/api";
 import { describeFailure, type FormField } from "@/lib/form-errors";
 import { formatKobo, hasStarted } from "@/lib/format";
 import { EMPTY_PERSON, personSchema, type PersonBody, type PersonField, type PersonInput } from "@/lib/schemas";
@@ -17,7 +19,7 @@ import { EMPTY_PERSON, personSchema, type PersonBody, type PersonField, type Per
 type Outcome =
   | { kind: "form" }
   | { kind: "redirecting" }
-  | { kind: "already"; channel: Channel; sentTo: string | null }
+  | { kind: "already"; sentTo: string | null }
   | { kind: "full" }
   | { kind: "closed" };
 
@@ -35,30 +37,42 @@ interface Props {
    * on the waitlist, so somebody who never pays is still somebody to follow up.
    */
   captureLead?: boolean;
+  /** "4 places left", shown above the button when few remain; null otherwise. */
+  places?: string | null;
+  /** Used for the form's ids, so two forms can share a page. */
+  idPrefix?: string;
+  /** What it is, for sentences such as "The price of this workshop has changed." */
+  noun?: string;
+  /**
+   * The API refused the place: every one has gone, or it has closed (the
+   * event started, or enrolment ended, after the page was cached). The panel
+   * shows what fits instead of the form; without this the form says so itself.
+   */
+  onRefused?: (kind: "full" | "closed", person: PersonBody) => void;
 }
 
 const COPY = {
   event: {
     heading: "Reserve your place",
     freeAction: "Reserve your place",
+    freeBusy: "Reserving your place…",
     already: "You already have a place.",
+    alreadyWhen: "when you reserved it",
     full: "Every place has been taken.",
-    closed: "Registration has closed.",
-    unavailableDetail: "The next one will be on our workshops page. Join the community and you will hear about it first.",
-    unavailableNext: { href: "/workshops", label: "See upcoming workshops" },
-    confirmedNext: { href: "/programmes", label: "See our programmes" },
+    closed: "Reservations have closed.",
   },
   program: {
-    heading: "Secure your spot",
-    freeAction: "Secure your spot",
-    already: "You are already enrolled.",
+    heading: "Secure your place",
+    freeAction: "Secure your place",
+    freeBusy: "Securing your place…",
+    already: "You’re already enrolled.",
+    alreadyWhen: "when you enrolled",
     full: "This cohort is full.",
     closed: "Enrolment for this cohort has closed.",
-    unavailableDetail: "Join the community and you will hear first when the next cohort opens.",
-    unavailableNext: { href: "/community", label: "Join the community" },
-    confirmedNext: { href: "/webinars", label: "See upcoming webinars" },
   },
 } as const;
+
+const PAYSTACK_LINE = "You pay securely on Paystack, then come back here. Your place is confirmed when payment clears.";
 
 /** Who has been put on the waitlist from this form, so going back and forth asks once. */
 function leadKey(person: PersonBody): string {
@@ -66,7 +80,8 @@ function leadKey(person: PersonBody): string {
 }
 
 /**
- * Details, an optional discount code, then Paystack. Payment is confirmed by
+ * The reservation and enrolment form (design C7 and C6): details, an
+ * optional discount code, the total, then Paystack. Payment is confirmed by
  * the API, never by this form: a successful submit only hands the visitor to
  * Paystack, or to the return page when a code made it free. The form never
  * clears on failure.
@@ -76,7 +91,17 @@ function leadKey(person: PersonBody): string {
  * them on the waitlist. That never stands between somebody and paying: only
  * what enrolment would refuse as well stops them there.
  */
-export function PaymentForm({ payable, title, priceKobo, closesAt, captureLead = false }: Props) {
+export function PaymentForm({
+  payable,
+  title,
+  priceKobo,
+  closesAt,
+  captureLead = false,
+  places = null,
+  idPrefix = payable.kind,
+  noun = payable.kind === "event" ? "event" : "programme",
+  onRefused,
+}: Props) {
   const copy = COPY[payable.kind];
   const twoStep = payable.kind === "program";
   const [outcome, setOutcome] = useState<Outcome>({ kind: "form" });
@@ -152,6 +177,11 @@ export function PaymentForm({ payable, title, priceKobo, closesAt, captureLead =
     }
   }
 
+  function refuse(kind: "full" | "closed", details: PersonBody) {
+    if (onRefused) onRefused(kind, details);
+    else setOutcome({ kind });
+  }
+
   /** Puts the API's words back on the fields they belong to. Returns the first person field, if any. */
   function showFieldErrors(fields: Array<{ field: FormField; message: string }>, focus: boolean): PersonField | null {
     let first: PersonField | null = null;
@@ -173,7 +203,7 @@ export function PaymentForm({ payable, title, priceKobo, closesAt, captureLead =
     setFormError(null);
 
     if (closesAt && hasStarted(closesAt)) {
-      setOutcome({ kind: "closed" });
+      refuse("closed", details);
       return;
     }
 
@@ -204,7 +234,7 @@ export function PaymentForm({ payable, title, priceKobo, closesAt, captureLead =
     setFormError(null);
 
     if (closesAt && hasStarted(closesAt)) {
-      setOutcome({ kind: "closed" });
+      refuse("closed", details);
       return;
     }
 
@@ -214,7 +244,7 @@ export function PaymentForm({ payable, title, priceKobo, closesAt, captureLead =
       const response = await run(() => startPayment(payable, details, appliedCode ?? (code.trim() || undefined)));
 
       if ("alreadyRegistered" in response || "alreadyEnrolled" in response) {
-        setOutcome({ kind: "already", channel: response.channel, sentTo: response.sentTo });
+        setOutcome({ kind: "already", sentTo: response.sentTo });
         return;
       }
 
@@ -226,7 +256,9 @@ export function PaymentForm({ payable, title, priceKobo, closesAt, captureLead =
     } catch (error) {
       const failure = describeFailure(error);
       if (failure.kind === "full" || failure.kind === "closed") {
-        setOutcome({ kind: failure.kind });
+        refuse(failure.kind, details);
+      } else if (error instanceof ApiError && (error.code === "PAYMENT_REQUIRED" || error.code === "PAYMENT_NOT_REQUIRED")) {
+        setFormError(`The price of this ${noun} has changed. Reload the page to continue.`);
       } else if (failure.kind === "message") {
         setFormError(failure.message);
       } else {
@@ -239,121 +271,136 @@ export function PaymentForm({ payable, title, priceKobo, closesAt, captureLead =
 
   if (outcome.kind === "already") {
     return (
-      <PlaceConfirmed
+      <AlreadyHave
+        id={`${idPrefix}-title`}
         heading={copy.already}
-        repeat
-        channel={outcome.channel}
-        sentTo={outcome.sentTo}
-        title={title}
-        next={copy.confirmedNext}
+        line={outcome.sentTo ? `We sent the details to ${outcome.sentTo} ${copy.alreadyWhen}.` : `Your place for ${title} is saved.`}
       />
     );
   }
 
   if (outcome.kind === "full" || outcome.kind === "closed") {
     return (
-      <Unavailable
-        heading={outcome.kind === "full" ? copy.full : copy.closed}
-        detail={copy.unavailableDetail}
-        next={copy.unavailableNext}
-      />
+      <div role="status" className="flex flex-col gap-4">
+        <FormHead
+          id={`${idPrefix}-title`}
+          title={outcome.kind === "full" ? copy.full : copy.closed}
+          line="Join the community and you’ll hear first when the next one opens."
+        />
+        <div className="pt-2">
+          <Button asChild size="lg" className="w-full px-5">
+            <Link href="/community">Join the community</Link>
+          </Button>
+        </div>
+      </div>
     );
   }
 
   const busy = isSubmitting || outcome.kind === "redirecting";
-
-  const intro = (
-    <p className="mt-2 leading-[1.6] text-muted-foreground">
-      You pay securely on Paystack, then come back here. Your place is confirmed when payment clears.
-    </p>
-  );
-
-  const fields = (
-    <div className="mt-6">
-      <PersonFields register={register} control={control} errors={errors} idPrefix={payable.kind} />
-    </div>
-  );
+  const free = total === 0;
+  const codeId = `${idPrefix}-discountCode`;
 
   const discount = (
-    <details
-      className="mt-6 border-t border-border pt-5"
-      open={codeOpen}
-      onToggle={(event) => setCodeOpen(event.currentTarget.open)}
-    >
-      <summary className="cursor-pointer font-semibold underline underline-offset-4">Have a discount code?</summary>
-      <div className="mt-4">
-        <Field id={`${payable.kind}-discountCode`} label="Discount code" error={codeError ?? undefined}>
+    <details className="group" open={codeOpen} onToggle={(event) => setCodeOpen(event.currentTarget.open)}>
+      <summary className="flex h-11 w-fit cursor-pointer list-none items-center gap-2 text-base font-semibold text-ink [&::-webkit-details-marker]:hidden">
+        Have a discount code?
+        <ChevronDown className="transition-transform group-open:rotate-180 motion-reduce:transition-none" />
+      </summary>
+      <div className="flex flex-col pt-3">
+        <Field id={codeId} label="Discount code" error={codeError ?? undefined}>
           <div className="flex gap-2">
             <TextInput
-              id={`${payable.kind}-discountCode`}
+              id={codeId}
               value={code}
               autoCapitalize="characters"
               autoComplete="off"
               spellCheck={false}
               aria-invalid={codeError ? true : undefined}
-              aria-describedby={codeError ? `${payable.kind}-discountCode-error` : undefined}
+              aria-describedby={codeError ? `${codeId}-error` : undefined}
               onChange={(event) => {
                 setCode(event.target.value);
                 setCodeError(null);
               }}
             />
-            <Button type="button" variant="outline" onClick={applyCode} disabled={quoting}>
+            {/* Busy, it refuses a second check rather than being disabled, so focus stays on it. */}
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="px-5"
+              aria-disabled={quoting || undefined}
+              onClick={quoting ? undefined : applyCode}
+            >
               {quoting ? "Checking…" : "Apply code"}
             </Button>
           </div>
         </Field>
-        {appliedCode && quote ? (
-          <p aria-live="polite" className="mt-3 font-medium">
-            {quote.code} takes {formatKobo(quote.discountKobo)} off.
-          </p>
-        ) : null}
+        {/* Always present, so the discount is announced when it arrives. */}
+        <div aria-live="polite">
+          {appliedCode && quote ? (
+            <p className="type-small mt-3 flex items-center gap-2 font-semibold text-ink tabular-nums">
+              <Tick />
+              Code applied: −{formatKobo(quote.discountKobo)}
+            </p>
+          ) : null}
+        </div>
       </div>
     </details>
   );
 
-  const totalLine = (
-    <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-foreground pt-5">
-      <span className="font-semibold">Total</span>
-      <span className="text-title text-3xl">
-        {appliedCode && total !== priceKobo ? (
-          <>
-            <s className="mr-3 text-lg font-normal text-muted-foreground">{formatKobo(priceKobo)}</s>
-            {formatKobo(total)}
-          </>
-        ) : (
-          formatKobo(total)
-        )}
+  const discounted = Boolean(appliedCode) && total !== priceKobo;
+  const totalRow = (
+    <div className="flex items-end justify-between gap-4 border-b border-ink pb-3">
+      <span className="type-body font-semibold text-ink">Total</span>
+      <span className="flex flex-wrap items-baseline justify-end gap-x-3 tabular-nums">
+        {discounted ? (
+          <s className="type-body text-ink-muted">
+            <span className="sr-only">Was </span>
+            {formatKobo(priceKobo)}
+          </s>
+        ) : null}
+        <span className="type-h3 text-ink">
+          {discounted ? <span className="sr-only">Now </span> : null}
+          {formatKobo(total)}
+        </span>
       </span>
     </div>
   );
 
-  const payButton = (
-    <>
-      <FormAlert message={formError} className="mt-6" />
-      <Button type="submit" size="lg" className="mt-6 w-full" disabled={busy}>
-        {outcome.kind === "redirecting"
-          ? "Taking you to Paystack…"
-          : isSubmitting
-            ? "Starting payment…"
-            : total === 0
-              ? copy.freeAction
-              : "Continue to payment"}
-      </Button>
-      <SlowNote show={isSubmitting && slow} />
-    </>
+  /** The alert, the places left, the button and the slow note. `active` is false on a hidden step. */
+  const submit = (label: string, busyLabel: string, active: boolean) => (
+    <div className="flex flex-col gap-3">
+      <FormAlert message={active ? formError : null} />
+      {places ? <p className="type-meta font-medium text-ink-muted tabular-nums">{places}</p> : null}
+      <div>
+        <SubmitButton busy={busy && active} busyLabel={busyLabel}>
+          {label}
+        </SubmitButton>
+        <SlowNote show={active && isSubmitting && slow} />
+      </div>
+    </div>
+  );
+  const paySubmit = submit(
+    free ? copy.freeAction : "Continue to payment",
+    free ? copy.freeBusy : "Taking you to Paystack…",
+    true,
   );
 
   if (!twoStep) {
     return (
-      <form onSubmit={handleSubmit(pay)} noValidate aria-labelledby="pay-title">
-        <h2 id="pay-title" className="text-title text-3xl">
-          {copy.heading}
-        </h2>
-        {intro}
-        {fields}
-        {discount}
-        {totalLine}
-        {payButton}
+      <form
+        onSubmit={handleSubmit(pay)}
+        noValidate
+        aria-labelledby={`${idPrefix}-title`}
+        className="flex flex-col gap-6"
+      >
+        <FormHead id={`${idPrefix}-title`} title={copy.heading} line={PAYSTACK_LINE} />
+        <div className="flex flex-col gap-5">
+          <PersonFields register={register} control={control} errors={errors} idPrefix={idPrefix} />
+          {discount}
+          {totalRow}
+        </div>
+        {paySubmit}
       </form>
     );
   }
@@ -361,48 +408,67 @@ export function PaymentForm({ payable, title, priceKobo, closesAt, captureLead =
   return (
     <>
       {/* Hidden rather than removed on the second step, so the details and any errors on them are kept. */}
-      <form onSubmit={handleSubmit(onContinue)} noValidate aria-labelledby="pay-title" hidden={step !== "details"}>
-        <h2 id="pay-title" ref={detailsHeading} tabIndex={-1} className="text-title text-3xl outline-none">
-          {copy.heading}
-        </h2>
-        {intro}
-        {fields}
-        <FormAlert message={step === "details" ? formError : null} className="mt-6" />
-        <Button type="submit" size="lg" className="mt-6 w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Continuing…" : "Continue"}
-        </Button>
-        <SlowNote show={step === "details" && isSubmitting && slow} />
+      <form
+        onSubmit={handleSubmit(onContinue)}
+        noValidate
+        aria-labelledby={`${idPrefix}-title`}
+        hidden={step !== "details"}
+        className="flex flex-col gap-6"
+      >
+        <FormHead id={`${idPrefix}-title`} headingRef={detailsHeading} title={copy.heading} line={PAYSTACK_LINE} />
+        <PersonFields register={register} control={control} errors={errors} idPrefix={idPrefix} />
+        {submit("Continue", "Continuing…", step === "details")}
       </form>
 
       {step === "pay" && person ? (
-        <form onSubmit={handleSubmit(pay)} noValidate aria-labelledby="pay-total-title">
-          <h2 id="pay-total-title" ref={payHeading} tabIndex={-1} className="text-title text-3xl outline-none">
-            {copy.heading}
-          </h2>
-          <div className="mt-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-2 bg-muted px-4 py-3">
-            <p className="min-w-0 leading-[1.5] break-words">
-              <span className="font-semibold">{[person.firstName, person.lastName].filter(Boolean).join(" ")}</span>
-              <br />
-              {person.email}
-              <br />
-              {person.phone}
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setFormError(null);
-                goTo("details");
-              }}
-              className="font-semibold underline underline-offset-4 hover:no-underline"
-            >
-              Change details
-            </button>
+        <form
+          onSubmit={handleSubmit(pay)}
+          noValidate
+          aria-labelledby={`${idPrefix}-total-title`}
+          className="flex flex-col gap-6"
+        >
+          <FormHead id={`${idPrefix}-total-title`} headingRef={payHeading} title={copy.heading} />
+          <div className="flex flex-col gap-5">
+            <div className="flex items-center justify-between gap-4 rounded-md bg-wash py-3.5 pr-3 pl-4">
+              <p className="type-body flex min-w-0 flex-col">
+                <span className="font-semibold text-ink">
+                  {[person.firstName, person.lastName].filter(Boolean).join(" ")}
+                </span>
+                <span className="break-words text-ink-muted">{person.email}</span>
+              </p>
+              <Button
+                type="button"
+                variant="text"
+                className="px-1"
+                aria-label="Change your details"
+                onClick={() => {
+                  setFormError(null);
+                  goTo("details");
+                }}
+              >
+                Change
+              </Button>
+            </div>
+            {discount}
+            {totalRow}
           </div>
-          {discount}
-          {totalLine}
-          {payButton}
+          {paySubmit}
         </form>
       ) : null}
     </>
+  );
+}
+
+/** They hold a place already. Nothing new was sent, so nothing points at an inbox. */
+function AlreadyHave({ id, heading, line }: { id: string; heading: string; line: string }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+  return (
+    <div role="status" className="flex flex-col gap-2">
+      <FormHead id={id} headingRef={headingRef} title={heading} />
+      <p className="type-body text-ink">{line}</p>
+    </div>
   );
 }

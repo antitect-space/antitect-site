@@ -27,7 +27,7 @@ export type RegistrationEvent = Pick<
   "slug" | "title" | "description" | "type" | "format" | "venue" | "startsAt" | "endsAt" | "capacity" | "spotsRemaining" | "isFull"
 >;
 
-export type NextEvent = Pick<PublicEvent, "slug" | "title" | "type" | "startsAt" | "priceKobo">;
+export type NextEvent = Pick<PublicEvent, "slug" | "title" | "type" | "format" | "venue" | "startsAt" | "priceKobo">;
 
 function useFocusOnMount<T extends HTMLElement>(enabled: boolean) {
   const ref = useRef<T>(null);

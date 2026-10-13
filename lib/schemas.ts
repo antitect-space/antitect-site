@@ -96,3 +96,20 @@ export const EMPTY_PERSON: PersonInput = {
   country: "",
   whatsappOptIn: false,
 };
+
+/**
+ * A posted person back into a form's values, so details typed into one form
+ * can start another (a refused reservation offering the community form).
+ */
+export function personInput(person: PersonBody): PersonInput {
+  const abroad = person.country !== undefined && person.state === undefined;
+  return {
+    firstName: person.firstName,
+    lastName: person.lastName ?? "",
+    email: person.email,
+    phone: person.phone,
+    state: abroad ? OUTSIDE_NIGERIA : (person.state ?? ""),
+    country: abroad ? (person.country ?? "") : "",
+    whatsappOptIn: person.whatsappOptIn,
+  };
+}
