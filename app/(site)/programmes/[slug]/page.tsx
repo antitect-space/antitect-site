@@ -51,11 +51,12 @@ export async function generateMetadata({ params }: PageProps<"/programmes/[slug]
   return {
     title: program.title,
     // The summary only. A price or a date in a preview outlives the cohort it was true for.
+    // The share image is drawn by opengraph-image.tsx beside this page.
     ...shareMetadata({
       title: program.title,
       description: program.summary,
       path: `/programmes/${program.slug}`,
-      imageUrl: program.imageUrl,
+      generatedImage: true,
     }),
   };
 }
