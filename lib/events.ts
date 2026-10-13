@@ -1,4 +1,4 @@
-import type { PublicEvent, PublicProgram } from "./api";
+import type { PublicEvent, PublicProgram, Venue } from "./api";
 import { formatKobo, hasStarted } from "./format";
 
 /**
@@ -71,6 +71,12 @@ export function eventsPath(type: PublicEvent["type"]): "/webinars" | "/workshops
 /** An event's own page, under its type: /webinars/… or /workshops/…. */
 export function eventHref(event: Pick<PublicEvent, "type" | "slug">): string {
   return `${eventsPath(event.type)}/${event.slug}`;
+}
+
+/** Google Maps searching for the venue's own name and address: "Get directions". */
+export function directionsUrl(venue: Pick<Venue, "name" | "address">): string {
+  const query = [venue.name, venue.address].filter(Boolean).join(", ");
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 export type RegistrationState = "open" | "full" | "closed";
