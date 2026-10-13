@@ -37,7 +37,7 @@ export function NextUpCard({
   /** "Next up", "Next workshop". */
   label: string;
   as?: "h2" | "h3";
-  /** The event's flyer, when it has one (components/flyer). */
+  /** The event's flyer, when it has one: a `<Flyer placement="card">`. */
   flyer?: React.ReactNode;
   className?: string;
 }) {
@@ -57,57 +57,80 @@ export function NextUpCard({
     paid ? formatKobo(event.priceKobo) : null,
   ].filter(Boolean);
 
-  return (
-    <article
-      className={cn(
-        "grid gap-6 rounded-md border border-field-border bg-paper p-6 lg:grid-cols-[720fr_328fr] lg:p-10",
-        className,
-      )}
-    >
-      <div className="flex min-w-0 flex-col gap-4">
-        {flyer}
-        <p className="type-meta flex items-center gap-2 font-semibold text-ink">
-          <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-ink" />
-          <span>
-            {label}
-            <RelativeLabel startsAt={event.startsAt} endsAt={event.endsAt} prefix=" · " />
-          </span>
-        </p>
-        <Heading className="type-h2 text-ink">
-          <Link href={href} className="underline-offset-4 hover:underline">
-            {event.title}
-          </Link>
-        </Heading>
-        {promise ? <p className="type-lead text-ink">{promise}</p> : null}
-        <p className="type-body pt-2 font-medium text-ink tabular-nums">
-          <time dateTime={event.startsAt}>
-            {workshop ? formatDayShort(event.startsAt) : formatDateLong(event.startsAt)}
-          </time>
-          {/* On a phone the date has a line to itself. */}
-          <span aria-hidden="true" className="max-lg:hidden">
-            {" · "}
-          </span>
-          <span className="max-lg:block">{details.join(" · ")}</span>
-        </p>
-      </div>
+  const text = (
+    <div className="flex min-w-0 flex-col gap-4">
+      <p className="type-meta flex items-center gap-2 font-semibold text-ink">
+        <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-ink" />
+        <span>
+          {label}
+          <RelativeLabel startsAt={event.startsAt} endsAt={event.endsAt} prefix=" · " />
+        </span>
+      </p>
+      <Heading className="type-h2 text-ink">
+        <Link href={href} className="underline-offset-4 hover:underline">
+          {event.title}
+        </Link>
+      </Heading>
+      {promise ? <p className="type-lead text-ink">{promise}</p> : null}
+      <p className="type-body pt-2 font-medium text-ink tabular-nums">
+        <time dateTime={event.startsAt}>
+          {workshop ? formatDayShort(event.startsAt) : formatDateLong(event.startsAt)}
+        </time>
+        {/* On a phone the date has a line to itself. */}
+        <span aria-hidden="true" className="max-lg:hidden">
+          {" · "}
+        </span>
+        <span className="max-lg:block">{details.join(" · ")}</span>
+      </p>
+    </div>
+  );
 
-      <div className="flex flex-col gap-5 border-t border-rule pt-5 lg:justify-between lg:gap-6 lg:border-0 lg:pt-0">
-        {/* The same date as the line beside it, drawn large; read once is enough. */}
-        <p aria-hidden="true" className="flex items-center gap-3">
-          <span className="type-h2 text-ink tabular-nums">{date.day}</span>
-          <span className="type-meta flex flex-col">
-            <span className="font-semibold text-ink">{date.month}</span>
-            <span className="font-medium text-ink-muted">{formatWeekday(event.startsAt)}</span>
-          </span>
-        </p>
-        <div className="flex flex-col gap-3">
-          <Button asChild size="lg" className="w-full px-5">
-            <Link href={`${href}#register`} aria-label={`${action}: ${event.title}`}>
-              {action}
-            </Link>
-          </Button>
-          {places ? <p className="type-meta font-medium text-ink-muted tabular-nums">{places}</p> : null}
+  // The same date as the line above, drawn large; read once is enough.
+  const bigDate = (
+    <p aria-hidden="true" className="flex items-center gap-3">
+      <span className="type-h2 text-ink tabular-nums">{date.day}</span>
+      <span className="type-meta flex flex-col">
+        <span className="font-semibold text-ink">{date.month}</span>
+        <span className="font-medium text-ink-muted">{formatWeekday(event.startsAt)}</span>
+      </span>
+    </p>
+  );
+
+  const register = (
+    <div className="flex flex-col gap-3">
+      <Button asChild size="lg" className="w-full px-5">
+        <Link href={`${href}#register`} aria-label={`${action}: ${event.title}`}>
+          {action}
+        </Link>
+      </Button>
+      {places ? <p className="type-meta font-medium text-ink-muted tabular-nums">{places}</p> : null}
+    </div>
+  );
+
+  const box = "grid gap-6 rounded-md border border-field-border bg-paper p-6 lg:p-10";
+
+  if (flyer) {
+    // The flyer takes the left four columns (the top, on a phone); it never touches the red button.
+    return (
+      <article className={cn(box, "lg:grid-cols-[368fr_680fr]", className)}>
+        <div className="min-w-0">{flyer}</div>
+        <div className="flex min-w-0 flex-col gap-6">
+          {text}
+          <div className="flex flex-col gap-5 border-t border-rule pt-5 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:pt-6">
+            {bigDate}
+            <div className="lg:w-[328px]">{register}</div>
+          </div>
         </div>
+      </article>
+    );
+  }
+
+  return (
+    <article className={cn(box, "lg:grid-cols-[720fr_328fr]", className)}>
+      {text}
+      <div className="flex flex-col gap-5 border-t border-rule pt-5 lg:justify-between lg:gap-6 lg:border-0 lg:pt-0">
+        {bigDate}
+        {register}
       </div>
     </article>
   );

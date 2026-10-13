@@ -93,6 +93,15 @@ export function Close({ className, ...props }: IconProps) {
   );
 }
 
+/** Two corners pulled apart: a flyer's "View full size". */
+export function Expand({ className, ...props }: IconProps) {
+  return (
+    <Svg size={16} strokeLinecap="square" className={cn("size-4", className)} {...props}>
+      <path d="M9.5 2.5h4v4m0-4l-4.5 4.5m-2.5 6.5h-4v-4m0 4l4.5-4.5" />
+    </Svg>
+  );
+}
+
 export function ChevronDown({ className, ...props }: IconProps) {
   return (
     <Svg size={16} className={cn("size-4", className)} {...props}>
