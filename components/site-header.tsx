@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Close, Menu } from "@/components/icons";
 import { Lockup } from "@/components/logo";
 import { MenuCloser } from "@/components/menu-closer";
+import { NavLink } from "@/components/nav-link";
 import { Button } from "@/components/ui/button";
 import { CONTACT_LINK, JOIN_FREE, NAV, SIGN_IN } from "@/lib/site";
 
@@ -11,6 +12,8 @@ const MENU_ID = "site-menu";
 /**
  * The header (design section 11). It scrolls away with the page. "Join free"
  * is ink, not red: the hero's red button shares the first screen with it.
+ * The page you are on is marked (design W9): a 2px ink underline 6px under
+ * its label, inside the 44px target, and bold in the phone menu.
  *
  * The full navigation needs about 1,100px, so below `xl` the header is the
  * phone one: the lockup, "Join free" and a native <details> menu, which opens
@@ -55,13 +58,13 @@ export function SiteHeader() {
               <ul className="container-site pt-2 pb-6">
                 {[...NAV, CONTACT_LINK, SIGN_IN].map((item) => (
                   <li key={item.label}>
-                    <Link
+                    <NavLink
                       href={item.href}
-                      className="flex min-h-14 items-center justify-between gap-4 border-b border-rule text-lg leading-[1.2] font-medium text-ink"
+                      className="flex min-h-14 items-center justify-between gap-4 border-b border-rule text-lg leading-[1.2] font-medium text-ink aria-[current=page]:font-semibold"
                     >
                       {item.label}
                       <ArrowRight />
-                    </Link>
+                    </NavLink>
                   </li>
                 ))}
               </ul>
@@ -76,11 +79,11 @@ export function SiteHeader() {
 
 function HeaderLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link
+    <NavLink
       href={href}
-      className="flex h-11 items-center text-base leading-none font-medium text-ink underline-offset-4 hover:underline"
+      className="flex h-11 items-center text-base leading-none font-medium text-ink underline-offset-4 hover:underline aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-[6px]"
     >
       {children}
-    </Link>
+    </NavLink>
   );
 }
