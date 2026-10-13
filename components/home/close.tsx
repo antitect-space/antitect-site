@@ -8,8 +8,12 @@ import { filled } from "@/lib/content";
  * The page closes on the community (Home B, section 7): the free way in, and
  * how people hear about everything else. Its "Join free" is the red button on
  * this screen.
+ *
+ * `quiet` is the band on the webinar, workshop and programme pages, whose red
+ * button is the panel's or the next session's: the button is ink and reads
+ * "Join the community".
  */
-export function CloseSection() {
+export function CloseSection({ quiet = false }: { quiet?: boolean }) {
   return (
     <section aria-labelledby="close-title" className="bg-wash py-16 lg:py-24">
       <div className="container-site grid gap-5 lg:grid-cols-2 lg:gap-6">
@@ -23,8 +27,8 @@ export function CloseSection() {
             {filled(close.cadence) ? <p className="type-body max-w-[520px] text-ink-muted">{close.cadence}</p> : null}
           </div>
           <div className="flex flex-col items-start gap-3 pt-2">
-            <Button asChild size="lg" className="px-5">
-              <Link href={close.action.href}>{close.action.label}</Link>
+            <Button asChild size="lg" variant={quiet ? "secondary" : "default"} className="px-5">
+              <Link href={close.action.href}>{quiet ? "Join the community" : close.action.label}</Link>
             </Button>
             <p className="type-meta font-medium text-ink-muted">{close.note}</p>
           </div>
