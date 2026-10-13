@@ -34,7 +34,10 @@ export async function generateMetadata({ params }: PageProps<"/workshops/[slug]"
   const recap = recapOf(slug);
   if (recap) {
     // No city here: the place belongs on the page, beside the event it names.
-    return { title: recap.name, ...shareMetadata({ title: recap.name, description: recapPage.description, path: `/workshops/${recap.slug}` }) };
+    return {
+      title: recap.name,
+      ...shareMetadata({ title: recap.name, description: recapPage.description, path: `/workshops/${recap.slug}`, generatedImage: true }),
+    };
   }
 
   const event = await getEvent(slug);
@@ -42,7 +45,11 @@ export async function generateMetadata({ params }: PageProps<"/workshops/[slug]"
 
   // Never a price: link previews are cached long after one changes.
   const description = summarise(firstParagraph(event.description), 155) || "A one-day workshop from Antitect.";
-  return { title: event.title, ...shareMetadata({ title: event.title, description, path: eventHref(event) }) };
+  return {
+    title: event.title,
+    // The share image is drawn by opengraph-image.tsx beside this page.
+    ...shareMetadata({ title: event.title, description, path: eventHref(event), generatedImage: true }),
+  };
 }
 
 /**
